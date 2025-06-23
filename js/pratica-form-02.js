@@ -209,6 +209,8 @@ class PraticaForm {
     
     const url = `${this.appsScriptUrl}?${params}`;
 
+console.log('Save URL:', url); // Debug
+
         const response = await fetch(url);
 
         if (!response.ok) {
