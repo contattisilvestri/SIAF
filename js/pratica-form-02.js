@@ -467,13 +467,18 @@ async savePratica() {
     }
 }
 
+// BLOCCO 5: Sistema salvataggio (raccolta dati, validazione, submit)
 collectAllFormData() {
     const operatorSelect = document.getElementById('operatore');
     const selectedOption = operatorSelect?.selectedOptions[0];
     
+    console.log('=== DEBUG COLLECT DATA ===');
+    console.log('this.venditori:', this.venditori);
+    console.log('Numero venditori:', this.venditori.length);
+    
     // Raccolta dati venditori
     const venditoriData = this.venditori.map(venditore => {
-        return {
+        const data = {
             id: venditore.id,
             nome: document.getElementById(`venditore_${venditore.id}_nome`)?.value || '',
             cognome: document.getElementById(`venditore_${venditore.id}_cognome`)?.value || '',
@@ -490,13 +495,15 @@ collectAllFormData() {
             telefono: document.getElementById(`venditore_${venditore.id}_telefono`)?.value || '',
             email: document.getElementById(`venditore_${venditore.id}_email`)?.value || ''
         };
+        
+        console.log(`📋 Dati venditore ${venditore.id}:`, data);
+        return data;
     });
-
-     console.log('=== DEBUG COLLECT DATA ===');
-    console.log('Venditori array:', this.venditori);
-    console.log('Venditori data raccolti:', venditoriData);
     
-    return {
+    console.log('📦 Venditori data finale:', venditoriData);
+    console.log('📦 Venditori data length:', venditoriData.length);
+    
+    const finalData = {
         // Dati operatore
         lettera: selectedOption?.dataset.letter || '',
         operatore: selectedOption?.textContent || '',
@@ -507,6 +514,12 @@ collectAllFormData() {
         // Venditori (JSON)
         venditori: venditoriData
     };
+    
+    console.log('🎯 Final form data:', finalData);
+    console.log('🎯 Final venditori nel data:', finalData.venditori);
+    console.log('🎯 Final venditori length:', finalData.venditori.length);
+    
+    return finalData;
 }
 
 validateCompleteForm() {
