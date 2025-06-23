@@ -237,191 +237,197 @@ async getPreviewNumber(lettera) {
     return data;
 }
 
-// BLOCCO 4: Sistema venditori multipli dinamici (add/remove/render) - DEBUG
-initializeVenditori() {
-    console.log('🔧 Inizializzando sistema venditori...');
-    
-    const addBtn = document.getElementById('add-venditore');
-    
-    if (addBtn) {
-        addBtn.addEventListener('click', () => {
-            console.log('➕ Click add venditore');
-            this.addVenditore();
-        });
-    } else {
-        console.error('❌ Pulsante add-venditore non trovato!');
+// BLOCCO 4: Sistema venditori multipli dinamici (add/remove/render)
+    initializeVenditori() {
+        console.log('🔧 Inizializzando sistema venditori...');
+        
+        const addBtn = document.getElementById('add-venditore');
+        
+        if (addBtn) {
+            addBtn.addEventListener('click', () => {
+                console.log('➕ Click add venditore');
+                this.addVenditore();
+            });
+            console.log('✅ Event listener add-venditore attaccato');
+        } else {
+            console.error('❌ Pulsante add-venditore non trovato!');
+        }
+        
+        // Aggiungi primo venditore di default
+        console.log('🚀 Aggiungendo primo venditore di default...');
+        this.addVenditore();
+        
+        console.log('✅ Venditori dopo init:', this.venditori);
+        console.log('✅ Sistema venditori inizializzato');
     }
-    
-    // Aggiungi primo venditore di default
-    console.log('🚀 Aggiungendo primo venditore di default...');
-    this.addVenditore();
-    
-    console.log('✅ Venditori dopo init:', this.venditori);
-    console.log('✅ Sistema venditori inizializzato');
-}
 
-addVenditore() {
-    console.log('➕ Aggiungendo venditore...');
-    
-    const venditore = {
-        id: ++this.venditoreCounter,
-        nome: '',
-        cognome: '',
-        luogo_nascita: '',
-        data_nascita: '',
-        codice_fiscale: '',
-        tipo_documento: '',
-        numero_documento: '',
-        data_rilascio: '',
-        data_scadenza: '',
-        cittadinanza: 'Italiana',
-        stato_civile: '',
-        indirizzo: '',
-        citta: '',
-        provincia: '',
-        pensionato: '',
-        telefono: '',
-        email: ''
-    };
-    
-    this.venditori.push(venditore);
-    console.log(`✅ Venditore ${venditore.id} aggiunto. Totale venditori:`, this.venditori.length);
-    
-    this.renderVenditore(venditore);
-    this.updateTabProgress();
-    
-    console.log('📊 Array venditori attuale:', this.venditori);
-}
-
-// Resto delle funzioni uguale...
-
-removeVenditore(id) {
-    // Non permettere rimozione se è l'unico venditore
-    if (this.venditori.length === 1) {
-        alert('Deve esserci almeno un venditore');
-        return;
+    addVenditore() {
+        console.log('➕ Aggiungendo venditore...');
+        
+        const venditore = {
+            id: ++this.venditoreCounter,
+            nome: '',
+            cognome: '',
+            luogo_nascita: '',
+            data_nascita: '',
+            codice_fiscale: '',
+            tipo_documento: '',
+            numero_documento: '',
+            data_rilascio: '',
+            data_scadenza: '',
+            cittadinanza: 'Italiana',
+            stato_civile: '',
+            indirizzo: '',
+            citta: '',
+            provincia: '',
+            pensionato: '',
+            telefono: '',
+            email: ''
+        };
+        
+        this.venditori.push(venditore);
+        console.log(`✅ Venditore ${venditore.id} aggiunto. Totale venditori:`, this.venditori.length);
+        
+        this.renderVenditore(venditore);
+        this.updateTabProgress();
+        
+        console.log('📊 Array venditori attuale:', this.venditori);
     }
-    
-    this.venditori = this.venditori.filter(v => v.id !== id);
-    document.getElementById(`venditore-${id}`).remove();
-    this.updateTabProgress();
-    this.isDirty = true;
-    
-    console.log(`❌ Rimosso venditore ${id}`);
-}
 
-renderVenditore(venditore) {
-    const container = document.getElementById('venditori-container');
-    const isFirst = this.venditori.length === 1;
-    
-    const venditoreHtml = `
-        <div id="venditore-${venditore.id}" class="venditore-card">
-            <div class="venditore-header">
-                <h3>👤 Venditore ${venditore.id}</h3>
-                ${!isFirst ? `<button type="button" class="btn-remove" onclick="window.siafApp.removeVenditore(${venditore.id})">❌ Rimuovi</button>` : ''}
+    removeVenditore(id) {
+        // Non permettere rimozione se è l'unico venditore
+        if (this.venditori.length === 1) {
+            alert('Deve esserci almeno un venditore');
+            return;
+        }
+        
+        this.venditori = this.venditori.filter(v => v.id !== id);
+        document.getElementById(`venditore-${id}`).remove();
+        this.updateTabProgress();
+        this.isDirty = true;
+        
+        console.log(`❌ Rimosso venditore ${id}`);
+    }
+
+    renderVenditore(venditore) {
+        const container = document.getElementById('venditori-container');
+        
+        if (!container) {
+            console.error('❌ Container venditori-container non trovato!');
+            return;
+        }
+        
+        const isFirst = this.venditori.length === 1;
+        
+        const venditoreHtml = `
+            <div id="venditore-${venditore.id}" class="venditore-card">
+                <div class="venditore-header">
+                    <h3>👤 Venditore ${venditore.id}</h3>
+                    ${!isFirst ? `<button type="button" class="btn-remove" onclick="window.siafApp.removeVenditore(${venditore.id})">❌ Rimuovi</button>` : ''}
+                </div>
+                
+                <div class="form-grid">
+                    <!-- Dati anagrafici -->
+                    <div class="field-card">
+                        <h4>Dati Anagrafici</h4>
+                        <div class="field-row">
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_nome">Nome</label>
+                                <input type="text" id="venditore_${venditore.id}_nome" value="${venditore.nome}" required>
+                            </div>
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_cognome">Cognome</label>
+                                <input type="text" id="venditore_${venditore.id}_cognome" value="${venditore.cognome}" required>
+                            </div>
+                        </div>
+
+                        <div class="field-row">
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_luogo_nascita">Luogo di Nascita</label>
+                                <input type="text" id="venditore_${venditore.id}_luogo_nascita" value="${venditore.luogo_nascita}">
+                            </div>
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_data_nascita">Data di Nascita</label>
+                                <input type="date" id="venditore_${venditore.id}_data_nascita" value="${venditore.data_nascita}">
+                            </div>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_codice_fiscale">Codice Fiscale</label>
+                            <input type="text" id="venditore_${venditore.id}_codice_fiscale" value="${venditore.codice_fiscale}" 
+                                   maxlength="16" style="text-transform: uppercase;">
+                        </div>
+                    </div>
+
+                    <!-- Documento -->
+                    <div class="field-card">
+                        <h4>Documento di Riconoscimento</h4>
+                        <div class="field-row">
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_tipo_documento">Tipo Documento</label>
+                                <select id="venditore_${venditore.id}_tipo_documento">
+                                    <option value="">Seleziona...</option>
+                                    <option value="carta_identita" ${venditore.tipo_documento === 'carta_identita' ? 'selected' : ''}>Carta d'Identità</option>
+                                    <option value="patente" ${venditore.tipo_documento === 'patente' ? 'selected' : ''}>Patente di Guida</option>
+                                    <option value="passaporto" ${venditore.tipo_documento === 'passaporto' ? 'selected' : ''}>Passaporto</option>
+                                </select>
+                            </div>
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_numero_documento">Numero Documento</label>
+                                <input type="text" id="venditore_${venditore.id}_numero_documento" value="${venditore.numero_documento}">
+                            </div>
+                        </div>
+
+                        <div class="field-row">
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_data_rilascio">Data Rilascio</label>
+                                <input type="date" id="venditore_${venditore.id}_data_rilascio" value="${venditore.data_rilascio}">
+                            </div>
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_data_scadenza">Data Scadenza</label>
+                                <input type="date" id="venditore_${venditore.id}_data_scadenza" value="${venditore.data_scadenza}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Residenza e Contatti -->
+                    <div class="field-card">
+                        <h4>Residenza e Contatti</h4>
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_indirizzo">Indirizzo</label>
+                            <input type="text" id="venditore_${venditore.id}_indirizzo" value="${venditore.indirizzo}">
+                        </div>
+
+                        <div class="field-row">
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_citta">Città</label>
+                                <input type="text" id="venditore_${venditore.id}_citta" value="${venditore.citta}">
+                            </div>
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_provincia">Provincia</label>
+                                <input type="text" id="venditore_${venditore.id}_provincia" value="${venditore.provincia}" 
+                                       maxlength="2" style="text-transform: uppercase;">
+                            </div>
+                        </div>
+
+                        <div class="field-row">
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_telefono">Telefono</label>
+                                <input type="tel" id="venditore_${venditore.id}_telefono" value="${venditore.telefono}">
+                            </div>
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_email">Email</label>
+                                <input type="email" id="venditore_${venditore.id}_email" value="${venditore.email}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            <div class="form-grid">
-                <!-- Dati anagrafici -->
-                <div class="field-card">
-                    <h4>Dati Anagrafici</h4>
-                    <div class="field-row">
-                        <div class="field-group">
-                            <label for="venditore_${venditore.id}_nome">Nome</label>
-                            <input type="text" id="venditore_${venditore.id}_nome" value="${venditore.nome}" required>
-                        </div>
-                        <div class="field-group">
-                            <label for="venditore_${venditore.id}_cognome">Cognome</label>
-                            <input type="text" id="venditore_${venditore.id}_cognome" value="${venditore.cognome}" required>
-                        </div>
-                    </div>
-
-                    <div class="field-row">
-                        <div class="field-group">
-                            <label for="venditore_${venditore.id}_luogo_nascita">Luogo di Nascita</label>
-                            <input type="text" id="venditore_${venditore.id}_luogo_nascita" value="${venditore.luogo_nascita}">
-                        </div>
-                        <div class="field-group">
-                            <label for="venditore_${venditore.id}_data_nascita">Data di Nascita</label>
-                            <input type="date" id="venditore_${venditore.id}_data_nascita" value="${venditore.data_nascita}">
-                        </div>
-                    </div>
-
-                    <div class="field-group">
-                        <label for="venditore_${venditore.id}_codice_fiscale">Codice Fiscale</label>
-                        <input type="text" id="venditore_${venditore.id}_codice_fiscale" value="${venditore.codice_fiscale}" 
-                               maxlength="16" style="text-transform: uppercase;">
-                    </div>
-                </div>
-
-                <!-- Documento -->
-                <div class="field-card">
-                    <h4>Documento di Riconoscimento</h4>
-                    <div class="field-row">
-                        <div class="field-group">
-                            <label for="venditore_${venditore.id}_tipo_documento">Tipo Documento</label>
-                            <select id="venditore_${venditore.id}_tipo_documento">
-                                <option value="">Seleziona...</option>
-                                <option value="carta_identita" ${venditore.tipo_documento === 'carta_identita' ? 'selected' : ''}>Carta d'Identità</option>
-                                <option value="patente" ${venditore.tipo_documento === 'patente' ? 'selected' : ''}>Patente di Guida</option>
-                                <option value="passaporto" ${venditore.tipo_documento === 'passaporto' ? 'selected' : ''}>Passaporto</option>
-                            </select>
-                        </div>
-                        <div class="field-group">
-                            <label for="venditore_${venditore.id}_numero_documento">Numero Documento</label>
-                            <input type="text" id="venditore_${venditore.id}_numero_documento" value="${venditore.numero_documento}">
-                        </div>
-                    </div>
-
-                    <div class="field-row">
-                        <div class="field-group">
-                            <label for="venditore_${venditore.id}_data_rilascio">Data Rilascio</label>
-                            <input type="date" id="venditore_${venditore.id}_data_rilascio" value="${venditore.data_rilascio}">
-                        </div>
-                        <div class="field-group">
-                            <label for="venditore_${venditore.id}_data_scadenza">Data Scadenza</label>
-                            <input type="date" id="venditore_${venditore.id}_data_scadenza" value="${venditore.data_scadenza}">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Residenza e Contatti -->
-                <div class="field-card">
-                    <h4>Residenza e Contatti</h4>
-                    <div class="field-group">
-                        <label for="venditore_${venditore.id}_indirizzo">Indirizzo</label>
-                        <input type="text" id="venditore_${venditore.id}_indirizzo" value="${venditore.indirizzo}">
-                    </div>
-
-                    <div class="field-row">
-                        <div class="field-group">
-                            <label for="venditore_${venditore.id}_citta">Città</label>
-                            <input type="text" id="venditore_${venditore.id}_citta" value="${venditore.citta}">
-                        </div>
-                        <div class="field-group">
-                            <label for="venditore_${venditore.id}_provincia">Provincia</label>
-                            <input type="text" id="venditore_${venditore.id}_provincia" value="${venditore.provincia}" 
-                                   maxlength="2" style="text-transform: uppercase;">
-                        </div>
-                    </div>
-
-                    <div class="field-row">
-                        <div class="field-group">
-                            <label for="venditore_${venditore.id}_telefono">Telefono</label>
-                            <input type="tel" id="venditore_${venditore.id}_telefono" value="${venditore.telefono}">
-                        </div>
-                        <div class="field-group">
-                            <label for="venditore_${venditore.id}_email">Email</label>
-                            <input type="email" id="venditore_${venditore.id}_email" value="${venditore.email}">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    container.insertAdjacentHTML('beforeend', venditoreHtml);
-}
+        `;
+        
+        container.insertAdjacentHTML('beforeend', venditoreHtml);
+        console.log(`✅ Venditore ${venditore.id} renderizzato`);
+    }
 
 // BLOCCO 5: Sistema salvataggio (raccolta dati, validazione, submit)
 initializeActions() {
