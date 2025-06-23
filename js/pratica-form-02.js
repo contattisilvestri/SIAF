@@ -200,16 +200,16 @@ class PraticaForm {
     }
 
     async savePratica(formData) {
-        const response = await fetch(this.appsScriptUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'save',
-                data: formData
-            })
-        });
+        
+        // Test: converti POST in GET con parametri
+    const params = new URLSearchParams({
+        action: 'save',
+        data: JSON.stringify(formData)
+    });
+    
+    const url = `${this.appsScriptUrl}?${params}`;
+
+        const response = await fetch(url);
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
