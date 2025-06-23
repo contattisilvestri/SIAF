@@ -392,3 +392,36 @@ function generatePreventivoImposte(data, targetFolder) {
 function generateDelegaPlanimetrie(data, targetFolder) {
   return { success: false, error: 'Non ancora implementato' };
 }
+
+// ========== INIZIALIZZAZIONE AUTOMATICA (DEBUG) ==========
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔍 DOM loaded, avvio debug Document Generator...');
+    
+    // Verifica presenza elementi
+    const generateBtn = document.getElementById('generate-documents');
+    const generateStatus = document.getElementById('generate-status');
+    const siafApp = window.siafApp;
+    
+    console.log('🔍 Generate button trovato:', !!generateBtn);
+    console.log('🔍 Generate status trovato:', !!generateStatus);
+    console.log('🔍 SIAF App disponibile:', !!siafApp);
+    
+    if (generateBtn) {
+        console.log('🔍 Pulsante HTML:', generateBtn.outerHTML);
+    }
+    
+    // Aspetta che anche siafApp sia inizializzato
+    setTimeout(() => {
+        console.log('🚀 Inizializzazione SIAF Document Generator...');
+        console.log('🔍 SIAF App dopo timeout:', !!window.siafApp);
+        
+        try {
+            window.siafDocumentGenerator = new SiafDocumentGenerator();
+            window.siafDocumentGenerator.init();
+            console.log('✅ SIAF Document Generator pronto!');
+        } catch (error) {
+            console.error('❌ Errore inizializzazione Document Generator:', error);
+        }
+    }, 1000);
+});
