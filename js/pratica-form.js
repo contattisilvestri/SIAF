@@ -1,7 +1,6 @@
-// pratica-form.js - Versione ottimizzata
+// pratica-form.js - Versione con preview
 class PraticaForm {
     constructor() {
-        this.cache = {}; // Cache per velocità
         this.init();
     }
 
@@ -36,25 +35,18 @@ class PraticaForm {
             return;
         }
 
-        // Check cache prima
-        if (this.cache[lettera]) {
-            this.updateProtocolNumber(this.cache[lettera]);
-            return;
-        }
-
         this.showLoading();
         
         try {
-            const protocolData = await this.generateProtocolNumber(lettera);
-            this.cache[lettera] = protocolData; // Salva in cache
-            this.updateProtocolNumber(protocolData);
+            const previewData = await this.getPreviewNumber(lettera);
+            this.updateProtocolNumber(previewData);
         } catch (error) {
             this.handleError(error);
         }
     }
 
-    async generateProtocolNumber(lettera) {
-        const url = `${this.appsScriptUrl}?lettera=${lettera}`;
+    async getPreviewNumber(lettera) {
+        const url = `${this.appsScriptUrl}?action=preview&lettera=${lettera}`;
         
         const response = await fetch(url);
         
@@ -65,7 +57,7 @@ class PraticaForm {
         const data = await response.json();
         
         if (!data.success) {
-            throw new Error(data.error || 'Errore generazione numero protocollo');
+            throw new Error(data.error || 'Errore preview numero protocollo');
         }
         
         return data;
@@ -73,33 +65,61 @@ class PraticaForm {
 
     updateProtocolNumber(data) {
         if (this.numeroProtocolloField) {
-            this.numeroProtocolloField.value = data.protocolNumber;
+            this.numeroProtocolloField.value = `Preview: ${data.previewNumber}`;
             this.numeroProtocolloField.classList.remove('loading', 'error');
-            this.numeroProtocolloField.classList.add('success');
+            this.numeroProtocolloField.classList.add('preview');
         }
     }
 
     showLoading() {
         if (this.numeroProtocolloField) {
-            this.numeroProtocolloField.value = 'Generando...';
+            this.numeroProtocolloField.value = 'Caricando preview...';
             this.numeroProtocolloField.classList.add('loading');
-            this.numeroProtocolloField.classList.remove('error', 'success');
+            this.numeroProtocolloField.classList.remove('error', 'preview');
         }
     }
 
     clearProtocolNumber() {
         if (this.numeroProtocolloField) {
             this.numeroProtocolloField.value = '';
-            this.numeroProtocolloField.classList.remove('loading', 'error', 'success');
+            this.numeroProtocolloField.classList.remove('loading', 'error', 'preview');
         }
     }
 
     handleError(error) {
         console.error('Errore:', error);
         if (this.numeroProtocolloField) {
-            this.numeroProtocolloField.value = 'Errore generazione';
-            this.numeroProtocolloField.classList.remove('loading', 'success');
+            this.numeroProtocolloField.value = 'Errore preview';
+            this.numeroProtocolloField.classList.remove('loading', 'preview');
             this.numeroProtocolloField.classList.add('error');
+        }
+    }
+
+    // Funzione per salvare pratica completa (da implementare)
+    async savePratica(formData) {
+        try {
+            const response = await fetch(this.appsScriptUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'save',
+                    data: formData
+                })
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                console.log('Pratica salvata:', result.protocollo);
+                return result;
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            console.error('Errore salvataggio:', error);
+            throw error;
         }
     }
 }
