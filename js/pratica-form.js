@@ -1,17 +1,39 @@
-// pratica-form.js - Versione con preview
+// pratica-form.js - Versione completa con data automatica
 class PraticaForm {
     constructor() {
-        this.init();
+        // Inizializzazione vuota - init() chiamato dopo DOM ready
     }
 
     init() {
         this.operatoreSelect = document.getElementById('operatore');
         this.numeroProtocolloField = document.getElementById('numero_protocollo');
-this.dataCompilazioneField = document.getElementById('data_compilazione');
+        this.dataCompilazioneField = document.getElementById('data_compilazione');
         this.appsScriptUrl = 'https://script.google.com/macros/s/AKfycbyt5wpzq9dLg52WJphwcKKgRexTcI7GQsZ0Mz3-2ofkEQbo8tlziYf2trZ-wobUL26K/exec';
         
-  this.setCurrentDate(); // ← Nuova funzione
+        this.setCurrentDate();
         this.bindEvents();
+    }
+
+    setCurrentDate() {
+        if (this.dataCompilazioneField) {
+            const now = new Date();
+            const formattedDate = this.formatDate(now);
+            this.dataCompilazioneField.value = formattedDate;
+            this.dataCompilazioneField.classList.add('auto-filled');
+            console.log('Data impostata:', formattedDate);
+        } else {
+            console.log('Campo data_compilazione non trovato');
+        }
+    }
+
+    formatDate(date) {
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        
+        return `${day}/${month}/${year} ${hours}:${minutes}`;
     }
 
     bindEvents() {
@@ -22,26 +44,6 @@ this.dataCompilazioneField = document.getElementById('data_compilazione');
         }
     }
 
-// Nuova funzione per impostare data automatica
-setCurrentDate() {
-    if (this.dataCompilazioneField) {
-        const now = new Date();
-        const formattedDate = this.formatDate(now);
-        this.dataCompilazioneField.value = formattedDate;
-        this.dataCompilazioneField.classList.add('auto-filled');
-    }
-}
-
-formatDate(date) {
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    
-    return `${day}/${month}/${year} ${hours}:${minutes}`;
-}
-    
     async handleOperatoreChange(event) {
         const selectedOption = event.target.selectedOptions[0];
         
@@ -148,5 +150,6 @@ formatDate(date) {
 
 // Inizializza quando il DOM è pronto
 document.addEventListener('DOMContentLoaded', function() {
-    new PraticaForm();
+    const form = new PraticaForm();
+    form.init();
 });
