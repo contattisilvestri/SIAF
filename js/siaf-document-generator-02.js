@@ -113,30 +113,28 @@ class SiafDocumentGenerator {
         return result;
     }
 
-    // BLOCCO 5: Raccolta e preparazione dati per generazione
-    collectGenerationData(saveResult) {
-        const formData = window.siafApp ? window.siafApp.collectAllFormData() : {};
+   // BLOCCO 5: Raccolta e preparazione dati per generazione
+collectGenerationData(saveResult) {
+    const formData = window.siafApp ? window.siafApp.collectAllFormData() : {};
+    
+    const generationData = {
+        protocollo: saveResult.protocollo,
+        lettera: formData.lettera || '',
+        operatore: formData.operatore || '',
+        data_compilazione: formData.data_compilazione || '',
+        venditori: formData.venditori || [],
         
-        const generationData = {
-            protocollo: saveResult.protocollo,
-            lettera: formData.lettera || '',
-            operatore: formData.operatore || '',
-            data_compilazione: formData.data_compilazione || '',
-            venditori: formData.venditori || [],
-            
-            anno: new Date().getFullYear(),
-            generazione_timestamp: new Date().toISOString(),
-            
-            documenti_richiesti: [
-                'incarico_mediazione',
-                'preventivo_imposte',
-                'delega_planimetrie'
-            ]
-        };
+        anno: new Date().getFullYear(),
+        generazione_timestamp: new Date().toISOString(),
+        
+        documenti_richiesti: [
+            'incarico_mediazione'
+        ]
+    };
 
-        console.log('📦 Dati per generazione:', generationData);
-        return generationData;
-    }
+    console.log('📦 Dati per generazione:', generationData);
+    return generationData;
+}
 
     // BLOCCO 6: Chiamata al backend per generazione documenti
     async callGenerateBackend(generationData) {
