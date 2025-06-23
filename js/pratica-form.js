@@ -1,6 +1,7 @@
-// pratica-form.js
+// pratica-form.js - Versione ottimizzata
 class PraticaForm {
     constructor() {
+        this.cache = {}; // Cache per velocità
         this.init();
     }
 
@@ -35,10 +36,17 @@ class PraticaForm {
             return;
         }
 
+        // Check cache prima
+        if (this.cache[lettera]) {
+            this.updateProtocolNumber(this.cache[lettera]);
+            return;
+        }
+
         this.showLoading();
         
         try {
             const protocolData = await this.generateProtocolNumber(lettera);
+            this.cache[lettera] = protocolData; // Salva in cache
             this.updateProtocolNumber(protocolData);
         } catch (error) {
             this.handleError(error);
