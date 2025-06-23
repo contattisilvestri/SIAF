@@ -7,7 +7,7 @@ class PraticaForm {
     init() {
         this.operatoreSelect = document.getElementById('operatore');
         this.numeroProtocolloField = document.getElementById('numero_protocollo');
-        this.appsScriptUrl = 'https://script.google.com/macros/s/TUO_DEPLOYMENT_ID/exec';
+        this.appsScriptUrl = 'https://script.google.com/macros/s/AKfycbyt5wpzq9dLg52WJphwcKKgRexTcI7GQsZ0Mz3-2ofkEQbo8tlziYf2trZ-wobUL26K/exec';
         
         this.bindEvents();
     }
