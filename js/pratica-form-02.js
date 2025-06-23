@@ -17,8 +17,8 @@ class SiafApp {
         // Inizializza componenti
         this.initializeTabs();
         this.initializeForm();
+        this.initializeVenditori(); // ← QUESTA CHIAMATA MANCAVA!
         this.initializeActions();
-        this.initializeVenditori();
         
         // Auto-popola data
         this.setCurrentDate();
@@ -237,24 +237,32 @@ async getPreviewNumber(lettera) {
     return data;
 }
 
-// BLOCCO 4: Sistema venditori multipli dinamici (add/remove/render)
+// BLOCCO 4: Sistema venditori multipli dinamici (add/remove/render) - DEBUG
 initializeVenditori() {
+    console.log('🔧 Inizializzando sistema venditori...');
+    
     const addBtn = document.getElementById('add-venditore');
     
     if (addBtn) {
         addBtn.addEventListener('click', () => {
+            console.log('➕ Click add venditore');
             this.addVenditore();
         });
+    } else {
+        console.error('❌ Pulsante add-venditore non trovato!');
     }
     
-   // Aggiungi primo venditore di default
+    // Aggiungi primo venditore di default
     console.log('🚀 Aggiungendo primo venditore di default...');
     this.addVenditore();
     
     console.log('✅ Venditori dopo init:', this.venditori);
+    console.log('✅ Sistema venditori inizializzato');
 }
 
 addVenditore() {
+    console.log('➕ Aggiungendo venditore...');
+    
     const venditore = {
         id: ++this.venditoreCounter,
         nome: '',
@@ -277,11 +285,15 @@ addVenditore() {
     };
     
     this.venditori.push(venditore);
+    console.log(`✅ Venditore ${venditore.id} aggiunto. Totale venditori:`, this.venditori.length);
+    
     this.renderVenditore(venditore);
     this.updateTabProgress();
     
-    console.log(`➕ Aggiunto venditore ${venditore.id}`);
+    console.log('📊 Array venditori attuale:', this.venditori);
 }
+
+// Resto delle funzioni uguale...
 
 removeVenditore(id) {
     // Non permettere rimozione se è l'unico venditore
