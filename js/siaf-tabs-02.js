@@ -17,7 +17,7 @@ class SiafApp {
         // Inizializza componenti
         this.initializeTabs();
         this.initializeForm();
-        this.initializeVenditori(); // ← QUESTA CHIAMATA MANCAVA!
+        this.initializeVenditori();
         this.initializeActions();
         
         // Auto-popola data
@@ -26,9 +26,9 @@ class SiafApp {
         // Auto-save periodico
         this.startAutoSave();
     }
-}
 
-// BLOCCO 2: Sistema navigazione tab e progress tracking
+    // ========== BLOCCO 2: GESTIONE NAVIGAZIONE TAB ==========
+    
     initializeTabs() {
         const tabButtons = document.querySelectorAll('.tab-btn');
         
@@ -130,114 +130,116 @@ class SiafApp {
         return fields;
     }
 
-// BLOCCO 3: Gestione form base (operatore, data, eventi generali)
-initializeForm() {
-    // Operatore change
-    const operatoreSelect = document.getElementById('operatore');
-    if (operatoreSelect) {
-        operatoreSelect.addEventListener('change', (e) => {
-            this.handleOperatoreChange(e);
-        });
-    }
+    // ========== BLOCCO 3: GESTIONE FORM BASE ==========
 
-    // Track form changes
-    const form = document.getElementById('siaf-form');
-    if (form) {
-        form.addEventListener('input', () => {
-            this.isDirty = true;
-            this.updateTabProgress();
-        });
-        
-        form.addEventListener('change', () => {
-            this.isDirty = true;
-            this.updateTabProgress();
-        });
-    }
-    
-    console.log('✅ Form event listeners inizializzati');
-}
-
-setCurrentDate() {
-    const dateField = document.getElementById('data_compilazione');
-    if (dateField) {
-        const now = new Date();
-        const formattedDate = this.formatDate(now);
-        dateField.value = formattedDate;
-        console.log('📅 Data compilazione impostata:', formattedDate);
-    }
-}
-
-formatDate(date) {
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    
-    return `${day}/${month}/${year} ${hours}:${minutes}`;
-}
-
-async handleOperatoreChange(event) {
-    const selectedOption = event.target.selectedOptions[0];
-    const protocolField = document.getElementById('numero_protocollo');
-    
-    if (!selectedOption.value) {
-        if (protocolField) {
-            protocolField.value = '';
-            protocolField.className = 'readonly-field';
+    initializeForm() {
+        // Operatore change
+        const operatoreSelect = document.getElementById('operatore');
+        if (operatoreSelect) {
+            operatoreSelect.addEventListener('change', (e) => {
+                this.handleOperatoreChange(e);
+            });
         }
-        return;
-    }
 
-    const lettera = selectedOption.dataset.letter;
-    
-    if (!lettera) {
-        console.error('❌ Lettera operatore non trovata');
-        return;
-    }
-
-    if (protocolField) {
-        protocolField.value = 'Caricando preview...';
-        protocolField.className = 'readonly-field loading';
-    }
-    
-    try {
-        const previewData = await this.getPreviewNumber(lettera);
-        
-        if (protocolField) {
-            protocolField.value = `Preview: ${previewData.previewNumber}`;
-            protocolField.className = 'readonly-field preview';
+        // Track form changes
+        const form = document.getElementById('siaf-form');
+        if (form) {
+            form.addEventListener('input', () => {
+                this.isDirty = true;
+                this.updateTabProgress();
+            });
+            
+            form.addEventListener('change', () => {
+                this.isDirty = true;
+                this.updateTabProgress();
+            });
         }
         
-    } catch (error) {
-        console.error('❌ Errore preview:', error);
-        
-        if (protocolField) {
-            protocolField.value = 'Errore preview';
-            protocolField.className = 'readonly-field error';
+        console.log('✅ Form event listeners inizializzati');
+    }
+
+    setCurrentDate() {
+        const dateField = document.getElementById('data_compilazione');
+        if (dateField) {
+            const now = new Date();
+            const formattedDate = this.formatDate(now);
+            dateField.value = formattedDate;
+            console.log('📅 Data compilazione impostata:', formattedDate);
         }
     }
-}
 
-async getPreviewNumber(lettera) {
-    const url = `${this.appsScriptUrl}?action=preview&lettera=${lettera}`;
-    
-    const response = await fetch(url);
-    
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    formatDate(date) {
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        
+        return `${day}/${month}/${year} ${hours}:${minutes}`;
     }
-    
-    const data = await response.json();
-    
-    if (!data.success) {
-        throw new Error(data.error || 'Errore preview numero protocollo');
-    }
-    
-    return data;
-}
 
-// BLOCCO 4: Sistema venditori multipli dinamici (add/remove/render)
+    async handleOperatoreChange(event) {
+        const selectedOption = event.target.selectedOptions[0];
+        const protocolField = document.getElementById('numero_protocollo');
+        
+        if (!selectedOption.value) {
+            if (protocolField) {
+                protocolField.value = '';
+                protocolField.className = 'readonly-field';
+            }
+            return;
+        }
+
+        const lettera = selectedOption.dataset.letter;
+        
+        if (!lettera) {
+            console.error('❌ Lettera operatore non trovata');
+            return;
+        }
+
+        if (protocolField) {
+            protocolField.value = 'Caricando preview...';
+            protocolField.className = 'readonly-field loading';
+        }
+        
+        try {
+            const previewData = await this.getPreviewNumber(lettera);
+            
+            if (protocolField) {
+                protocolField.value = `Preview: ${previewData.previewNumber}`;
+                protocolField.className = 'readonly-field preview';
+            }
+            
+        } catch (error) {
+            console.error('❌ Errore preview:', error);
+            
+            if (protocolField) {
+                protocolField.value = 'Errore preview';
+                protocolField.className = 'readonly-field error';
+            }
+        }
+    }
+
+    async getPreviewNumber(lettera) {
+        const url = `${this.appsScriptUrl}?action=preview&lettera=${lettera}`;
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.error || 'Errore preview numero protocollo');
+        }
+        
+        return data;
+    }
+
+    // ========== BLOCCO 4: GESTIONE VENDITORI DINAMICI ==========
+
     initializeVenditori() {
         console.log('🔧 Inizializzando sistema venditori...');
         
@@ -429,223 +431,225 @@ async getPreviewNumber(lettera) {
         console.log(`✅ Venditore ${venditore.id} renderizzato`);
     }
 
-// BLOCCO 5: Sistema salvataggio (raccolta dati, validazione, submit)
-initializeActions() {
-    const savePraticaBtn = document.getElementById('save-pratica');
-    
-    if (savePraticaBtn) {
-        savePraticaBtn.addEventListener('click', () => {
-            this.savePratica();
-        });
-    }
-    
-    console.log('✅ Save button inizializzato');
-}
+    // ========== BLOCCO 5: GESTIONE SALVATAGGIO ==========
 
-async savePratica() {
-    const formData = this.collectAllFormData();
-    const protocolField = document.getElementById('numero_protocollo');
-    const currentProtocol = protocolField?.value;
-    
-    // Determina se UPDATE o CREATE
-    if (currentProtocol && !currentProtocol.includes('Preview:')) {
-        formData.azione = 'update';
-        formData.protocollo_esistente = currentProtocol;
-    } else {
-        formData.azione = 'create';
-    }
-    
-    this.showSaveLoading();
-    
-    try {
-        const result = await this.submitToAppsScript(formData);
-        this.showSaveSuccess(result);
-        this.isDirty = false;
+    initializeActions() {
+        const savePraticaBtn = document.getElementById('save-pratica');
         
-        // Aggiorna protocollo se nuovo
-        if (result.protocollo && protocolField) {
-            protocolField.value = result.protocollo;
-            protocolField.className = 'readonly-field saved';
+        if (savePraticaBtn) {
+            savePraticaBtn.addEventListener('click', () => {
+                this.savePratica();
+            });
         }
         
-    } catch (error) {
-        this.showSaveError(error);
+        console.log('✅ Save button inizializzato');
     }
-}
 
-// BLOCCO 5: Sistema salvataggio (raccolta dati, validazione, submit)
-collectAllFormData() {
-    const operatorSelect = document.getElementById('operatore');
-    const selectedOption = operatorSelect?.selectedOptions[0];
-    
-    console.log('=== DEBUG COLLECT DATA ===');
-    console.log('this.venditori:', this.venditori);
-    console.log('Numero venditori:', this.venditori.length);
-    
-    // Raccolta dati venditori
-    const venditoriData = this.venditori.map(venditore => {
-        const data = {
-            id: venditore.id,
-            nome: document.getElementById(`venditore_${venditore.id}_nome`)?.value || '',
-            cognome: document.getElementById(`venditore_${venditore.id}_cognome`)?.value || '',
-            luogo_nascita: document.getElementById(`venditore_${venditore.id}_luogo_nascita`)?.value || '',
-            data_nascita: document.getElementById(`venditore_${venditore.id}_data_nascita`)?.value || '',
-            codice_fiscale: document.getElementById(`venditore_${venditore.id}_codice_fiscale`)?.value || '',
-            tipo_documento: document.getElementById(`venditore_${venditore.id}_tipo_documento`)?.value || '',
-            numero_documento: document.getElementById(`venditore_${venditore.id}_numero_documento`)?.value || '',
-            data_rilascio: document.getElementById(`venditore_${venditore.id}_data_rilascio`)?.value || '',
-            data_scadenza: document.getElementById(`venditore_${venditore.id}_data_scadenza`)?.value || '',
-            indirizzo: document.getElementById(`venditore_${venditore.id}_indirizzo`)?.value || '',
-            citta: document.getElementById(`venditore_${venditore.id}_citta`)?.value || '',
-            provincia: document.getElementById(`venditore_${venditore.id}_provincia`)?.value || '',
-            telefono: document.getElementById(`venditore_${venditore.id}_telefono`)?.value || '',
-            email: document.getElementById(`venditore_${venditore.id}_email`)?.value || ''
+    async savePratica() {
+        const formData = this.collectAllFormData();
+        const protocolField = document.getElementById('numero_protocollo');
+        const currentProtocol = protocolField?.value;
+        
+        // Determina se UPDATE o CREATE
+        if (currentProtocol && !currentProtocol.includes('Preview:')) {
+            formData.azione = 'update';
+            formData.protocollo_esistente = currentProtocol;
+        } else {
+            formData.azione = 'create';
+        }
+        
+        this.showSaveLoading();
+        
+        try {
+            const result = await this.submitToAppsScript(formData);
+            this.showSaveSuccess(result);
+            this.isDirty = false;
+            
+            // Aggiorna protocollo se nuovo
+            if (result.protocollo && protocolField) {
+                protocolField.value = result.protocollo;
+                protocolField.className = 'readonly-field saved';
+            }
+            
+        } catch (error) {
+            this.showSaveError(error);
+        }
+    }
+
+    collectAllFormData() {
+        const operatorSelect = document.getElementById('operatore');
+        const selectedOption = operatorSelect?.selectedOptions[0];
+        
+        console.log('=== DEBUG COLLECT DATA ===');
+        console.log('this.venditori:', this.venditori);
+        console.log('Numero venditori:', this.venditori.length);
+        
+        // Raccolta dati venditori
+        const venditoriData = this.venditori.map(venditore => {
+            const data = {
+                id: venditore.id,
+                nome: document.getElementById(`venditore_${venditore.id}_nome`)?.value || '',
+                cognome: document.getElementById(`venditore_${venditore.id}_cognome`)?.value || '',
+                luogo_nascita: document.getElementById(`venditore_${venditore.id}_luogo_nascita`)?.value || '',
+                data_nascita: document.getElementById(`venditore_${venditore.id}_data_nascita`)?.value || '',
+                codice_fiscale: document.getElementById(`venditore_${venditore.id}_codice_fiscale`)?.value || '',
+                tipo_documento: document.getElementById(`venditore_${venditore.id}_tipo_documento`)?.value || '',
+                numero_documento: document.getElementById(`venditore_${venditore.id}_numero_documento`)?.value || '',
+                data_rilascio: document.getElementById(`venditore_${venditore.id}_data_rilascio`)?.value || '',
+                data_scadenza: document.getElementById(`venditore_${venditore.id}_data_scadenza`)?.value || '',
+                indirizzo: document.getElementById(`venditore_${venditore.id}_indirizzo`)?.value || '',
+                citta: document.getElementById(`venditore_${venditore.id}_citta`)?.value || '',
+                provincia: document.getElementById(`venditore_${venditore.id}_provincia`)?.value || '',
+                telefono: document.getElementById(`venditore_${venditore.id}_telefono`)?.value || '',
+                email: document.getElementById(`venditore_${venditore.id}_email`)?.value || ''
+            };
+            
+            console.log(`📋 Dati venditore ${venditore.id}:`, data);
+            return data;
+        });
+        
+        console.log('📦 Venditori data finale:', venditoriData);
+        console.log('📦 Venditori data length:', venditoriData.length);
+        
+        const finalData = {
+            // Dati operatore
+            lettera: selectedOption?.dataset.letter || '',
+            operatore: selectedOption?.textContent || '',
+            
+            // Dati pratica
+            data_compilazione: document.getElementById('data_compilazione')?.value || '',
+            
+            // Venditori (JSON)
+            venditori: venditoriData
         };
         
-        console.log(`📋 Dati venditore ${venditore.id}:`, data);
-        return data;
-    });
-    
-    console.log('📦 Venditori data finale:', venditoriData);
-    console.log('📦 Venditori data length:', venditoriData.length);
-    
-    const finalData = {
-        // Dati operatore
-        lettera: selectedOption?.dataset.letter || '',
-        operatore: selectedOption?.textContent || '',
+        console.log('🎯 Final form data:', finalData);
+        console.log('🎯 Final venditori nel data:', finalData.venditori);
+        console.log('🎯 Final venditori length:', finalData.venditori.length);
         
-        // Dati pratica
-        data_compilazione: document.getElementById('data_compilazione')?.value || '',
-        
-        // Venditori (JSON)
-        venditori: venditoriData
-    };
-    
-    console.log('🎯 Final form data:', finalData);
-    console.log('🎯 Final venditori nel data:', finalData.venditori);
-    console.log('🎯 Final venditori length:', finalData.venditori.length);
-    
-    return finalData;
-}
+        return finalData;
+    }
 
-validateCompleteForm() {
-    const errors = [];
-    const formData = this.collectAllFormData();
-    
-    // Validazioni obbligatorie
-    if (!formData.lettera) errors.push('Seleziona un operatore');
-    
-    // Validazione venditori
-    if (formData.venditori.length === 0) {
-        errors.push('Aggiungi almeno un venditore');
-    } else {
-        formData.venditori.forEach((venditore, index) => {
-            if (!venditore.nome.trim()) errors.push(`Nome venditore ${index + 1} obbligatorio`);
-            if (!venditore.cognome.trim()) errors.push(`Cognome venditore ${index + 1} obbligatorio`);
+    validateCompleteForm() {
+        const errors = [];
+        const formData = this.collectAllFormData();
+        
+        // Validazioni obbligatorie
+        if (!formData.lettera) errors.push('Seleziona un operatore');
+        
+        // Validazione venditori
+        if (formData.venditori.length === 0) {
+            errors.push('Aggiungi almeno un venditore');
+        } else {
+            formData.venditori.forEach((venditore, index) => {
+                if (!venditore.nome.trim()) errors.push(`Nome venditore ${index + 1} obbligatorio`);
+                if (!venditore.cognome.trim()) errors.push(`Cognome venditore ${index + 1} obbligatorio`);
+            });
+        }
+        
+        if (errors.length > 0) {
+            this.showValidationErrors(errors);
+            return false;
+        }
+        
+        return true;
+    }
+
+    async submitToAppsScript(formData) {
+        const params = new URLSearchParams({
+            action: 'save',
+            data: JSON.stringify(formData)
         });
-    }
-    
-    if (errors.length > 0) {
-        this.showValidationErrors(errors);
-        return false;
-    }
-    
-    return true;
-}
+        
+        const url = `${this.appsScriptUrl}?${params}`;
+        
+        const response = await fetch(url);
 
-async submitToAppsScript(formData) {
-    const params = new URLSearchParams({
-        action: 'save',
-        data: JSON.stringify(formData)
-    });
-    
-    const url = `${this.appsScriptUrl}?${params}`;
-    
-    const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const result = await response.json();
+        
+        if (!result.success) {
+            throw new Error(result.error || 'Errore salvataggio pratica');
+        }
+        
+        return result;
     }
 
-    const result = await response.json();
-    
-    if (!result.success) {
-        throw new Error(result.error || 'Errore salvataggio pratica');
-    }
-    
-    return result;
-}
+    // ========== BLOCCO 6: UI FEEDBACK E UTILITÀ ==========
 
-// BLOCCO 6: Gestione UI feedback (loading, success, error) e auto-save
-showSaveLoading() {
-    const status = document.getElementById('save-status');
-    const savePraticaBtn = document.getElementById('save-pratica');
-    
-    if (savePraticaBtn) {
-        savePraticaBtn.disabled = true;
-        savePraticaBtn.classList.add('loading');
-    }
-    
-    if (status) {
-        status.className = 'save-status loading';
-        status.textContent = '💾 Salvando pratica...';
-    }
-}
-
-showSaveSuccess(result) {
-    const status = document.getElementById('save-status');
-    const savePraticaBtn = document.getElementById('save-pratica');
-    
-    if (savePraticaBtn) {
-        savePraticaBtn.disabled = false;
-        savePraticaBtn.classList.remove('loading');
-    }
-    
-    if (status) {
-        status.className = 'save-status success';
-        status.textContent = `✅ Pratica salvata! ${result.protocollo ? `Numero: ${result.protocollo}` : ''}`;
-    }
-    
-    // Auto-hide dopo 5 secondi
-    setTimeout(() => {
+    showSaveLoading() {
+        const status = document.getElementById('save-status');
+        const savePraticaBtn = document.getElementById('save-pratica');
+        
+        if (savePraticaBtn) {
+            savePraticaBtn.disabled = true;
+            savePraticaBtn.classList.add('loading');
+        }
+        
         if (status) {
-            status.className = 'save-status';
-            status.textContent = '';
+            status.className = 'save-status loading';
+            status.textContent = '💾 Salvando pratica...';
         }
-    }, 5000);
-}
-
-showSaveError(error) {
-    const status = document.getElementById('save-status');
-    const savePraticaBtn = document.getElementById('save-pratica');
-    
-    if (savePraticaBtn) {
-        savePraticaBtn.disabled = false;
-        savePraticaBtn.classList.remove('loading');
     }
-    
-    if (status) {
-        status.className = 'save-status error';
-        status.textContent = `❌ Errore: ${error.message}`;
-    }
-}
 
-showValidationErrors(errors) {
-    const status = document.getElementById('save-status');
-    
-    if (status) {
-        status.className = 'save-status error';
-        status.innerHTML = `❌ Errori:<br>• ${errors.join('<br>• ')}`;
-    }
-}
-
-startAutoSave() {
-    setInterval(() => {
-        if (this.isDirty) {
-            console.log('💾 Auto-save...');
-            this.savePratica();
+    showSaveSuccess(result) {
+        const status = document.getElementById('save-status');
+        const savePraticaBtn = document.getElementById('save-pratica');
+        
+        if (savePraticaBtn) {
+            savePraticaBtn.disabled = false;
+            savePraticaBtn.classList.remove('loading');
         }
-    }, 30000); // Auto-save ogni 30 secondi
+        
+        if (status) {
+            status.className = 'save-status success';
+            status.textContent = `✅ Pratica salvata! ${result.protocollo ? `Numero: ${result.protocollo}` : ''}`;
+        }
+        
+        // Auto-hide dopo 5 secondi
+        setTimeout(() => {
+            if (status) {
+                status.className = 'save-status';
+                status.textContent = '';
+            }
+        }, 5000);
+    }
+
+    showSaveError(error) {
+        const status = document.getElementById('save-status');
+        const savePraticaBtn = document.getElementById('save-pratica');
+        
+        if (savePraticaBtn) {
+            savePraticaBtn.disabled = false;
+            savePraticaBtn.classList.remove('loading');
+        }
+        
+        if (status) {
+            status.className = 'save-status error';
+            status.textContent = `❌ Errore: ${error.message}`;
+        }
+    }
+
+    showValidationErrors(errors) {
+        const status = document.getElementById('save-status');
+        
+        if (status) {
+            status.className = 'save-status error';
+            status.innerHTML = `❌ Errori:<br>• ${errors.join('<br>• ')}`;
+        }
+    }
+
+    startAutoSave() {
+        setInterval(() => {
+            if (this.isDirty) {
+                console.log('💾 Auto-save...');
+                this.savePratica();
+            }
+        }, 30000); // Auto-save ogni 30 secondi
+    }
 }
 
 // BLOCCO 7: Inizializzazione app quando DOM è pronto
