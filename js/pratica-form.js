@@ -1,4 +1,4 @@
-// pratica-form.js - Versione completa con data automatica
+// pratica-form.js - Versione completa con salvataggio
 class PraticaForm {
     constructor() {
         // Inizializzazione vuota - init() chiamato dopo DOM ready
@@ -40,6 +40,14 @@ class PraticaForm {
         if (this.operatoreSelect) {
             this.operatoreSelect.addEventListener('change', (e) => {
                 this.handleOperatoreChange(e);
+            });
+        }
+        
+        // Pulsante salva pratica
+        const salvaPraticaBtn = document.getElementById('salva-pratica');
+        if (salvaPraticaBtn) {
+            salvaPraticaBtn.addEventListener('click', (e) => {
+                this.handleSalvaPratica(e);
             });
         }
     }
@@ -119,31 +127,165 @@ class PraticaForm {
         }
     }
 
-    // Funzione per salvare pratica completa (da implementare)
-    async savePratica(formData) {
-        try {
-            const response = await fetch(this.appsScriptUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    action: 'save',
-                    data: formData
-                })
-            });
+    // ========== GESTIONE SALVATAGGIO ==========
 
-            const result = await response.json();
+    async handleSalvaPratica(event) {
+        event.preventDefault();
+        
+        try {
+            const formData = this.collectFormData();
             
-            if (result.success) {
-                console.log('Pratica salvata:', result.protocollo);
-                return result;
-            } else {
-                throw new Error(result.error);
+            if (!this.validateFormData(formData)) {
+                return;
             }
+            
+            this.showSaveLoading();
+            
+            const result = await this.savePratica(formData);
+            this.showSaveSuccess(result);
+            
         } catch (error) {
-            console.error('Errore salvataggio:', error);
-            throw error;
+            this.showSaveError(error);
+        }
+    }
+
+    collectFormData() {
+        const operatorSelect = this.operatoreSelect.selectedOptions[0];
+        
+        return {
+            lettera: operatorSelect?.dataset.letter,
+            operatore: operatorSelect?.textContent,
+            data_compilazione: this.dataCompilazioneField?.value,
+            venditore_nome: document.getElementById('venditore_nome')?.value || '',
+            venditore_cognome: document.getElementById('venditore_cognome')?.value || '',
+            venditore_luogo_nascita: document.getElementById('venditore_luogo_nascita')?.value || '',
+            venditore_data_nascita: document.getElementById('venditore_data_nascita')?.value || '',
+            venditore_codice_fiscale: document.getElementById('venditore_codice_fiscale')?.value || '',
+            venditore_tipo_documento: document.getElementById('venditore_tipo_documento')?.value || '',
+            venditore_numero_documento: document.getElementById('venditore_numero_documento')?.value || '',
+            venditore_data_rilascio: document.getElementById('venditore_data_rilascio')?.value || '',
+            venditore_data_scadenza: document.getElementById('venditore_data_scadenza')?.value || '',
+            venditore_cittadinanza: document.getElementById('venditore_cittadinanza')?.value || '',
+            venditore_stato_civile: document.getElementById('venditore_stato_civile')?.value || '',
+            venditore_indirizzo: document.getElementById('venditore_indirizzo')?.value || '',
+            venditore_citta: document.getElementById('venditore_citta')?.value || '',
+            venditore_provincia: document.getElementById('venditore_provincia')?.value || '',
+            venditore_pensionato: document.getElementById('venditore_pensionato')?.value || '',
+            venditore_telefono: document.getElementById('venditore_telefono')?.value || '',
+            venditore_email: document.getElementById('venditore_email')?.value || ''
+        };
+    }
+
+    validateFormData(data) {
+        const errors = [];
+        
+        if (!data.lettera) {
+            errors.push('Seleziona un operatore');
+        }
+        
+        if (!data.venditore_nome.trim()) {
+            errors.push('Nome venditore obbligatorio');
+        }
+        
+        if (!data.venditore_cognome.trim()) {
+            errors.push('Cognome venditore obbligatorio');
+        }
+        
+        if (errors.length > 0) {
+            this.showValidationErrors(errors);
+            return false;
+        }
+        
+        return true;
+    }
+
+    async savePratica(formData) {
+        const response = await fetch(this.appsScriptUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'save',
+                data: formData
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        
+        if (!result.success) {
+            throw new Error(result.error || 'Errore salvataggio pratica');
+        }
+        
+        return result;
+    }
+
+    // ========== UI FEEDBACK ==========
+
+    showSaveLoading() {
+        const btn = document.getElementById('salva-pratica');
+        const status = document.getElementById('save-status');
+        
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="icon">⏳</span>SALVANDO...';
+        }
+        
+        if (status) {
+            status.className = 'save-status loading';
+            status.textContent = 'Salvataggio in corso...';
+        }
+    }
+
+    showSaveSuccess(result) {
+        const btn = document.getElementById('salva-pratica');
+        const status = document.getElementById('save-status');
+        
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<span class="icon">💾</span>SALVA PRATICA';
+        }
+        
+        if (status) {
+            status.className = 'save-status success';
+            status.textContent = `✅ Pratica salvata! Numero: ${result.protocollo}`;
+        }
+        
+        // Aggiorna campo numero protocollo con quello definitivo
+        if (this.numeroProtocolloField) {
+            this.numeroProtocolloField.value = result.protocollo;
+            this.numeroProtocolloField.classList.remove('preview');
+            this.numeroProtocolloField.classList.add('saved');
+        }
+    }
+
+    showSaveError(error) {
+        const btn = document.getElementById('salva-pratica');
+        const status = document.getElementById('save-status');
+        
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<span class="icon">💾</span>SALVA PRATICA';
+        }
+        
+        if (status) {
+            status.className = 'save-status error';
+            status.textContent = `❌ Errore: ${error.message}`;
+        }
+        
+        console.error('Errore salvataggio:', error);
+    }
+
+    showValidationErrors(errors) {
+        const status = document.getElementById('save-status');
+        
+        if (status) {
+            status.className = 'save-status error';
+            status.innerHTML = `❌ Errori:<br>• ${errors.join('<br>• ')}`;
         }
     }
 }
