@@ -247,10 +247,11 @@ initializeVenditori() {
         });
     }
     
-    // Aggiungi primo venditore di default
+   // Aggiungi primo venditore di default
+    console.log('🚀 Aggiungendo primo venditore di default...');
     this.addVenditore();
     
-    console.log('✅ Sistema venditori inizializzato');
+    console.log('✅ Venditori dopo init:', this.venditori);
 }
 
 addVenditore() {
@@ -478,6 +479,10 @@ collectAllFormData() {
             email: document.getElementById(`venditore_${venditore.id}_email`)?.value || ''
         };
     });
+
+     console.log('=== DEBUG COLLECT DATA ===');
+    console.log('Venditori array:', this.venditori);
+    console.log('Venditori data raccolti:', venditoriData);
     
     return {
         // Dati operatore
