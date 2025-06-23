@@ -136,7 +136,7 @@ collectGenerationData(saveResult) {
     return generationData;
 }
 
-    // BLOCCO 6: Chiamata al backend per generazione documenti
+   // BLOCCO 6: Chiamata al backend per generazione documenti
 async callGenerateBackend(generationData) {
     const params = new URLSearchParams({
         action: 'generate_documents',
@@ -177,7 +177,7 @@ async callGenerateBackend(generationData) {
         throw error;
     }
 }
-
+    
     // BLOCCO 7: Gestione feedback visivo di caricamento
     showGenerateLoading() {
         const status = document.getElementById('generate-status');
