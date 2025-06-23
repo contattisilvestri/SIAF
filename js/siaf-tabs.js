@@ -383,67 +383,57 @@ async savePratica() {
 
     // ========== UI FEEDBACK ==========
     
-    showSaveLoading(stato) {
-        const status = document.getElementById('save-status');
-        const saveDraftBtn = document.getElementById('save-draft');
-        const saveCompleteBtn = document.getElementById('save-complete');
-        
-        [saveDraftBtn, saveCompleteBtn].forEach(btn => {
-            if (btn) {
-                btn.disabled = true;
-                btn.classList.add('loading');
-            }
-        });
-        
-        if (status) {
-            status.className = 'save-status loading';
-            status.textContent = `💾 Salvando ${stato.toLowerCase()}...`;
-        }
+    showSaveLoading() {  // ← Senza parametro
+    const status = document.getElementById('save-status');
+    const savePraticaBtn = document.getElementById('save-pratica');
+    
+    if (savePraticaBtn) {
+        savePraticaBtn.disabled = true;
+        savePraticaBtn.classList.add('loading');
     }
+    
+    if (status) {
+        status.className = 'save-status loading';
+        status.textContent = '💾 Salvando pratica...';  // ← Testo fisso
+    }
+}
 
-    showSaveSuccess(result, stato) {
-        const status = document.getElementById('save-status');
-        const saveDraftBtn = document.getElementById('save-draft');
-        const saveCompleteBtn = document.getElementById('save-complete');
-        
-        [saveDraftBtn, saveCompleteBtn].forEach(btn => {
-            if (btn) {
-                btn.disabled = false;
-                btn.classList.remove('loading');
-            }
-        });
-        
-        if (status) {
-            status.className = 'save-status success';
-            status.textContent = `✅ ${stato} salvata! ${result.protocollo ? `Numero: ${result.protocollo}` : ''}`;
-        }
-        
-        // Auto-hide dopo 5 secondi
-        setTimeout(() => {
-            if (status) {
-                status.className = 'save-status';
-                status.textContent = '';
-            }
-        }, 5000);
+    showSaveSuccess(result) {  // ← Senza parametro stato
+    const status = document.getElementById('save-status');
+    const savePraticaBtn = document.getElementById('save-pratica');
+    
+    if (savePraticaBtn) {
+        savePraticaBtn.disabled = false;
+        savePraticaBtn.classList.remove('loading');
     }
-
-    showSaveError(error, stato) {
-        const status = document.getElementById('save-status');
-        const saveDraftBtn = document.getElementById('save-draft');
-        const saveCompleteBtn = document.getElementById('save-complete');
-        
-        [saveDraftBtn, saveCompleteBtn].forEach(btn => {
-            if (btn) {
-                btn.disabled = false;
-                btn.classList.remove('loading');
-            }
-        });
-        
-        if (status) {
-            status.className = 'save-status error';
-            status.textContent = `❌ Errore salvataggio ${stato.toLowerCase()}: ${error.message}`;
-        }
+    
+    if (status) {
+        status.className = 'save-status success';
+        status.textContent = `✅ Pratica salvata! ${result.protocollo ? `Numero: ${result.protocollo}` : ''}`;
     }
+    
+    setTimeout(() => {
+        if (status) {
+            status.className = 'save-status';
+            status.textContent = '';
+        }
+    }, 5000);
+}
+    
+    showSaveError(error) {  // ← Senza parametro stato
+    const status = document.getElementById('save-status');
+    const savePraticaBtn = document.getElementById('save-pratica');
+    
+    if (savePraticaBtn) {
+        savePraticaBtn.disabled = false;
+        savePraticaBtn.classList.remove('loading');
+    }
+    
+    if (status) {
+        status.className = 'save-status error';
+        status.textContent = `❌ Errore: ${error.message}`;
+    }
+}
 
     showValidationErrors(errors) {
         const status = document.getElementById('save-status');
@@ -457,13 +447,13 @@ async savePratica() {
     // ========== AUTO-SAVE ==========
     
     startAutoSave() {
-        setInterval(() => {
-            if (this.isDirty) {
-                console.log('💾 Auto-save...');
-                this.saveDraft();
-            }
-        }, 30000); // Auto-save ogni 30 secondi
-    }
+    setInterval(() => {
+        if (this.isDirty) {
+            console.log('💾 Auto-save...');
+            this.savePratica();  // ← Cambiato da saveDraft
+        }
+    }, 30000);
+}
 }
 
 // Inizializza app quando DOM è pronto
