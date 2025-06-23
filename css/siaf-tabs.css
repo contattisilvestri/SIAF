@@ -273,6 +273,17 @@ input:invalid, select:invalid {
     transform: translateY(-1px);
 }
 
+.btn-generate {
+    background: #28a745;
+    color: white;
+}
+
+.btn-generate:hover:not(:disabled) {
+    background: #218838;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
 .btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -293,7 +304,7 @@ input:invalid, select:invalid {
 }
 
 /* ========== STATUS MESSAGES ========== */
-.save-status {
+.save-status, .generate-status {
     flex: 1;
     padding: 12px 16px;
     border-radius: 8px;
@@ -302,21 +313,22 @@ input:invalid, select:invalid {
     min-height: 20px;
     display: flex;
     align-items: center;
+    margin-left: 8px;
 }
 
-.save-status.loading {
+.save-status.loading, .generate-status.loading {
     background: #fff3cd;
     color: #856404;
     border: 1px solid #ffeaa7;
 }
 
-.save-status.success {
+.save-status.success, .generate-status.success {
     background: #d4edda;
     color: #155724;
     border: 1px solid #c3e6cb;
 }
 
-.save-status.error {
+.save-status.error, .generate-status.error {
     background: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
