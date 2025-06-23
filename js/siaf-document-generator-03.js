@@ -137,17 +137,21 @@ collectGenerationData(saveResult) {
 }
 
     // BLOCCO 6: Chiamata al backend per generazione documenti
-    async callGenerateBackend(generationData) {
-        const params = new URLSearchParams({
-            action: 'generate_documents',
-            data: JSON.stringify(generationData)
-        });
-        
-        const url = `${this.appsScriptUrl}?${params}`;
-        
-        console.log('🌐 Chiamando backend:', url);
-        
+async callGenerateBackend(generationData) {
+    const params = new URLSearchParams({
+        action: 'generate_documents',
+        data: JSON.stringify(generationData)
+    });
+    
+    const url = `${this.appsScriptUrl}?${params}`;
+    
+    console.log('🌐 Chiamando backend:', url);
+    
+    try {
         const response = await fetch(url);
+        
+        console.log('📡 Response status:', response.status);
+        console.log('📡 Response ok:', response.ok);
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -155,14 +159,24 @@ collectGenerationData(saveResult) {
 
         const result = await response.json();
         
-        console.log('📡 Risposta backend:', result);
+        console.log('📡 Risposta backend completa:', result);
+        console.log('📡 Success:', result.success);
+        console.log('📡 Message:', result.message);
+        console.log('📡 Error (se presente):', result.error);
         
         if (!result.success) {
             throw new Error(result.error || 'Errore generazione documenti');
         }
         
         return result;
+        
+    } catch (error) {
+        console.error('❌ Errore nella chiamata backend:', error);
+        console.error('❌ Error message:', error.message);
+        console.error('❌ Error stack:', error.stack);
+        throw error;
     }
+}
 
     // BLOCCO 7: Gestione feedback visivo di caricamento
     showGenerateLoading() {
