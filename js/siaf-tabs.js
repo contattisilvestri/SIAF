@@ -231,31 +231,47 @@ class SiafApp {
     // ========== GESTIONE SALVATAGGIO ==========
     
     initializeActions() {
-        const saveDraftBtn = document.getElementById('save-draft');
-        const saveCompleteBtn = document.getElementById('save-complete');
-        
-        if (saveDraftBtn) {
-            saveDraftBtn.addEventListener('click', () => {
-                this.saveDraft();
-            });
-        }
-        
-        if (saveCompleteBtn) {
-            saveCompleteBtn.addEventListener('click', () => {
-                this.saveComplete();
-            });
-        }
-        
-        console.log('✅ Action buttons inizializzati');
+    const savePraticaBtn = document.getElementById('save-pratica');
+    
+    if (savePraticaBtn) {
+        savePraticaBtn.addEventListener('click', () => {
+            this.savePratica();
+        });
     }
+    
+    console.log('✅ Save button inizializzato');
+}
 
-    async saveDraft() {
-        try {
-            await this.saveForm('Bozza');
-        } catch (error) {
-            console.error('❌ Errore salvataggio bozza:', error);
-        }
+async savePratica() {
+    const formData = this.collectAllFormData();
+    const protocolField = document.getElementById('numero_protocollo');
+    const currentProtocol = protocolField?.value;
+    
+    // Determina se UPDATE o CREATE
+    if (currentProtocol && !currentProtocol.includes('Preview:')) {
+        formData.azione = 'update';
+        formData.protocollo_esistente = currentProtocol;
+    } else {
+        formData.azione = 'create';
     }
+    
+    this.showSaveLoading();
+    
+    try {
+        const result = await this.submitToAppsScript(formData);
+        this.showSaveSuccess(result);
+        this.isDirty = false;
+        
+        // Aggiorna protocollo se nuovo
+        if (result.protocollo && protocolField) {
+            protocolField.value = result.protocollo;
+            protocolField.className = 'readonly-field saved';
+        }
+        
+    } catch (error) {
+        this.showSaveError(error);
+    }
+}
 
     async saveComplete() {
         try {
