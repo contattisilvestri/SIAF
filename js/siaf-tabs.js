@@ -29,106 +29,106 @@ class SiafApp {
 }
 
 // BLOCCO 2: Sistema navigazione tab e progress tracking
-initializeTabs() {
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    
-    tabButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const targetTab = btn.dataset.tab;
-            this.switchTab(targetTab);
+    initializeTabs() {
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetTab = btn.dataset.tab;
+                this.switchTab(targetTab);
+            });
         });
-    });
-    
-    console.log('✅ Tab navigation inizializzata');
-}
-
-switchTab(tabName) {
-    // Nascondi tutte le tab
-    document.querySelectorAll('.tab-panel').forEach(panel => {
-        panel.classList.remove('active');
-    });
-    
-    // Rimuovi active da tutti i button
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    // Mostra tab target
-    const targetPanel = document.getElementById(`tab-${tabName}`);
-    const targetButton = document.querySelector(`[data-tab="${tabName}"]`);
-    
-    if (targetPanel && targetButton) {
-        targetPanel.classList.add('active');
-        targetButton.classList.add('active');
-        this.currentTab = tabName;
         
-        console.log(`📂 Switched to tab: ${tabName}`);
-        
-        // Aggiorna progress
-        this.updateTabProgress();
+        console.log('✅ Tab navigation inizializzata');
     }
-}
 
-updateTabProgress() {
-    const tabs = ['pratica', 'venditore', 'acquirente', 'immobile-prima', 'immobile-dopo', 'condizioni'];
-    
-    tabs.forEach(tabName => {
-        const btn = document.querySelector(`[data-tab="${tabName}"]`);
-        const status = btn?.querySelector('.status');
+    switchTab(tabName) {
+        // Nascondi tutte le tab
+        document.querySelectorAll('.tab-panel').forEach(panel => {
+            panel.classList.remove('active');
+        });
         
-        if (status) {
-            const progress = this.getTabProgress(tabName);
+        // Rimuovi active da tutti i button
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Mostra tab target
+        const targetPanel = document.getElementById(`tab-${tabName}`);
+        const targetButton = document.querySelector(`[data-tab="${tabName}"]`);
+        
+        if (targetPanel && targetButton) {
+            targetPanel.classList.add('active');
+            targetButton.classList.add('active');
+            this.currentTab = tabName;
             
-            if (progress === 100) {
-                status.textContent = '✅';
-                status.className = 'status complete';
-            } else if (progress > 0) {
-                status.textContent = '⚠️';
-                status.className = 'status partial';
-            } else {
-                status.textContent = '⭕';
-                status.className = 'status empty';
-            }
+            console.log(`📂 Switched to tab: ${tabName}`);
+            
+            // Aggiorna progress
+            this.updateTabProgress();
         }
-    });
-}
+    }
 
-getTabProgress(tabName) {
-    const fieldsInTab = this.getFieldsInTab(tabName);
-    if (fieldsInTab.length === 0) return 0;
-    
-    const filledFields = fieldsInTab.filter(fieldId => {
-        const field = document.getElementById(fieldId);
-        return field && field.value && field.value.trim() !== '';
-    });
-    
-    return Math.round((filledFields.length / fieldsInTab.length) * 100);
-}
+    updateTabProgress() {
+        const tabs = ['pratica', 'venditore', 'acquirente', 'immobile-prima', 'immobile-dopo', 'condizioni'];
+        
+        tabs.forEach(tabName => {
+            const btn = document.querySelector(`[data-tab="${tabName}"]`);
+            const status = btn?.querySelector('.status');
+            
+            if (status) {
+                const progress = this.getTabProgress(tabName);
+                
+                if (progress === 100) {
+                    status.textContent = '✅';
+                    status.className = 'status complete';
+                } else if (progress > 0) {
+                    status.textContent = '⚠️';
+                    status.className = 'status partial';
+                } else {
+                    status.textContent = '⭕';
+                    status.className = 'status empty';
+                }
+            }
+        });
+    }
 
-getFieldsInTab(tabName) {
-    const fieldsByTab = {
-        'pratica': ['operatore', 'numero_protocollo', 'data_compilazione'],
-        'venditore': this.getVenditoriFieldsList(),
-        'acquirente': [], // TODO
-        'immobile-prima': [], // TODO
-        'immobile-dopo': [], // TODO
-        'condizioni': [] // TODO
-    };
-    
-    return fieldsByTab[tabName] || [];
-}
+    getTabProgress(tabName) {
+        const fieldsInTab = this.getFieldsInTab(tabName);
+        if (fieldsInTab.length === 0) return 0;
+        
+        const filledFields = fieldsInTab.filter(fieldId => {
+            const field = document.getElementById(fieldId);
+            return field && field.value && field.value.trim() !== '';
+        });
+        
+        return Math.round((filledFields.length / fieldsInTab.length) * 100);
+    }
 
-getVenditoriFieldsList() {
-    // Genera dinamicamente lista campi venditori
-    const fields = [];
-    this.venditori.forEach(venditore => {
-        fields.push(`venditore_${venditore.id}_nome`);
-        fields.push(`venditore_${venditore.id}_cognome`);
-        fields.push(`venditore_${venditore.id}_cf`);
-    });
-    return fields;
-}
+    getFieldsInTab(tabName) {
+        const fieldsByTab = {
+            'pratica': ['operatore', 'numero_protocollo', 'data_compilazione'],
+            'venditore': this.getVenditoriFieldsList(),
+            'acquirente': [], // TODO
+            'immobile-prima': [], // TODO
+            'immobile-dopo': [], // TODO
+            'condizioni': [] // TODO
+        };
+        
+        return fieldsByTab[tabName] || [];
+    }
+
+    getVenditoriFieldsList() {
+        // Genera dinamicamente lista campi venditori
+        const fields = [];
+        this.venditori.forEach(venditore => {
+            fields.push(`venditore_${venditore.id}_nome`);
+            fields.push(`venditore_${venditore.id}_cognome`);
+            fields.push(`venditore_${venditore.id}_cf`);
+        });
+        return fields;
+    }
 
 // BLOCCO 3: Gestione form base (operatore, data, eventi generali)
 initializeForm() {
