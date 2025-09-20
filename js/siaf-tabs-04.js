@@ -299,6 +299,52 @@ class SiafApp {
         if (praticaData.venditori && Array.isArray(praticaData.venditori)) {
             this.populateVenditori(praticaData.venditori);
         }
+
+        // Popola immobili
+        if (praticaData.immobili && Array.isArray(praticaData.immobili)) {
+            this.populateImmobili(praticaData.immobili);
+        }
+    }
+
+    populateImmobili(immobiliData) {
+        console.log('🏠 Popolamento immobili:', immobiliData);
+
+        // Reset immobili esistenti
+        this.immobili = [];
+        this.immobileCounter = 0;
+        const container = document.getElementById('immobili-container');
+        if (container) {
+            container.innerHTML = '';
+        }
+
+        // Ricostruisce immobili dai dati
+        immobiliData.forEach(immobileData => {
+            const immobile = {
+                id: ++this.immobileCounter,
+                provincia: immobileData.provincia || 'Rovigo',
+                comune: immobileData.comune || 'Bergantino',
+                via: immobileData.via || '',
+                numero: immobileData.numero || '',
+                intestatari: immobileData.intestatari || [{ nome: '', cognome: '' }],
+                blocchiCatastali: immobileData.blocchiCatastali || [],
+                confini: immobileData.confini || {
+                    nord: [''],
+                    est: [''],
+                    sud: [''],
+                    ovest: ['']
+                }
+            };
+
+            this.immobili.push(immobile);
+            this.renderImmobile(immobile);
+
+            console.log(`✅ Ricostruito immobile ${immobile.id}:`, immobile);
+        });
+
+        // Se non ci sono immobili, aggiungi uno di default
+        if (this.immobili.length === 0) {
+            this.addImmobile();
+        }
     }
 
     populateVenditori(venditoriData) {
@@ -867,6 +913,9 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         console.log('📦 Venditori data finale:', venditoriData);
         console.log('📦 Venditori data length:', venditoriData.length);
         
+        // Prima salva tutti i dati degli immobili dai campi HTML
+        this.saveAllImmobiliData();
+
         const finalData = {
             // Dati operatore
             lettera: selectedOption?.dataset.letter || '',
@@ -877,14 +926,66 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
             data_compilazione: document.getElementById('data_compilazione')?.value || '',
 
             // Venditori (JSON)
-            venditori: venditoriData
+            venditori: venditoriData,
+
+            // Immobili (JSON)
+            immobili: this.immobili
         };
         
         console.log('🎯 Final form data:', finalData);
         console.log('🎯 Final venditori nel data:', finalData.venditori);
         console.log('🎯 Final venditori length:', finalData.venditori.length);
+        console.log('🎯 Final immobili nel data:', finalData.immobili);
+        console.log('🎯 Final immobili length:', finalData.immobili.length);
         
         return finalData;
+    }
+
+    saveAllImmobiliData() {
+        console.log('💾 Salvataggio completo dati immobili...');
+
+        this.immobili.forEach(immobile => {
+            // Salva dati generali immobile
+            const provinciaField = document.getElementById(`immobile_${immobile.id}_provincia`);
+            const comuneField = document.getElementById(`immobile_${immobile.id}_comune`);
+            const viaField = document.getElementById(`immobile_${immobile.id}_via`);
+            const numeroField = document.getElementById(`immobile_${immobile.id}_numero`);
+
+            if (provinciaField) immobile.provincia = provinciaField.value || '';
+            if (comuneField) immobile.comune = comuneField.value || '';
+            if (viaField) immobile.via = viaField.value || '';
+            if (numeroField) immobile.numero = numeroField.value || '';
+
+            // Salva intestatari
+            this.saveAllIntestatariData(immobile.id);
+
+            // Salva tutti i blocchi catastali
+            this.saveAllBlocchiData(immobile.id);
+
+            // Salva confini
+            this.saveAllConfiniData(immobile.id);
+
+            console.log(`✅ Salvato immobile ${immobile.id}:`, immobile);
+        });
+    }
+
+    saveAllConfiniData(immobileId) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        if (!immobile) return;
+
+        // Salva mappali per ogni direzione
+        ['nord', 'est', 'sud', 'ovest'].forEach(direzione => {
+            const mappaliInputs = document.querySelectorAll(`input[id^="mappale-${immobileId}-${direzione}-"]`);
+            const mappaliValues = [];
+
+            mappaliInputs.forEach(input => {
+                mappaliValues.push(input.value || '');
+            });
+
+            if (mappaliValues.length > 0) {
+                immobile.confini[direzione] = mappaliValues;
+            }
+        });
     }
 
     validateCompleteForm() {
