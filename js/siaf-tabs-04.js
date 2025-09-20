@@ -10,6 +10,10 @@ class SiafApp {
         this.venditori = [];
         this.venditoreCounter = 0;
 
+        // Immobili multipli
+        this.immobili = [];
+        this.immobileCounter = 0;
+
         // Modalità pratica: 'selection', 'new', 'edit'
         this.praticaMode = 'selection';
         this.currentProtocollo = null;
@@ -23,6 +27,7 @@ class SiafApp {
         this.initializePraticaSelection();
         this.initializeForm();
         this.initializeVenditori();
+        this.initializeImmobili();
         this.initializeActions();
 
         // Auto-popola data
@@ -1079,6 +1084,475 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         // Auto-save disabilitato per evitare cartelle duplicate su Drive
         // L'utente deve salvare manualmente con SALVA o GENERA DOCUMENTI
         console.log('⚠️ Auto-save disabilitato - salvataggio manuale richiesto');
+    }
+
+    // ========== BLOCCO IMMOBILI: GESTIONE IMMOBILI DINAMICI ==========
+
+    initializeImmobili() {
+        console.log('🏠 Inizializzando sistema immobili...');
+
+        const addBtn = document.getElementById('add-immobile');
+
+        if (addBtn) {
+            addBtn.addEventListener('click', () => {
+                console.log('➕ Click add immobile');
+                this.addImmobile();
+            });
+            console.log('✅ Event listener add-immobile attaccato');
+        } else {
+            console.error('❌ Pulsante add-immobile non trovato!');
+        }
+
+        // Aggiungi primo immobile di default
+        console.log('🚀 Aggiungendo primo immobile di default...');
+        this.addImmobile();
+
+        console.log('✅ Sistema immobili inizializzato');
+    }
+
+    addImmobile() {
+        console.log('🏠 Aggiungendo immobile...');
+
+        const immobile = {
+            id: ++this.immobileCounter,
+            provincia: 'Rovigo',
+            comune: 'Bergantino',
+            via: '',
+            numero: '',
+            intestatari: [''],
+            blocchiCatastali: [],
+            confini: {
+                nord: [''],
+                est: [''],
+                sud: [''],
+                ovest: ['']
+            }
+        };
+
+        // Aggiungi primo blocco catastale (sempre Fabbricati)
+        immobile.blocchiCatastali.push({
+            id: 1,
+            descrizione: 'distinta nel catasto dei fabbricati al',
+            tipoCatasto: 'fabbricati',
+            righe: [this.createEmptyFabbricatoRow()]
+        });
+
+        this.immobili.push(immobile);
+        console.log(`✅ Immobile ${immobile.id} aggiunto. Totale immobili:`, this.immobili.length);
+
+        this.renderImmobile(immobile);
+        this.updateTabProgress();
+
+        console.log('📊 Array immobili attuale:', this.immobili);
+    }
+
+    createEmptyFabbricatoRow() {
+        return {
+            id: 1,
+            foglio: '',
+            mappale: '',
+            subalterno: '',
+            categoria: '',
+            classe: '',
+            vani_mq: '',
+            superfici: '',
+            indirizzo_piano: '',
+            rendita: ''
+        };
+    }
+
+    createEmptyTerrenoRow() {
+        return {
+            id: 1,
+            foglio: '',
+            mappale: '',
+            porzione: '',
+            qualita: '',
+            classe: '',
+            metri_quadrati: '',
+            dominicale: '',
+            agrario: ''
+        };
+    }
+
+    renderImmobile(immobile) {
+        const container = document.getElementById('immobili-container');
+
+        if (!container) {
+            console.error('❌ Container immobili-container non trovato!');
+            return;
+        }
+
+        const isFirst = this.immobili.length === 1;
+
+        const immobileHtml = `
+            <div id="immobile-${immobile.id}" class="immobile-card">
+                <div class="immobile-header">
+                    <h3>🏠 Immobile ${immobile.id}</h3>
+                    ${!isFirst ? `<button type="button" class="btn-remove" onclick="window.siafApp.removeImmobile(${immobile.id})">❌ Rimuovi Immobile</button>` : ''}
+                </div>
+
+                <!-- Dati Generali Immobile -->
+                <div class="field-card">
+                    <h4>📍 Dati Generali</h4>
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="immobile_${immobile.id}_provincia">Provincia</label>
+                            <input type="text" id="immobile_${immobile.id}_provincia" value="${immobile.provincia}">
+                        </div>
+                        <div class="field-group">
+                            <label for="immobile_${immobile.id}_comune">Comune</label>
+                            <input type="text" id="immobile_${immobile.id}_comune" value="${immobile.comune}">
+                        </div>
+                    </div>
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="immobile_${immobile.id}_via">Via</label>
+                            <input type="text" id="immobile_${immobile.id}_via" value="${immobile.via}">
+                        </div>
+                        <div class="field-group">
+                            <label for="immobile_${immobile.id}_numero">Numero</label>
+                            <input type="text" id="immobile_${immobile.id}_numero" value="${immobile.numero}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Intestatari -->
+                <div class="field-card">
+                    <div class="field-header">
+                        <h4>👤 Proprietà intestata a</h4>
+                        <button type="button" class="btn btn-sm" onclick="window.siafApp.addIntestatario(${immobile.id})">➕ Aggiungi Intestatario</button>
+                    </div>
+                    <div id="intestatari-${immobile.id}" class="intestatari-container">
+                        ${this.renderIntestatari(immobile)}
+                    </div>
+                </div>
+
+                <!-- Blocchi Catastali -->
+                <div class="field-card">
+                    <div class="field-header">
+                        <h4>📋 Descrizione Catastale</h4>
+                        <button type="button" class="btn btn-sm" onclick="window.siafApp.addBloccoCatastale(${immobile.id})">➕ Aggiungi Blocco</button>
+                    </div>
+                    <div id="blocchi-${immobile.id}">
+                        ${this.renderBlocchiCatastali(immobile)}
+                    </div>
+                </div>
+
+                <!-- Confini -->
+                <div class="confini-section">
+                    <h4>🧭 Confini</h4>
+                    ${this.renderConfini(immobile)}
+                </div>
+            </div>
+        `;
+
+        container.insertAdjacentHTML('beforeend', immobileHtml);
+        console.log(`✅ Immobile ${immobile.id} renderizzato`);
+    }
+
+    renderIntestatari(immobile) {
+        return immobile.intestatari.map((intestatario, index) => `
+            <div class="intestatario-row">
+                <input type="text" class="intestatario-input"
+                       id="intestatario_${immobile.id}_${index}"
+                       value="${intestatario}"
+                       placeholder="Nome intestatario">
+                ${immobile.intestatari.length > 1 ?
+                    `<button type="button" class="btn-remove-mappale" onclick="window.siafApp.removeIntestatario(${immobile.id}, ${index})">❌</button>` :
+                    ''}
+            </div>
+        `).join('');
+    }
+
+    renderBlocchiCatastali(immobile) {
+        return immobile.blocchiCatastali.map(blocco => `
+            <div id="blocco-${immobile.id}-${blocco.id}" class="blocco-catastale">
+                <div class="blocco-header">
+                    <h4>📊 Blocco Catastale ${blocco.id}</h4>
+                    ${immobile.blocchiCatastali.length > 1 ?
+                        `<button type="button" class="btn-remove-block" onclick="window.siafApp.removeBloccoCatastale(${immobile.id}, ${blocco.id})">❌ Rimuovi Blocco</button>` :
+                        ''}
+                </div>
+
+                <!-- Dropdown Descrizione -->
+                ${blocco.id === 1 ? '' : this.renderDescrizioneDropdown(immobile.id, blocco.id, blocco.descrizione)}
+
+                <!-- Tipo Catasto -->
+                ${blocco.id === 1 ? '' : this.renderTipoCatastoSelector(immobile.id, blocco.id, blocco.tipoCatasto)}
+
+                <!-- Righe Catastali -->
+                <div id="righe-${immobile.id}-${blocco.id}">
+                    ${this.renderRigheCatastali(immobile.id, blocco)}
+                </div>
+
+                <button type="button" class="btn-add-catasto-row" onclick="window.siafApp.addRigaCatastale(${immobile.id}, ${blocco.id})">➕ Aggiungi Riga</button>
+            </div>
+        `).join('');
+    }
+
+    renderDescrizioneDropdown(immobileId, bloccoId, selectedValue) {
+        const options = [
+            { value: 'distinta nel catasto dei fabbricati al', text: 'distinta nel catasto dei fabbricati al' },
+            { value: 'area_sedime', text: "l'area di sedime di pertinenza è distinta nel catasto dei terreni al" },
+            { value: 'area_cortiliva', text: "l'area cortiliva di pertinenza è distinta nel catasto dei terreni al" },
+            { value: 'parte_area_sedime', text: "parte dell'area di sedime di pertinenza è distinta nel catasto dei terreni al" },
+            { value: 'parte_area_cortiliva', text: "parte dell'area cortiliva di pertinenza è distinta nel catasto dei terreni al" },
+            { value: 'area_sedime_e_cortiliva', text: "l'area di sedime e parte dell'area cortiliva di pertinenza è distinta nel catasto dei terreni al" },
+            { value: 'custom', text: 'Inserisci testo manualmente' }
+        ];
+
+        return `
+            <select class="descrizione-dropdown" id="descrizione-${immobileId}-${bloccoId}"
+                    onchange="window.siafApp.handleDescrizioneChange(${immobileId}, ${bloccoId})">
+                ${options.map(opt => `<option value="${opt.value}" ${opt.value === selectedValue ? 'selected' : ''}>${opt.text}</option>`).join('')}
+            </select>
+            <textarea class="descrizione-custom" id="descrizione-custom-${immobileId}-${bloccoId}"
+                      placeholder="Inserisci descrizione personalizzata"
+                      style="${selectedValue === 'custom' ? 'display: block;' : 'display: none;'}"></textarea>
+        `;
+    }
+
+    renderTipoCatastoSelector(immobileId, bloccoId, selectedType) {
+        return `
+            <div class="tipo-catasto-selector">
+                <label>
+                    <input type="radio" name="tipo-${immobileId}-${bloccoId}" value="fabbricati"
+                           ${selectedType === 'fabbricati' ? 'checked' : ''}
+                           onchange="window.siafApp.changeTipoCatasto(${immobileId}, ${bloccoId}, 'fabbricati')">
+                    Catasto Fabbricati
+                </label>
+                <label>
+                    <input type="radio" name="tipo-${immobileId}-${bloccoId}" value="terreni"
+                           ${selectedType === 'terreni' ? 'checked' : ''}
+                           onchange="window.siafApp.changeTipoCatasto(${immobileId}, ${bloccoId}, 'terreni')">
+                    Catasto Terreni
+                </label>
+            </div>
+        `;
+    }
+
+    renderRigheCatastali(immobileId, blocco) {
+        return blocco.righe.map(riga => `
+            <div id="riga-${immobileId}-${blocco.id}-${riga.id}" class="catasto-row">
+                ${blocco.tipoCatasto === 'fabbricati' ? this.renderRigaFabbricati(immobileId, blocco.id, riga) : this.renderRigaTerreni(immobileId, blocco.id, riga)}
+                ${blocco.righe.length > 1 ?
+                    `<button type="button" class="btn-remove-mappale" onclick="window.siafApp.removeRigaCatastale(${immobileId}, ${blocco.id}, ${riga.id})">❌ Rimuovi</button>` :
+                    ''}
+            </div>
+        `).join('');
+    }
+
+    renderRigaFabbricati(immobileId, bloccoId, riga) {
+        return `
+            <div class="catasto-fields">
+                <div><label>Fog.</label><input type="text" id="fog_${immobileId}_${bloccoId}_${riga.id}" value="${riga.foglio}" placeholder="8"></div>
+                <div><label>Map.</label><input type="text" id="map_${immobileId}_${bloccoId}_${riga.id}" value="${riga.mappale}" placeholder="1335"></div>
+                <div><label>Sub.</label><input type="text" id="sub_${immobileId}_${bloccoId}_${riga.id}" value="${riga.subalterno}" placeholder="-"></div>
+                <div><label>Categoria</label><input type="text" id="cat_${immobileId}_${bloccoId}_${riga.id}" value="${riga.categoria}" placeholder="A/3"></div>
+                <div><label>Classe</label><input type="text" id="classe_${immobileId}_${bloccoId}_${riga.id}" value="${riga.classe}" placeholder="1"></div>
+                <div><label>Vani/mq</label><input type="text" id="vani_${immobileId}_${bloccoId}_${riga.id}" value="${riga.vani_mq}" placeholder="5,5"></div>
+                <div><label>Superfici</label><input type="text" id="sup_${immobileId}_${bloccoId}_${riga.id}" value="${riga.superfici}" placeholder="128"></div>
+                <div><label>Indirizzo/Piano</label><input type="text" id="ind_${immobileId}_${bloccoId}_${riga.id}" value="${riga.indirizzo_piano}" placeholder="pt-1"></div>
+                <div><label>Rendita</label><input type="text" id="rend_${immobileId}_${bloccoId}_${riga.id}" value="${riga.rendita}" placeholder="298,25"></div>
+            </div>
+        `;
+    }
+
+    renderRigaTerreni(immobileId, bloccoId, riga) {
+        return `
+            <div class="catasto-fields">
+                <div><label>Fog.</label><input type="text" id="fog_${immobileId}_${bloccoId}_${riga.id}" value="${riga.foglio}" placeholder="8"></div>
+                <div><label>Map.</label><input type="text" id="map_${immobileId}_${bloccoId}_${riga.id}" value="${riga.mappale}" placeholder="1335"></div>
+                <div><label>Porz.</label><input type="text" id="porz_${immobileId}_${bloccoId}_${riga.id}" value="${riga.porzione}" placeholder="-"></div>
+                <div><label>Qualità</label><input type="text" id="qual_${immobileId}_${bloccoId}_${riga.id}" value="${riga.qualita}" placeholder="ente urbano"></div>
+                <div><label>Classe</label><input type="text" id="classe_${immobileId}_${bloccoId}_${riga.id}" value="${riga.classe}" placeholder="1"></div>
+                <div><label>Mq</label><input type="text" id="mq_${immobileId}_${bloccoId}_${riga.id}" value="${riga.metri_quadrati}" placeholder="745"></div>
+                <div><label>Dominicale</label><input type="text" id="dom_${immobileId}_${bloccoId}_${riga.id}" value="${riga.dominicale}" placeholder="0,62"></div>
+                <div><label>Agrario</label><input type="text" id="agr_${immobileId}_${bloccoId}_${riga.id}" value="${riga.agrario}" placeholder="0,34"></div>
+            </div>
+        `;
+    }
+
+    renderConfini(immobile) {
+        const direzioni = ['nord', 'est', 'sud', 'ovest'];
+        return direzioni.map(direzione => `
+            <div class="confini-direction">
+                <label>${direzione.charAt(0).toUpperCase() + direzione.slice(1)} ragioni ai mappali:</label>
+                <div id="confini-${immobile.id}-${direzione}" class="mappali-container">
+                    ${this.renderMappaliConfini(immobile.id, direzione, immobile.confini[direzione])}
+                    <button type="button" class="btn-add-mappale" onclick="window.siafApp.addMappaleConfine(${immobile.id}, '${direzione}')">➕ Aggiungi</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    renderMappaliConfini(immobileId, direzione, mappali) {
+        return mappali.map((mappale, index) => `
+            <span>
+                <input type="text" class="mappale-input"
+                       id="confine_${immobileId}_${direzione}_${index}"
+                       value="${mappale}"
+                       placeholder="n. mappale">
+                ${mappali.length > 1 ?
+                    `<button type="button" class="btn-remove-mappale" onclick="window.siafApp.removeMappaleConfine(${immobileId}, '${direzione}', ${index})">❌</button>` :
+                    ''}
+            </span>
+        `).join('');
+    }
+
+    // Funzioni di gestione eventi
+
+    addIntestatario(immobileId) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        if (immobile) {
+            immobile.intestatari.push('');
+            this.refreshIntestatari(immobileId);
+        }
+    }
+
+    removeIntestatario(immobileId, index) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        if (immobile && immobile.intestatari.length > 1) {
+            immobile.intestatari.splice(index, 1);
+            this.refreshIntestatari(immobileId);
+        }
+    }
+
+    refreshIntestatari(immobileId) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        const container = document.getElementById(`intestatari-${immobileId}`);
+        if (container && immobile) {
+            container.innerHTML = this.renderIntestatari(immobile);
+        }
+    }
+
+    addBloccoCatastale(immobileId) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        if (immobile) {
+            const newBlocco = {
+                id: immobile.blocchiCatastali.length + 1,
+                descrizione: 'area_sedime',
+                tipoCatasto: 'terreni',
+                righe: [this.createEmptyTerrenoRow()]
+            };
+            immobile.blocchiCatastali.push(newBlocco);
+            this.refreshBlocchiCatastali(immobileId);
+        }
+    }
+
+    removeBloccoCatastale(immobileId, bloccoId) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        if (immobile && immobile.blocchiCatastali.length > 1) {
+            immobile.blocchiCatastali = immobile.blocchiCatastali.filter(b => b.id !== bloccoId);
+            this.refreshBlocchiCatastali(immobileId);
+        }
+    }
+
+    refreshBlocchiCatastali(immobileId) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        const container = document.getElementById(`blocchi-${immobileId}`);
+        if (container && immobile) {
+            container.innerHTML = this.renderBlocchiCatastali(immobile);
+        }
+    }
+
+    handleDescrizioneChange(immobileId, bloccoId) {
+        const select = document.getElementById(`descrizione-${immobileId}-${bloccoId}`);
+        const customField = document.getElementById(`descrizione-custom-${immobileId}-${bloccoId}`);
+
+        if (select.value === 'custom') {
+            customField.style.display = 'block';
+        } else {
+            customField.style.display = 'none';
+        }
+    }
+
+    changeTipoCatasto(immobileId, bloccoId, tipo) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        const blocco = immobile?.blocchiCatastali.find(b => b.id === bloccoId);
+
+        if (blocco) {
+            blocco.tipoCatasto = tipo;
+            // Reset righe con nuovo tipo
+            blocco.righe = [tipo === 'fabbricati' ? this.createEmptyFabbricatoRow() : this.createEmptyTerrenoRow()];
+            this.refreshRigheCatastali(immobileId, bloccoId);
+        }
+    }
+
+    addRigaCatastale(immobileId, bloccoId) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        const blocco = immobile?.blocchiCatastali.find(b => b.id === bloccoId);
+
+        if (blocco) {
+            const newRow = blocco.tipoCatasto === 'fabbricati' ?
+                this.createEmptyFabbricatoRow() :
+                this.createEmptyTerrenoRow();
+            newRow.id = blocco.righe.length + 1;
+            blocco.righe.push(newRow);
+            this.refreshRigheCatastali(immobileId, bloccoId);
+        }
+    }
+
+    removeRigaCatastale(immobileId, bloccoId, rigaId) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        const blocco = immobile?.blocchiCatastali.find(b => b.id === bloccoId);
+
+        if (blocco && blocco.righe.length > 1) {
+            blocco.righe = blocco.righe.filter(r => r.id !== rigaId);
+            this.refreshRigheCatastali(immobileId, bloccoId);
+        }
+    }
+
+    refreshRigheCatastali(immobileId, bloccoId) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        const blocco = immobile?.blocchiCatastali.find(b => b.id === bloccoId);
+        const container = document.getElementById(`righe-${immobileId}-${bloccoId}`);
+
+        if (container && blocco) {
+            container.innerHTML = this.renderRigheCatastali(immobileId, blocco);
+        }
+    }
+
+    addMappaleConfine(immobileId, direzione) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        if (immobile) {
+            immobile.confini[direzione].push('');
+            this.refreshMappaliConfini(immobileId, direzione);
+        }
+    }
+
+    removeMappaleConfine(immobileId, direzione, index) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        if (immobile && immobile.confini[direzione].length > 1) {
+            immobile.confini[direzione].splice(index, 1);
+            this.refreshMappaliConfini(immobileId, direzione);
+        }
+    }
+
+    refreshMappaliConfini(immobileId, direzione) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        const container = document.getElementById(`confini-${immobileId}-${direzione}`);
+        if (container && immobile) {
+            // Mantieni il bottone "Aggiungi"
+            const addButton = container.querySelector('.btn-add-mappale');
+            container.innerHTML = this.renderMappaliConfini(immobileId, direzione, immobile.confini[direzione]);
+            container.appendChild(addButton);
+        }
+    }
+
+    removeImmobile(id) {
+        if (this.immobili.length === 1) {
+            alert('Deve esserci almeno un immobile');
+            return;
+        }
+
+        this.immobili = this.immobili.filter(i => i.id !== id);
+        document.getElementById(`immobile-${id}`).remove();
+        this.updateTabProgress();
+        this.isDirty = true;
+
+        console.log(`❌ Rimosso immobile ${id}`);
     }
 }
 
