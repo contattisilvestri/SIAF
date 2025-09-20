@@ -49,12 +49,28 @@ class SiafApp {
             await loadItalyGeoData();
             this.geoDataLoaded = true;
 
+            console.log('✅ Geodati caricati - Province disponibili:', Object.keys(PROVINCE_COMUNI).length);
+
             // Aggiorna UI se ci sono immobili già renderizzati
             this.refreshProvinciaDropdowns();
 
+            // Forza aggiornamento di tutte le dropdown provincia
+            setTimeout(() => {
+                this.forceUpdateAllProvinciaDropdowns();
+            }, 500);
+
         } catch (error) {
             console.warn('⚠️ Geodati non disponibili, usando fallback');
+            console.error('Errore dettagliato:', error);
         }
+    }
+
+    forceUpdateAllProvinciaDropdowns() {
+        // Aggiorna tutte le dropdown provincia esistenti
+        this.immobili.forEach(immobile => {
+            this.populateProvinciaDropdown(immobile.id, immobile.provincia);
+        });
+        console.log('🔄 Aggiornate tutte le dropdown provincia');
     }
 
     refreshProvinciaDropdowns() {
@@ -1140,6 +1156,9 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         // Inizializza comuni recenti UI dopo il primo rendering
         setTimeout(() => {
             this.refreshComuniRecentiUI();
+            // Debug: controlla se i geodati sono caricati
+            console.log('🔍 Debug - Geodati caricati:', this.geoDataLoaded);
+            console.log('🔍 Debug - Province disponibili:', Object.keys(PROVINCE_COMUNI).length);
         }, 200);
 
         console.log('✅ Sistema immobili inizializzato');
