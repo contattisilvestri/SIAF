@@ -5,10 +5,14 @@ class SiafApp {
         this.formData = {};
         this.isDirty = false;
         this.appsScriptUrl = 'https://script.google.com/macros/s/AKfycbyt5wpzq9dLg52WJphwcKKgRexTcI7GQsZ0Mz3-2ofkEQbo8tlziYf2trZ-wobUL26K/exec';
-        
+
         // Venditori multipli
         this.venditori = [];
         this.venditoreCounter = 0;
+
+        // Modalità pratica: 'selection', 'new', 'edit'
+        this.praticaMode = 'selection';
+        this.currentProtocollo = null;
     }
 
     init() {
@@ -16,13 +20,14 @@ class SiafApp {
         
         // Inizializza componenti
         this.initializeTabs();
+        this.initializePraticaSelection();
         this.initializeForm();
         this.initializeVenditori();
         this.initializeActions();
-        
+
         // Auto-popola data
         this.setCurrentDate();
-        
+
         // Auto-save periodico
         this.startAutoSave();
     }
@@ -117,6 +122,261 @@ class SiafApp {
         };
         
         return fieldsByTab[tabName] || [];
+    }
+
+    // ========== BLOCCO 2.5: GESTIONE SELEZIONE PRATICA ==========
+
+    initializePraticaSelection() {
+        const btnNuovaPratica = document.getElementById('btn-nuova-pratica');
+        const btnCaricaPratica = document.getElementById('btn-carica-pratica');
+        const btnBackSelection = document.getElementById('btn-back-selection');
+        const protocolloLoad = document.getElementById('protocollo-load');
+
+        if (btnNuovaPratica) {
+            btnNuovaPratica.addEventListener('click', () => {
+                this.startNuovaPratica();
+            });
+        }
+
+        if (btnCaricaPratica) {
+            btnCaricaPratica.addEventListener('click', () => {
+                const protocollo = protocolloLoad?.value?.trim();
+                if (protocollo) {
+                    this.caricaPraticaEsistente(protocollo);
+                } else {
+                    alert('Inserisci un numero di protocollo valido (es: 3743/B)');
+                }
+            });
+        }
+
+        if (btnBackSelection) {
+            btnBackSelection.addEventListener('click', () => {
+                this.tornaAllaSelenzione();
+            });
+        }
+
+        // Enter sul campo protocollo
+        if (protocolloLoad) {
+            protocolloLoad.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    btnCaricaPratica?.click();
+                }
+            });
+        }
+
+        console.log('✅ Selezione pratica inizializzata');
+    }
+
+    startNuovaPratica() {
+        console.log('🆕 Avvio nuova pratica');
+        this.praticaMode = 'new';
+        this.currentProtocollo = null;
+        this.showPraticaForm('📝 Nuova Pratica');
+        this.resetForm();
+    }
+
+    async caricaPraticaEsistente(protocollo) {
+        console.log('📂 Caricamento pratica:', protocollo);
+
+        try {
+            this.showLoadingState('Caricamento pratica...');
+
+            const result = await this.loadPraticaFromBackend(protocollo);
+
+            if (result.success) {
+                this.praticaMode = 'edit';
+                this.currentProtocollo = protocollo;
+                this.showPraticaForm(`📝 Modifica Pratica - ${protocollo}`);
+                this.populateFormWithData(result);
+                this.hideLoadingState();
+            } else {
+                this.hideLoadingState();
+                alert('Errore caricamento pratica: ' + result.error);
+            }
+
+        } catch (error) {
+            this.hideLoadingState();
+            console.error('❌ Errore caricamento:', error);
+            alert('Errore durante il caricamento della pratica');
+        }
+    }
+
+    async loadPraticaFromBackend(protocollo) {
+        const url = `${this.appsScriptUrl}?action=load&protocollo=${encodeURIComponent(protocollo)}`;
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        return result;
+    }
+
+    populateFormWithData(praticaData) {
+        console.log('📋 Popolamento form con dati:', praticaData);
+
+        // Popola campi base
+        if (praticaData.operatore) {
+            const operatoreSelect = document.getElementById('operatore');
+            if (operatoreSelect) {
+                // Trova l'option corrispondente per testo
+                const options = operatoreSelect.options;
+                for (let i = 0; i < options.length; i++) {
+                    if (options[i].textContent === praticaData.operatore) {
+                        operatoreSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Popola protocollo
+        const protocolloField = document.getElementById('numero_protocollo');
+        if (protocolloField && praticaData.protocollo) {
+            protocolloField.value = praticaData.protocollo;
+            protocolloField.className = 'readonly-field saved';
+        }
+
+        // Popola data
+        const dataField = document.getElementById('data_compilazione');
+        if (dataField && praticaData.data_creazione) {
+            dataField.value = this.formatDateForDisplay(praticaData.data_creazione);
+        }
+
+        // Popola venditori
+        if (praticaData.venditori && Array.isArray(praticaData.venditori)) {
+            this.populateVenditori(praticaData.venditori);
+        }
+    }
+
+    populateVenditori(venditoriData) {
+        console.log('👥 Popolamento venditori:', venditoriData);
+
+        // Reset venditori esistenti
+        this.venditori = [];
+        this.venditoreCounter = 0;
+        const container = document.getElementById('venditori-container');
+        if (container) {
+            container.innerHTML = '';
+        }
+
+        // Ricostruisce venditori dai dati
+        venditoriData.forEach(venditoreData => {
+            const venditore = {
+                id: ++this.venditoreCounter,
+                ...venditoreData
+            };
+
+            this.venditori.push(venditore);
+            this.renderVenditore(venditore);
+
+            // Popola i campi del venditore
+            setTimeout(() => {
+                this.populateSingleVenditore(venditore);
+            }, 100);
+        });
+    }
+
+    populateSingleVenditore(venditore) {
+        const fields = [
+            'nome', 'cognome', 'sesso', 'stato_civile', 'luogo_nascita', 'data_nascita',
+            'codice_fiscale', 'tipo_documento', 'numero_documento', 'data_rilascio',
+            'data_scadenza', 'indirizzo', 'citta', 'provincia', 'telefono', 'email'
+        ];
+
+        fields.forEach(field => {
+            const fieldElement = document.getElementById(`venditore_${venditore.id}_${field}`);
+            if (fieldElement && venditore[field]) {
+                fieldElement.value = venditore[field];
+            }
+        });
+    }
+
+    formatDateForDisplay(date) {
+        if (date instanceof Date) {
+            return this.formatDate(date);
+        } else if (typeof date === 'string') {
+            try {
+                return this.formatDate(new Date(date));
+            } catch (e) {
+                return date;
+            }
+        }
+        return '';
+    }
+
+    showPraticaForm(title) {
+        const selection = document.getElementById('pratica-selection');
+        const form = document.getElementById('pratica-form');
+        const formTitle = document.getElementById('form-title');
+
+        if (selection) selection.style.display = 'none';
+        if (form) form.style.display = 'block';
+        if (formTitle) formTitle.textContent = title;
+    }
+
+    tornaAllaSelenzione() {
+        const selection = document.getElementById('pratica-selection');
+        const form = document.getElementById('pratica-form');
+
+        if (selection) selection.style.display = 'block';
+        if (form) form.style.display = 'none';
+
+        this.praticaMode = 'selection';
+        this.currentProtocollo = null;
+    }
+
+    resetForm() {
+        // Reset form fields
+        const form = document.getElementById('siaf-form');
+        if (form) {
+            const inputs = form.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                if (input.type === 'checkbox' || input.type === 'radio') {
+                    input.checked = false;
+                } else {
+                    input.value = '';
+                }
+            });
+        }
+
+        // Reset venditori
+        this.venditori = [];
+        this.venditoreCounter = 0;
+        const container = document.getElementById('venditori-container');
+        if (container) {
+            container.innerHTML = '';
+        }
+
+        // Riaggiungi primo venditore
+        setTimeout(() => {
+            this.addVenditore();
+        }, 100);
+
+        // Reset protocollo field
+        const protocolloField = document.getElementById('numero_protocollo');
+        if (protocolloField) {
+            protocolloField.value = '';
+            protocolloField.placeholder = 'Seleziona operatore...';
+            protocolloField.className = 'readonly-field';
+        }
+    }
+
+    showLoadingState(message) {
+        const btnCarica = document.getElementById('btn-carica-pratica');
+        if (btnCarica) {
+            btnCarica.disabled = true;
+            btnCarica.innerHTML = `<span class="icon">⏳</span> ${message}`;
+        }
+    }
+
+    hideLoadingState() {
+        const btnCarica = document.getElementById('btn-carica-pratica');
+        if (btnCarica) {
+            btnCarica.disabled = false;
+            btnCarica.innerHTML = '<span class="icon">🔍</span> CARICA PRATICA';
+        }
     }
 
     getVenditoriFieldsList() {
@@ -458,29 +718,36 @@ renderVenditore(venditore) {
 
     initializeActions() {
         const savePraticaBtn = document.getElementById('save-pratica');
-        
+        const generateDocumentsBtn = document.getElementById('generate-documents');
+
         if (savePraticaBtn) {
             savePraticaBtn.addEventListener('click', () => {
                 this.savePratica();
             });
         }
-        
-        console.log('✅ Save button inizializzato');
+
+        if (generateDocumentsBtn) {
+            generateDocumentsBtn.addEventListener('click', () => {
+                this.saveAndGenerateDocuments();
+            });
+        }
+
+        console.log('✅ Save and Generate buttons inizializzati');
     }
 
     async savePratica() {
         const formData = this.collectAllFormData();
-        const protocolField = document.getElementById('numero_protocollo');
-        const currentProtocol = protocolField?.value;
-        
-        // Determina se UPDATE o CREATE
-        if (currentProtocol && !currentProtocol.includes('Preview:')) {
+
+        // Determina azione basata sulla modalità
+        if (this.praticaMode === 'edit' && this.currentProtocollo) {
             formData.azione = 'update';
-            formData.protocollo_esistente = currentProtocol;
+            formData.protocollo_esistente = this.currentProtocollo;
         } else {
             formData.azione = 'create';
         }
-        
+
+        console.log('💾 Salvataggio pratica - Modalità:', this.praticaMode, 'Azione:', formData.azione);
+
         this.showSaveLoading();
         
         try {
@@ -488,10 +755,23 @@ renderVenditore(venditore) {
             this.showSaveSuccess(result);
             this.isDirty = false;
             
-            // Aggiorna protocollo se nuovo
-            if (result.protocollo && protocolField) {
-                protocolField.value = result.protocollo;
-                protocolField.className = 'readonly-field saved';
+            // Aggiorna protocollo se nuova pratica
+            if (result.protocollo && this.praticaMode === 'new') {
+                const protocolField = document.getElementById('numero_protocollo');
+                if (protocolField) {
+                    protocolField.value = result.protocollo;
+                    protocolField.className = 'readonly-field saved';
+                }
+
+                // Passa a modalità edit
+                this.praticaMode = 'edit';
+                this.currentProtocollo = result.protocollo;
+
+                // Aggiorna titolo
+                const formTitle = document.getElementById('form-title');
+                if (formTitle) {
+                    formTitle.textContent = `📝 Modifica Pratica - ${result.protocollo}`;
+                }
             }
             
         } catch (error) {
@@ -603,6 +883,80 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         return result;
     }
 
+    async saveAndGenerateDocuments() {
+        console.log('🎯 Avvio salvataggio + generazione documenti');
+
+        // Prima salva la pratica
+        await this.savePratica();
+
+        // Se il salvataggio è andato a buon fine, genera i documenti
+        if (!this.isDirty) { // isDirty viene settato a false dopo salvataggio riuscito
+            await this.generateDocuments();
+        }
+    }
+
+    async generateDocuments() {
+        const formData = this.collectAllFormData();
+
+        // Determina protocollo da usare
+        const protocollo = this.currentProtocollo || this.extractProtocolloFromField();
+
+        if (!protocollo) {
+            alert('Errore: numero protocollo non trovato. Salva prima la pratica.');
+            return;
+        }
+
+        console.log('📁 Generazione documenti per protocollo:', protocollo);
+
+        this.showGenerateLoading();
+
+        try {
+            const generateData = {
+                ...formData,
+                protocollo: protocollo,
+                lettera: formData.lettera
+            };
+
+            const result = await this.submitGenerateToAppsScript(generateData);
+            this.showGenerateSuccess(result);
+
+        } catch (error) {
+            this.showGenerateError(error);
+        }
+    }
+
+    extractProtocolloFromField() {
+        const protocolField = document.getElementById('numero_protocollo');
+        if (protocolField && protocolField.value) {
+            // Rimuovi "Preview: " se presente
+            return protocolField.value.replace('Preview: ', '');
+        }
+        return null;
+    }
+
+    async submitGenerateToAppsScript(generateData) {
+        const params = new URLSearchParams({
+            action: 'generate_documents',
+            data: JSON.stringify(generateData)
+        });
+
+        const url = `${this.appsScriptUrl}?${params}`;
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (!result.success) {
+            throw new Error(result.error || 'Errore generazione documenti');
+        }
+
+        return result;
+    }
+
     // ========== BLOCCO 6: UI FEEDBACK E UTILITÀ ==========
 
     showSaveLoading() {
@@ -664,6 +1018,59 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         if (status) {
             status.className = 'save-status error';
             status.innerHTML = `❌ Errori:<br>• ${errors.join('<br>• ')}`;
+        }
+    }
+
+    showGenerateLoading() {
+        const status = document.getElementById('generate-status');
+        const generateBtn = document.getElementById('generate-documents');
+
+        if (generateBtn) {
+            generateBtn.disabled = true;
+            generateBtn.classList.add('loading');
+        }
+
+        if (status) {
+            status.className = 'generate-status loading';
+            status.textContent = '📁 Generando documenti...';
+        }
+    }
+
+    showGenerateSuccess(result) {
+        const status = document.getElementById('generate-status');
+        const generateBtn = document.getElementById('generate-documents');
+
+        if (generateBtn) {
+            generateBtn.disabled = false;
+            generateBtn.classList.remove('loading');
+        }
+
+        if (status) {
+            status.className = 'generate-status success';
+            status.textContent = `✅ Documenti generati! ${result.documenti_creati || 0} file creati`;
+        }
+
+        // Auto-hide dopo 5 secondi
+        setTimeout(() => {
+            if (status) {
+                status.className = 'generate-status';
+                status.textContent = '';
+            }
+        }, 5000);
+    }
+
+    showGenerateError(error) {
+        const status = document.getElementById('generate-status');
+        const generateBtn = document.getElementById('generate-documents');
+
+        if (generateBtn) {
+            generateBtn.disabled = false;
+            generateBtn.classList.remove('loading');
+        }
+
+        if (status) {
+            status.className = 'generate-status error';
+            status.textContent = `❌ Errore generazione: ${error.message}`;
         }
     }
 
