@@ -16,15 +16,19 @@ class SiafApp {
 
         // Sistema province/comuni
         this.comuniRecenti = this.loadComuniRecenti();
+        this.geoDataLoaded = false;
 
         // Modalità pratica: 'selection', 'new', 'edit'
         this.praticaMode = 'selection';
         this.currentProtocollo = null;
     }
 
-    init() {
+    async init() {
         console.log('🚀 SIAF App inizializzata');
-        
+
+        // Carica geodati italiani (asincrono)
+        this.loadGeoDataInBackground();
+
         // Inizializza componenti
         this.initializeTabs();
         this.initializePraticaSelection();
@@ -38,6 +42,29 @@ class SiafApp {
 
         // Auto-save periodico
         this.startAutoSave();
+    }
+
+    async loadGeoDataInBackground() {
+        try {
+            await loadItalyGeoData();
+            this.geoDataLoaded = true;
+
+            // Aggiorna UI se ci sono immobili già renderizzati
+            this.refreshProvinciaDropdowns();
+
+        } catch (error) {
+            console.warn('⚠️ Geodati non disponibili, usando fallback');
+        }
+    }
+
+    refreshProvinciaDropdowns() {
+        // Aggiorna le dropdown province se ci sono immobili già renderizzati
+        this.immobili.forEach(immobile => {
+            const provinciaSelect = document.getElementById(`immobile_${immobile.id}_provincia`);
+            if (provinciaSelect) {
+                this.populateProvinciaDropdown(immobile.id, immobile.provincia);
+            }
+        });
     }
 
     // ========== BLOCCO 2: GESTIONE NAVIGAZIONE TAB ==========
@@ -1275,10 +1302,13 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
 
         container.insertAdjacentHTML('beforeend', immobileHtml);
 
-        // Inizializza dropdown comune se la provincia è già impostata
+        // Inizializza dropdown provincia e comune
         setTimeout(() => {
-            if (immobile.provincia) {
-                this.populateComuniDropdown(immobile.id, immobile.provincia, immobile.comune);
+            this.populateProvinciaDropdown(immobile.id, immobile.provincia);
+            if (immobile.provincia && immobile.comune) {
+                setTimeout(() => {
+                    this.populateComuniDropdown(immobile.id, immobile.provincia, immobile.comune);
+                }, 200);
             }
         }, 100);
 
@@ -1650,6 +1680,35 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         }
     }
 
+    populateProvinciaDropdown(immobileId, selectedProvincia = '') {
+        const provinciaField = document.getElementById(`immobile_${immobileId}_provincia`);
+        if (!provinciaField) return;
+
+        if (!this.geoDataLoaded || Object.keys(PROVINCE_COMUNI).length === 0) {
+            provinciaField.innerHTML = '<option value="">Caricamento province...</option>';
+            return;
+        }
+
+        let options = '<option value="">Seleziona provincia...</option>';
+
+        // Ordina province alfabeticamente
+        const provinceList = Object.keys(PROVINCE_COMUNI).sort();
+
+        provinceList.forEach(provincia => {
+            const selected = provincia === selectedProvincia ? 'selected' : '';
+            options += `<option value="${provincia}" ${selected}>${provincia}</option>`;
+        });
+
+        provinciaField.innerHTML = options;
+
+        // Se c'è una provincia selezionata, popola anche i comuni
+        if (selectedProvincia) {
+            setTimeout(() => {
+                this.populateComuniDropdown(immobileId, selectedProvincia);
+            }, 100);
+        }
+    }
+
     populateComuniDropdown(immobileId, provincia, selectedComune = '') {
         const comuneField = document.getElementById(`immobile_${immobileId}_comune`);
         if (!comuneField || !provincia || !PROVINCE_COMUNI[provincia]) {
@@ -1715,19 +1774,81 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
     }
 }
 
-// ========== DATASET PROVINCE E COMUNI ITALIANI ==========
+// ========== SISTEMA GESTIONE GEODATI ITALIANI ==========
 
-const PROVINCE_COMUNI = {
-    "Rovigo": ["Adria", "Ariano nel Polesine", "Arquà Polesine", "Badia Polesine", "Bagnolo di Po", "Bergantino", "Bosaro", "Calto", "Canaro", "Canda", "Castelguglielmo", "Castelmassa", "Castelnovo Bariano", "Ceneselli", "Ceregnano", "Costa di Rovigo", "Crespino", "Ficarolo", "Fiesso Umbertiano", "Frassinelle Polesine", "Fratta Polesine", "Gaiba", "Gavello", "Giacciano con Baruchella", "Guarda Veneta", "Lendinara", "Loreo", "Lusia", "Melara", "Occhiobello", "Papozze", "Pettorazza Grimani", "Pincara", "Polesella", "Pontecchio Polesine", "Porto Tolle", "Porto Viro", "Rosolina", "Rovigo", "Salara", "San Bellino", "San Martino di Venezze", "Stienta", "Taglio di Po", "Trecenta", "Villadose", "Villamarzana", "Villanova del Ghebbo", "Villanova Marchesana"],
+// URL del JSON completo comuni italiani
+const ITALY_GEO_URL = 'https://contattisilvestri.github.io/SIAF/DATA/italy-comuni.json';
 
-    "Verona": ["Affi", "Albaredo d'Adige", "Angiari", "Arcole", "Badia Calavena", "Bardolino", "Belfiore", "Bevilacqua", "Bonavigo", "Boschi Sant'Anna", "Bosco Chiesanuova", "Bovolone", "Brentino Belluno", "Brenzone sul Garda", "Bussolengo", "Buttapietra", "Caldiero", "Caprino Veronese", "Casaleone", "Castagnaro", "Castel d'Azzano", "Castelnuovo del Garda", "Cavaion Veronese", "Cazzano di Tramigna", "Cerea", "Cerro Veronese", "Cologna Veneta", "Colognola ai Colli", "Concamarise", "Costermano sul Garda", "Dolcè", "Erbè", "Erbezzo", "Ferrara di Monte Baldo", "Fumane", "Garda", "Gazzo Veronese", "Grezzana", "Illasi", "Isola della Scala", "Isola Rizza", "Lavagno", "Lazise", "Legnago", "Malcesine", "Marano di Valpolicella", "Mezzane di Sotto", "Minerbe", "Montecchia di Crosara", "Monteforte d'Alpone", "Mozzecane", "Negrar di Valpolicella", "Nogara", "Nogarole Rocca", "Oppeano", "Ossimo", "Palù", "Pastrengo", "Pescantina", "Peschiera del Garda", "Povegliano Veronese", "Pressana", "Rivoli Veronese", "Roncà", "Ronco all'Adige", "Roverchiara", "Roveredo di Guà", "Salizzole", "San Bonifacio", "San Giovanni Ilarione", "San Giovanni Lupatoto", "San Martino Buon Albergo", "San Mauro di Saline", "San Pietro di Morubio", "San Pietro in Cariano", "San Zeno di Montagna", "Sant'Ambrogio di Valpolicella", "Sant'Anna d'Alfaedo", "Selva di Progno", "Soave", "Sommacampagna", "Sona", "Sorgà", "Terrazzo", "Torri del Benaco", "Tregnago", "Trevenzuolo", "Valeggio sul Mincio", "Velo Veronese", "Verona", "Veronella", "Vestenanova", "Vigasio", "Villa Bartolomea", "Villafranca di Verona", "Zevio", "Zimella"],
+// Cache locale per evitare ricaricamenti
+let ITALY_GEO_DATA = null;
+let PROVINCE_COMUNI = {}; // Popolato dinamicamente
 
-    "Venezia": ["Annone Veneto", "Campagna Lupia", "Campolongo Maggiore", "Camponogara", "Caorle", "Cavallino-Treporti", "Cavarzere", "Chioggia", "Cinto Caomaggiore", "Cona", "Concordia Sagittaria", "Dolo", "Eraclea", "Fiesso d'Artico", "Fossalta di Piave", "Fossalta di Portogruaro", "Fossò", "Gruaro", "Jesolo", "Marcon", "Martellago", "Meolo", "Mestre", "Mira", "Mirano", "Musile di Piave", "Noale", "Noventa di Piave", "Pianiga", "Portogruaro", "Pramaggiore", "Quarto d'Altino", "Salzano", "San Donà di Piave", "San Michele al Tagliamento", "San Stino di Livenza", "Santa Maria di Sala", "Santo Stino di Livenza", "Scorzè", "Spinea", "Stra", "Teglio Veneto", "Torre di Mosto", "Venezia", "Vigonovo"],
+// Funzione per caricare e processare i geodati
+async function loadItalyGeoData() {
+    if (ITALY_GEO_DATA) {
+        return ITALY_GEO_DATA; // Già caricato
+    }
 
-    "Mantova": ["Asola", "Bagnolo San Vito", "Bigarello", "Borgo Virgilio", "Borgofranco sul Po", "Bozzolo", "Canneto sull'Oglio", "Casalmoro", "Casaloldo", "Casalromano", "Castel d'Ario", "Castel Goffredo", "Castellucchio", "Castiglione delle Stiviere", "Ceresara", "Commessaggio", "Curtatone", "Dosolo", "Gazoldo degli Ippoliti", "Goito", "Gonzaga", "Guidizzolo", "Magnacavallo", "Mantova", "Marcaria", "Mariana Mantovana", "Marmirolo", "Medole", "Moglia", "Monzambano", "Motteggiana", "Ostiglia", "Pegognaga", "Piubega", "Poggio Rusco", "Pomponesco", "Ponti sul Mincio", "Porto Mantovano", "Quingentole", "Quistello", "Redondesco", "Revere", "Rivarolo Mantovano", "Rodigo", "Roncoferraro", "Roverbella", "Sabbioneta", "San Benedetto Po", "San Giorgio Bigarello", "San Martino dall'Argine", "Schivenoglia", "Sermide e Felonica", "Serravalle a Po", "Solferino", "Sustinente", "Suzzara", "Villimpenta", "Viadana", "Villa Poma", "Volta Mantovana"],
+    try {
+        console.log('🌍 Caricamento geodati italiani...');
+        const response = await fetch(ITALY_GEO_URL);
 
-    "Ferrara": ["Argenta", "Berra", "Bondeno", "Cento", "Codigoro", "Comacchio", "Copparo", "Ferrara", "Fiscaglia", "Goro", "Jolanda di Savoia", "Lagosanto", "Masi Torello", "Mesola", "Ostellato", "Poggio Renatico", "Portomaggiore", "Riva del Po", "Sant'Agostino", "Terre del Reno", "Tresigallo", "Vigarano Mainarda", "Voghiera"]
-};
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        ITALY_GEO_DATA = data;
+
+        // Processa i dati per creare la struttura province->comuni
+        processGeoDataForDropdowns();
+
+        console.log(`✅ Caricati ${data.length} comuni italiani`);
+        return data;
+
+    } catch (error) {
+        console.warn('⚠️ Errore caricamento geodati:', error);
+        // Fallback ai dati di base per il Nord Italia
+        return getFallbackGeoData();
+    }
+}
+
+// Processa i dati per creare la struttura ottimizzata per dropdown
+function processGeoDataForDropdowns() {
+    if (!ITALY_GEO_DATA) return;
+
+    PROVINCE_COMUNI = {};
+
+    ITALY_GEO_DATA.forEach(comune => {
+        const provinciaName = comune.provincia.nome;
+
+        if (!PROVINCE_COMUNI[provinciaName]) {
+            PROVINCE_COMUNI[provinciaName] = [];
+        }
+
+        PROVINCE_COMUNI[provinciaName].push(comune.nome);
+    });
+
+    // Ordina comuni alfabeticamente per ogni provincia
+    Object.keys(PROVINCE_COMUNI).forEach(provincia => {
+        PROVINCE_COMUNI[provincia].sort();
+    });
+
+    console.log(`📊 Processate ${Object.keys(PROVINCE_COMUNI).length} province`);
+}
+
+// Fallback per dati base (Nord Italia) in caso di errore
+function getFallbackGeoData() {
+    console.log('🔄 Usando dati fallback Nord Italia');
+    PROVINCE_COMUNI = {
+        "Rovigo": ["Bergantino", "Castelmassa", "Ostiglia", "Adria", "Rovigo"],
+        "Mantova": ["Ostiglia", "Revere", "Suzzara", "Mantova", "Gonzaga"],
+        "Ferrara": ["Bondeno", "Ferrara", "Cento", "Argenta"],
+        "Verona": ["Verona", "Legnago", "Villafranca di Verona"],
+        "Padova": ["Padova", "Abano Terme", "Cittadella"]
+    };
+    return [];
+}
 
 // Comuni più frequenti per l'area SIAF (personalizzabile)
 const COMUNI_FREQUENTI_DEFAULT = [
