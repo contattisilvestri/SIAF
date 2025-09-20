@@ -1854,6 +1854,159 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         console.log(`❌ Rimosso immobile ${id}`);
     }
 
+    // ========== FUNZIONI RIGHE CATASTALI (APPEND-ONLY) ==========
+
+    addRigaCatastale(immobileId, bloccoId) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        const blocco = immobile?.blocchiCatastali.find(b => b.id === bloccoId);
+
+        if (blocco) {
+            const newRiga = {
+                id: blocco.righe.length + 1,
+                foglio: '',
+                mappale: '',
+                subalterno: '',
+                categoria: '',
+                classe: '',
+                consistenza: '',
+                rendita: '',
+                superficie: '',
+                reddito_dominicale: '',
+                reddito_agrario: ''
+            };
+
+            blocco.righe.push(newRiga);
+            this.appendNewRigaCatastale(immobileId, bloccoId, newRiga);
+            this.isDirty = true;
+
+            console.log(`✅ Aggiunta riga catastale ${newRiga.id} per blocco ${bloccoId}`);
+        }
+    }
+
+    appendNewRigaCatastale(immobileId, bloccoId, riga) {
+        const container = document.getElementById(`righe-${immobileId}-${bloccoId}`);
+        if (container) {
+            const rigaHtml = this.renderSingleRigaCatastale(immobileId, bloccoId, riga, true);
+            container.insertAdjacentHTML('beforeend', rigaHtml);
+        }
+    }
+
+    renderSingleRigaCatastale(immobileId, bloccoId, riga, showRemoveButton = false) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        const blocco = immobile?.blocchiCatastali.find(b => b.id === bloccoId);
+        const isFabbricati = blocco?.tipoCatasto === 'fabbricati';
+
+        return `
+            <div class="catasto-row">
+                <div class="catasto-fields">
+                    <input type="text" id="foglio_${immobileId}_${bloccoId}_${riga.id}"
+                           value="${riga.foglio}" placeholder="Foglio">
+                    <input type="text" id="mappale_${immobileId}_${bloccoId}_${riga.id}"
+                           value="${riga.mappale}" placeholder="Mappale">
+                    ${isFabbricati ?
+                        `<input type="text" id="subalterno_${immobileId}_${bloccoId}_${riga.id}"
+                                value="${riga.subalterno}" placeholder="Sub">` : ''}
+                    ${isFabbricati ?
+                        `<input type="text" id="categoria_${immobileId}_${bloccoId}_${riga.id}"
+                                value="${riga.categoria}" placeholder="Cat">` : ''}
+                    ${isFabbricati ?
+                        `<input type="text" id="classe_${immobileId}_${bloccoId}_${riga.id}"
+                                value="${riga.classe}" placeholder="Classe">` : ''}
+                    ${isFabbricati ?
+                        `<input type="text" id="consistenza_${immobileId}_${bloccoId}_${riga.id}"
+                                value="${riga.consistenza}" placeholder="Consist">` : ''}
+                    ${isFabbricati ?
+                        `<input type="text" id="rendita_${immobileId}_${bloccoId}_${riga.id}"
+                                value="${riga.rendita}" placeholder="Rendita">` : ''}
+                    ${!isFabbricati ?
+                        `<input type="text" id="superficie_${immobileId}_${bloccoId}_${riga.id}"
+                                value="${riga.superficie}" placeholder="Superficie">` : ''}
+                    ${!isFabbricati ?
+                        `<input type="text" id="reddito_dominicale_${immobileId}_${bloccoId}_${riga.id}"
+                                value="${riga.reddito_dominicale}" placeholder="R.Dom">` : ''}
+                    ${!isFabbricati ?
+                        `<input type="text" id="reddito_agrario_${immobileId}_${bloccoId}_${riga.id}"
+                                value="${riga.reddito_agrario}" placeholder="R.Agr">` : ''}
+                </div>
+                ${showRemoveButton ?
+                    `<button type="button" class="btn-remove-mappale"
+                             onclick="window.siafApp.removeRigaCatastale(${immobileId}, ${bloccoId}, ${riga.id})">
+                        ❌ Rimuovi
+                     </button>` : ''}
+            </div>
+        `;
+    }
+
+    // ========== FUNZIONI MAPPALI CONFINI (APPEND-ONLY) ==========
+
+    addMappaleConfine(immobileId, direzione) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        if (immobile) {
+            immobile.confini[direzione].push('');
+            this.appendNewMappaleConfine(immobileId, direzione, immobile.confini[direzione].length - 1);
+            this.isDirty = true;
+
+            console.log(`✅ Aggiunto mappale confine ${direzione} per immobile ${immobileId}`);
+        }
+    }
+
+    appendNewMappaleConfine(immobileId, direzione, index) {
+        const container = document.getElementById(`confini-${immobileId}-${direzione}`);
+        if (container) {
+            // Trova il pulsante "Aggiungi" e inserisci prima di esso
+            const addButton = container.querySelector('.btn-add-mappale');
+            const mappaleHtml = this.renderSingleMappaleConfine(immobileId, direzione, index, true);
+
+            if (addButton) {
+                addButton.insertAdjacentHTML('beforebegin', mappaleHtml);
+            } else {
+                container.insertAdjacentHTML('beforeend', mappaleHtml);
+            }
+        }
+    }
+
+    renderSingleMappaleConfine(immobileId, direzione, index, showRemoveButton = false) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        const mappaleValue = immobile?.confini[direzione][index] || '';
+
+        return `
+            <input type="text" class="mappale-input"
+                   id="mappale-${immobileId}-${direzione}-${index}"
+                   value="${mappaleValue}"
+                   placeholder="Mappale">
+            ${showRemoveButton ?
+                `<button type="button" class="btn-remove-mappale"
+                         onclick="window.siafApp.removeMappaleConfine(${immobileId}, '${direzione}', ${index})">
+                    ❌
+                 </button>` : ''}
+        `;
+    }
+
+    removeRigaCatastale(immobileId, bloccoId, rigaId) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        const blocco = immobile?.blocchiCatastali.find(b => b.id === bloccoId);
+
+        if (blocco && blocco.righe.length > 1) {
+            blocco.righe = blocco.righe.filter(r => r.id !== rigaId);
+            // Rimuovi l'elemento DOM direttamente
+            const rigaElement = document.querySelector(`#righe-${immobileId}-${bloccoId} .catasto-row:has(input[id*="_${rigaId}"])`);
+            if (rigaElement) {
+                rigaElement.remove();
+            }
+            this.isDirty = true;
+        }
+    }
+
+    removeMappaleConfine(immobileId, direzione, index) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        if (immobile && immobile.confini[direzione].length > 1) {
+            immobile.confini[direzione].splice(index, 1);
+            // Refresh necessario per ricalcolare gli indici
+            this.refreshMappaliConfini(immobileId, direzione);
+            this.isDirty = true;
+        }
+    }
+
     // ========== SISTEMA PROVINCE/COMUNI CON MEMORIZZAZIONE ==========
 
     loadComuniRecenti() {
