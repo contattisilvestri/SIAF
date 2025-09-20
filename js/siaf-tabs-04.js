@@ -960,7 +960,7 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
             this.saveAllIntestatariData(immobile.id);
 
             // Salva tutti i blocchi catastali
-            this.saveAllBlocchiData(immobile.id);
+            this.saveBlocchiCatastaliData(immobile.id);
 
             // Salva confini
             this.saveAllConfiniData(immobile.id);
