@@ -1280,11 +1280,13 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                     <div class="field-row">
                         <div class="field-group">
                             <label for="immobile_${immobile.id}_via">Via</label>
-                            <input type="text" id="immobile_${immobile.id}_via" value="${immobile.via}">
+                            <input type="text" id="immobile_${immobile.id}_via" value="${immobile.via || ''}"
+                                   onchange="window.siafApp.updateImmobileField(${immobile.id}, 'via', this.value)">
                         </div>
                         <div class="field-group">
                             <label for="immobile_${immobile.id}_numero">Numero</label>
-                            <input type="text" id="immobile_${immobile.id}_numero" value="${immobile.numero}">
+                            <input type="text" id="immobile_${immobile.id}_numero" value="${immobile.numero || ''}"
+                                   onchange="window.siafApp.updateImmobileField(${immobile.id}, 'numero', this.value)">
                         </div>
                     </div>
                 </div>
@@ -1509,6 +1511,15 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         }
     }
 
+    updateImmobileField(immobileId, field, value) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        if (immobile) {
+            immobile[field] = value;
+            this.isDirty = true;
+            console.log(`📝 Aggiornato immobile ${immobileId}: ${field} = ${value}`);
+        }
+    }
+
     removeIntestatario(immobileId, index) {
         const immobile = this.immobili.find(i => i.id === immobileId);
         if (immobile && immobile.intestatari.length > 1) {
@@ -1521,8 +1532,29 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         const immobile = this.immobili.find(i => i.id === immobileId);
         const container = document.getElementById(`intestatari-${immobileId}`);
         if (container && immobile) {
+            // Salva i dati attuali prima del re-rendering
+            this.saveIntestatariData(immobileId);
             container.innerHTML = this.renderIntestatari(immobile);
         }
+    }
+
+    saveIntestatariData(immobileId) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        if (!immobile) return;
+
+        immobile.intestatari.forEach((intestatario, index) => {
+            const nomeField = document.getElementById(`intestatario_nome_${immobileId}_${index}`);
+            const cognomeField = document.getElementById(`intestatario_cognome_${immobileId}_${index}`);
+
+            if (nomeField) {
+                intestatario.nome = nomeField.value || '';
+            }
+            if (cognomeField) {
+                intestatario.cognome = cognomeField.value || '';
+            }
+        });
+
+        console.log(`💾 Salvati dati intestatari immobile ${immobileId}`);
     }
 
     addBloccoCatastale(immobileId) {
@@ -1551,8 +1583,40 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         const immobile = this.immobili.find(i => i.id === immobileId);
         const container = document.getElementById(`blocchi-${immobileId}`);
         if (container && immobile) {
+            // Salva i dati attuali prima del re-rendering
+            this.saveBlocchiCatastaliData(immobileId);
             container.innerHTML = this.renderBlocchiCatastali(immobile);
         }
+    }
+
+    saveBlocchiCatastaliData(immobileId) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        if (!immobile) return;
+
+        immobile.blocchiCatastali.forEach(blocco => {
+            // Salva descrizione dropdown
+            const descSelect = document.getElementById(`descrizione-${immobileId}-${blocco.id}`);
+            if (descSelect) {
+                blocco.descrizione = descSelect.value;
+            }
+
+            // Salva descrizione custom
+            const descCustom = document.getElementById(`descrizione-custom-${immobileId}-${blocco.id}`);
+            if (descCustom && descCustom.style.display !== 'none') {
+                blocco.descrizioneCustom = descCustom.value;
+            }
+
+            // Salva tipo catasto
+            const tipoRadios = document.querySelectorAll(`input[name="tipo-${immobileId}-${blocco.id}"]:checked`);
+            if (tipoRadios.length > 0) {
+                blocco.tipoCatasto = tipoRadios[0].value;
+            }
+
+            // Salva righe catastali
+            this.saveRigheCatastaliData(immobileId, blocco.id);
+        });
+
+        console.log(`💾 Salvati dati blocchi catastali immobile ${immobileId}`);
     }
 
     handleDescrizioneChange(immobileId, bloccoId) {
@@ -1608,8 +1672,30 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         const container = document.getElementById(`righe-${immobileId}-${bloccoId}`);
 
         if (container && blocco) {
+            // Salva i dati delle righe prima del re-rendering
+            this.saveRigheCatastaliData(immobileId, bloccoId);
             container.innerHTML = this.renderRigheCatastali(immobileId, blocco);
         }
+    }
+
+    saveRigheCatastaliData(immobileId, bloccoId) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        const blocco = immobile?.blocchiCatastali.find(b => b.id === bloccoId);
+        if (!blocco) return;
+
+        blocco.righe.forEach(riga => {
+            // Salva tutti i campi della riga catastale
+            const fields = ['foglio', 'mappale', 'subalterno', 'categoria', 'classe', 'consistenza', 'rendita', 'superficie', 'reddito_dominicale', 'reddito_agrario'];
+
+            fields.forEach(field => {
+                const fieldElement = document.getElementById(`${field}_${immobileId}_${bloccoId}_${riga.id}`);
+                if (fieldElement) {
+                    riga[field] = fieldElement.value || '';
+                }
+            });
+        });
+
+        console.log(`💾 Salvati dati righe catastali ${immobileId}-${bloccoId}`);
     }
 
     addMappaleConfine(immobileId, direzione) {
@@ -1632,11 +1718,29 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         const immobile = this.immobili.find(i => i.id === immobileId);
         const container = document.getElementById(`confini-${immobileId}-${direzione}`);
         if (container && immobile) {
+            // Salva i dati attuali prima del re-rendering
+            this.saveMappaliConfiniData(immobileId, direzione);
+
             // Mantieni il bottone "Aggiungi"
             const addButton = container.querySelector('.btn-add-mappale');
             container.innerHTML = this.renderMappaliConfini(immobileId, direzione, immobile.confini[direzione]);
             container.appendChild(addButton);
         }
+    }
+
+    saveMappaliConfiniData(immobileId, direzione) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        if (!immobile) return;
+
+        // Salva i valori dei mappali per la direzione specifica
+        immobile.confini[direzione].forEach((mappale, index) => {
+            const mappaleInput = document.getElementById(`mappale-${immobileId}-${direzione}-${index}`);
+            if (mappaleInput) {
+                immobile.confini[direzione][index] = mappaleInput.value || '';
+            }
+        });
+
+        console.log(`💾 Salvati mappali confini ${direzione} per immobile ${immobileId}`);
     }
 
     removeImmobile(id) {
@@ -1766,6 +1870,14 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
 
         if (provinciaField && comuneField) {
             const provincia = provinciaField.value;
+
+            // Salva la provincia nell'oggetto immobile
+            const immobile = this.immobili.find(i => i.id === immobileId);
+            if (immobile) {
+                immobile.provincia = provincia;
+                this.isDirty = true;
+            }
+
             this.populateComuniDropdown(immobileId, provincia);
         }
     }
@@ -1775,6 +1887,13 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         const comuneField = document.getElementById(`immobile_${immobileId}_comune`);
 
         if (provinciaField && comuneField && provinciaField.value && comuneField.value) {
+            // Salva il comune nell'oggetto immobile
+            const immobile = this.immobili.find(i => i.id === immobileId);
+            if (immobile) {
+                immobile.comune = comuneField.value;
+                this.isDirty = true;
+            }
+
             // Aggiungi ai recenti quando viene selezionato un comune
             this.addComuneRecente(comuneField.value, provinciaField.value);
 
