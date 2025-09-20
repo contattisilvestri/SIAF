@@ -820,10 +820,11 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
             // Dati operatore
             lettera: selectedOption?.dataset.letter || '',
             operatore: selectedOption?.textContent || '',
-            
+            operatore_id: selectedOption?.value || '', // ID operatore per mapping template
+
             // Dati pratica
             data_compilazione: document.getElementById('data_compilazione')?.value || '',
-            
+
             // Venditori (JSON)
             venditori: venditoriData
         };
