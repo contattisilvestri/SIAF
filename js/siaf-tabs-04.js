@@ -1173,7 +1173,7 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
             comune: 'Bergantino',
             via: '',
             numero: '',
-            intestatari: [''],
+            intestatari: [{ nome: '', cognome: '' }],
             blocchiCatastali: [],
             confini: {
                 nord: [''],
@@ -1338,9 +1338,15 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         return immobile.intestatari.map((intestatario, index) => `
             <div class="intestatario-row">
                 <input type="text" class="intestatario-input"
-                       id="intestatario_${immobile.id}_${index}"
-                       value="${intestatario}"
-                       placeholder="Nome intestatario">
+                       id="intestatario_nome_${immobile.id}_${index}"
+                       value="${intestatario.nome || ''}"
+                       placeholder="Nome"
+                       onchange="window.siafApp.updateIntestatario(${immobile.id}, ${index}, 'nome', this.value)">
+                <input type="text" class="intestatario-input"
+                       id="intestatario_cognome_${immobile.id}_${index}"
+                       value="${intestatario.cognome || ''}"
+                       placeholder="Cognome"
+                       onchange="window.siafApp.updateIntestatario(${immobile.id}, ${index}, 'cognome', this.value)">
                 ${immobile.intestatari.length > 1 ?
                     `<button type="button" class="btn-remove-mappale" onclick="window.siafApp.removeIntestatario(${immobile.id}, ${index})">❌</button>` :
                     ''}
@@ -1489,8 +1495,17 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
     addIntestatario(immobileId) {
         const immobile = this.immobili.find(i => i.id === immobileId);
         if (immobile) {
-            immobile.intestatari.push('');
+            immobile.intestatari.push({ nome: '', cognome: '' });
             this.refreshIntestatari(immobileId);
+        }
+    }
+
+    updateIntestatario(immobileId, index, field, value) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        if (immobile && immobile.intestatari[index]) {
+            immobile.intestatari[index][field] = value;
+            this.isDirty = true;
+            console.log(`📝 Aggiornato intestatario ${index}: ${field} = ${value}`);
         }
     }
 
