@@ -14,6 +14,9 @@ class SiafApp {
         this.immobili = [];
         this.immobileCounter = 0;
 
+        // Sistema province/comuni
+        this.comuniRecenti = this.loadComuniRecenti();
+
         // Modalità pratica: 'selection', 'new', 'edit'
         this.praticaMode = 'selection';
         this.currentProtocollo = null;
@@ -1107,6 +1110,11 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         console.log('🚀 Aggiungendo primo immobile di default...');
         this.addImmobile();
 
+        // Inizializza comuni recenti UI dopo il primo rendering
+        setTimeout(() => {
+            this.refreshComuniRecentiUI();
+        }, 200);
+
         console.log('✅ Sistema immobili inizializzato');
     }
 
@@ -1195,14 +1203,32 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                 <!-- Dati Generali Immobile -->
                 <div class="field-card">
                     <h4>📍 Dati Generali</h4>
+
+                    <!-- Comuni Recenti -->
+                    <div class="comuni-recenti-section">
+                        <h5>🕐 Comuni Recenti</h5>
+                        <div class="comuni-recenti">
+                            ${this.renderComuniRecenti(immobile.id)}
+                        </div>
+                    </div>
+
                     <div class="field-row">
                         <div class="field-group">
                             <label for="immobile_${immobile.id}_provincia">Provincia</label>
-                            <input type="text" id="immobile_${immobile.id}_provincia" value="${immobile.provincia}">
+                            <select id="immobile_${immobile.id}_provincia"
+                                    onchange="window.siafApp.handleProvinciaChange(${immobile.id})">
+                                <option value="">Seleziona provincia...</option>
+                                ${Object.keys(PROVINCE_COMUNI).map(prov =>
+                                    `<option value="${prov}" ${prov === immobile.provincia ? 'selected' : ''}>${prov}</option>`
+                                ).join('')}
+                            </select>
                         </div>
                         <div class="field-group">
                             <label for="immobile_${immobile.id}_comune">Comune</label>
-                            <input type="text" id="immobile_${immobile.id}_comune" value="${immobile.comune}">
+                            <select id="immobile_${immobile.id}_comune"
+                                    onchange="window.siafApp.handleComuneChange(${immobile.id})">
+                                <option value="">Prima seleziona provincia...</option>
+                            </select>
                         </div>
                     </div>
                     <div class="field-row">
@@ -1248,6 +1274,14 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         `;
 
         container.insertAdjacentHTML('beforeend', immobileHtml);
+
+        // Inizializza dropdown comune se la provincia è già impostata
+        setTimeout(() => {
+            if (immobile.provincia) {
+                this.populateComuniDropdown(immobile.id, immobile.provincia, immobile.comune);
+            }
+        }, 100);
+
         console.log(`✅ Immobile ${immobile.id} renderizzato`);
     }
 
@@ -1554,14 +1588,163 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
 
         console.log(`❌ Rimosso immobile ${id}`);
     }
+
+    // ========== SISTEMA PROVINCE/COMUNI CON MEMORIZZAZIONE ==========
+
+    loadComuniRecenti() {
+        try {
+            const stored = localStorage.getItem('siaf-comuni-recenti');
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                // Verifica che sia un array valido
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    return parsed;
+                }
+            }
+        } catch (error) {
+            console.warn('⚠️ Errore caricamento comuni recenti:', error);
+        }
+        // Ritorna default se non trova nulla o in caso di errore
+        return [...COMUNI_FREQUENTI_DEFAULT];
+    }
+
+    saveComuniRecenti() {
+        try {
+            localStorage.setItem('siaf-comuni-recenti', JSON.stringify(this.comuniRecenti));
+            console.log('✅ Comuni recenti salvati in localStorage');
+        } catch (error) {
+            console.warn('⚠️ Errore salvataggio comuni recenti:', error);
+        }
+    }
+
+    addComuneRecente(comune, provincia) {
+        // Rimuovi se già presente
+        this.comuniRecenti = this.comuniRecenti.filter(c =>
+            !(c.comune === comune && c.provincia === provincia)
+        );
+
+        // Aggiungi in cima
+        this.comuniRecenti.unshift({ comune, provincia });
+
+        // Mantieni solo gli ultimi 7
+        this.comuniRecenti = this.comuniRecenti.slice(0, 7);
+
+        // Salva in localStorage
+        this.saveComuniRecenti();
+
+        console.log(`✅ Aggiunto comune recente: ${comune} (${provincia})`);
+    }
+
+    setComuneFromRecent(immobileId, comune, provincia) {
+        const provinciaField = document.getElementById(`immobile_${immobileId}_provincia`);
+        const comuneField = document.getElementById(`immobile_${immobileId}_comune`);
+
+        if (provinciaField && comuneField) {
+            provinciaField.value = provincia;
+            comuneField.innerHTML = '';
+
+            // Popola dropdown comuni per la provincia selezionata
+            this.populateComuniDropdown(immobileId, provincia, comune);
+
+            console.log(`📍 Impostato ${comune} (${provincia}) per immobile ${immobileId}`);
+        }
+    }
+
+    populateComuniDropdown(immobileId, provincia, selectedComune = '') {
+        const comuneField = document.getElementById(`immobile_${immobileId}_comune`);
+        if (!comuneField || !provincia || !PROVINCE_COMUNI[provincia]) {
+            return;
+        }
+
+        const comuni = PROVINCE_COMUNI[provincia];
+        let options = '<option value="">Seleziona comune...</option>';
+
+        comuni.forEach(comune => {
+            const selected = comune === selectedComune ? 'selected' : '';
+            options += `<option value="${comune}" ${selected}>${comune}</option>`;
+        });
+
+        comuneField.innerHTML = options;
+    }
+
+    handleProvinciaChange(immobileId) {
+        const provinciaField = document.getElementById(`immobile_${immobileId}_provincia`);
+        const comuneField = document.getElementById(`immobile_${immobileId}_comune`);
+
+        if (provinciaField && comuneField) {
+            const provincia = provinciaField.value;
+            this.populateComuniDropdown(immobileId, provincia);
+        }
+    }
+
+    handleComuneChange(immobileId) {
+        const provinciaField = document.getElementById(`immobile_${immobileId}_provincia`);
+        const comuneField = document.getElementById(`immobile_${immobileId}_comune`);
+
+        if (provinciaField && comuneField && provinciaField.value && comuneField.value) {
+            // Aggiungi ai recenti quando viene selezionato un comune
+            this.addComuneRecente(comuneField.value, provinciaField.value);
+
+            // Aggiorna la UI dei comuni recenti per tutti gli immobili
+            this.refreshComuniRecentiUI();
+        }
+    }
+
+    refreshComuniRecentiUI() {
+        // Aggiorna la sezione comuni recenti per tutti gli immobili
+        this.immobili.forEach(immobile => {
+            const container = document.querySelector(`#immobile-${immobile.id} .comuni-recenti`);
+            if (container) {
+                container.innerHTML = this.renderComuniRecenti(immobile.id);
+            }
+        });
+    }
+
+    renderComuniRecenti(immobileId) {
+        if (this.comuniRecenti.length === 0) {
+            return '<p class="no-recent">Nessun comune recente</p>';
+        }
+
+        return this.comuniRecenti.map(item => `
+            <button type="button" class="btn-comune-recente"
+                    onclick="window.siafApp.setComuneFromRecent(${immobileId}, '${item.comune}', '${item.provincia}')">
+                <span class="comune">${item.comune}</span>
+                <span class="provincia">(${item.provincia})</span>
+            </button>
+        `).join('');
+    }
 }
+
+// ========== DATASET PROVINCE E COMUNI ITALIANI ==========
+
+const PROVINCE_COMUNI = {
+    "Rovigo": ["Adria", "Ariano nel Polesine", "Arquà Polesine", "Badia Polesine", "Bagnolo di Po", "Bergantino", "Bosaro", "Calto", "Canaro", "Canda", "Castelguglielmo", "Castelmassa", "Castelnovo Bariano", "Ceneselli", "Ceregnano", "Costa di Rovigo", "Crespino", "Ficarolo", "Fiesso Umbertiano", "Frassinelle Polesine", "Fratta Polesine", "Gaiba", "Gavello", "Giacciano con Baruchella", "Guarda Veneta", "Lendinara", "Loreo", "Lusia", "Melara", "Occhiobello", "Papozze", "Pettorazza Grimani", "Pincara", "Polesella", "Pontecchio Polesine", "Porto Tolle", "Porto Viro", "Rosolina", "Rovigo", "Salara", "San Bellino", "San Martino di Venezze", "Stienta", "Taglio di Po", "Trecenta", "Villadose", "Villamarzana", "Villanova del Ghebbo", "Villanova Marchesana"],
+
+    "Verona": ["Affi", "Albaredo d'Adige", "Angiari", "Arcole", "Badia Calavena", "Bardolino", "Belfiore", "Bevilacqua", "Bonavigo", "Boschi Sant'Anna", "Bosco Chiesanuova", "Bovolone", "Brentino Belluno", "Brenzone sul Garda", "Bussolengo", "Buttapietra", "Caldiero", "Caprino Veronese", "Casaleone", "Castagnaro", "Castel d'Azzano", "Castelnuovo del Garda", "Cavaion Veronese", "Cazzano di Tramigna", "Cerea", "Cerro Veronese", "Cologna Veneta", "Colognola ai Colli", "Concamarise", "Costermano sul Garda", "Dolcè", "Erbè", "Erbezzo", "Ferrara di Monte Baldo", "Fumane", "Garda", "Gazzo Veronese", "Grezzana", "Illasi", "Isola della Scala", "Isola Rizza", "Lavagno", "Lazise", "Legnago", "Malcesine", "Marano di Valpolicella", "Mezzane di Sotto", "Minerbe", "Montecchia di Crosara", "Monteforte d'Alpone", "Mozzecane", "Negrar di Valpolicella", "Nogara", "Nogarole Rocca", "Oppeano", "Ossimo", "Palù", "Pastrengo", "Pescantina", "Peschiera del Garda", "Povegliano Veronese", "Pressana", "Rivoli Veronese", "Roncà", "Ronco all'Adige", "Roverchiara", "Roveredo di Guà", "Salizzole", "San Bonifacio", "San Giovanni Ilarione", "San Giovanni Lupatoto", "San Martino Buon Albergo", "San Mauro di Saline", "San Pietro di Morubio", "San Pietro in Cariano", "San Zeno di Montagna", "Sant'Ambrogio di Valpolicella", "Sant'Anna d'Alfaedo", "Selva di Progno", "Soave", "Sommacampagna", "Sona", "Sorgà", "Terrazzo", "Torri del Benaco", "Tregnago", "Trevenzuolo", "Valeggio sul Mincio", "Velo Veronese", "Verona", "Veronella", "Vestenanova", "Vigasio", "Villa Bartolomea", "Villafranca di Verona", "Zevio", "Zimella"],
+
+    "Venezia": ["Annone Veneto", "Campagna Lupia", "Campolongo Maggiore", "Camponogara", "Caorle", "Cavallino-Treporti", "Cavarzere", "Chioggia", "Cinto Caomaggiore", "Cona", "Concordia Sagittaria", "Dolo", "Eraclea", "Fiesso d'Artico", "Fossalta di Piave", "Fossalta di Portogruaro", "Fossò", "Gruaro", "Jesolo", "Marcon", "Martellago", "Meolo", "Mestre", "Mira", "Mirano", "Musile di Piave", "Noale", "Noventa di Piave", "Pianiga", "Portogruaro", "Pramaggiore", "Quarto d'Altino", "Salzano", "San Donà di Piave", "San Michele al Tagliamento", "San Stino di Livenza", "Santa Maria di Sala", "Santo Stino di Livenza", "Scorzè", "Spinea", "Stra", "Teglio Veneto", "Torre di Mosto", "Venezia", "Vigonovo"],
+
+    "Mantova": ["Asola", "Bagnolo San Vito", "Bigarello", "Borgo Virgilio", "Borgofranco sul Po", "Bozzolo", "Canneto sull'Oglio", "Casalmoro", "Casaloldo", "Casalromano", "Castel d'Ario", "Castel Goffredo", "Castellucchio", "Castiglione delle Stiviere", "Ceresara", "Commessaggio", "Curtatone", "Dosolo", "Gazoldo degli Ippoliti", "Goito", "Gonzaga", "Guidizzolo", "Magnacavallo", "Mantova", "Marcaria", "Mariana Mantovana", "Marmirolo", "Medole", "Moglia", "Monzambano", "Motteggiana", "Ostiglia", "Pegognaga", "Piubega", "Poggio Rusco", "Pomponesco", "Ponti sul Mincio", "Porto Mantovano", "Quingentole", "Quistello", "Redondesco", "Revere", "Rivarolo Mantovano", "Rodigo", "Roncoferraro", "Roverbella", "Sabbioneta", "San Benedetto Po", "San Giorgio Bigarello", "San Martino dall'Argine", "Schivenoglia", "Sermide e Felonica", "Serravalle a Po", "Solferino", "Sustinente", "Suzzara", "Villimpenta", "Viadana", "Villa Poma", "Volta Mantovana"],
+
+    "Ferrara": ["Argenta", "Berra", "Bondeno", "Cento", "Codigoro", "Comacchio", "Copparo", "Ferrara", "Fiscaglia", "Goro", "Jolanda di Savoia", "Lagosanto", "Masi Torello", "Mesola", "Ostellato", "Poggio Renatico", "Portomaggiore", "Riva del Po", "Sant'Agostino", "Terre del Reno", "Tresigallo", "Vigarano Mainarda", "Voghiera"]
+};
+
+// Comuni più frequenti per l'area SIAF (personalizzabile)
+const COMUNI_FREQUENTI_DEFAULT = [
+    { comune: "Bergantino", provincia: "Rovigo" },
+    { comune: "Castelmassa", provincia: "Rovigo" },
+    { comune: "Ostiglia", provincia: "Mantova" },
+    { comune: "Revere", provincia: "Mantova" },
+    { comune: "Suzzara", provincia: "Mantova" },
+    { comune: "Bondeno", provincia: "Ferrara" }
+];
 
 // BLOCCO 7: Inizializzazione app quando DOM è pronto
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Inizializzazione SIAF App...');
-    
+
     window.siafApp = new SiafApp();
     window.siafApp.init();
-    
+
     console.log('✅ SIAF App pronta!');
 });
