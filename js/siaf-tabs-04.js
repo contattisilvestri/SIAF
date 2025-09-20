@@ -1075,12 +1075,9 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
     }
 
     startAutoSave() {
-        setInterval(() => {
-            if (this.isDirty) {
-                console.log('💾 Auto-save...');
-                this.savePratica();
-            }
-        }, 30000); // Auto-save ogni 30 secondi
+        // Auto-save disabilitato per evitare cartelle duplicate su Drive
+        // L'utente deve salvare manualmente con SALVA o GENERA DOCUMENTI
+        console.log('⚠️ Auto-save disabilitato - salvataggio manuale richiesto');
     }
 }
 
