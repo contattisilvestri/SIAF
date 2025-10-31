@@ -5,7 +5,7 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 4,
-    patch: 0,
+    patch: 1,
     date: '31/10/2025',
     time: '09:45',
     description: 'Fix doppia generazione cartelle - prevenzione click multipli',
@@ -1228,14 +1228,16 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
     }
 
     async submitToAppsScript(formData) {
-        const params = new URLSearchParams({
-            action: 'save',
-            data: JSON.stringify(formData)
+        const response = await fetch(this.appsScriptUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                action: 'save',
+                data: JSON.stringify(formData)
+            })
         });
-        
-        const url = `${this.appsScriptUrl}?${params}`;
-        
-        const response = await fetch(url);
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -1313,14 +1315,16 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
     }
 
     async submitGenerateToAppsScript(generateData) {
-        const params = new URLSearchParams({
-            action: 'generate_documents',
-            data: JSON.stringify(generateData)
+        const response = await fetch(this.appsScriptUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                action: 'generate_documents',
+                data: JSON.stringify(generateData)
+            })
         });
-
-        const url = `${this.appsScriptUrl}?${params}`;
-
-        const response = await fetch(url);
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
