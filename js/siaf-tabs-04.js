@@ -5,11 +5,11 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 3,
-    patch: 8,
+    patch: 9,
     date: '31/10/2025',
-    time: '09:40',
-    description: 'Operatore bloccato in edit - sicurezza protocolli',
-    color: '#FF5722'  // Arancione - sicurezza
+    time: '09:45',
+    description: 'Fix doppia generazione cartelle - prevenzione click multipli',
+    color: '#4CAF50'  // Verde - bugfix importante
 };
 
 class SiafApp {
@@ -34,6 +34,9 @@ class SiafApp {
         // Modalità pratica: 'selection', 'new', 'edit'
         this.praticaMode = 'selection';
         this.currentProtocollo = null;
+
+        // Controllo prevenzione doppia generazione documenti
+        this.isGeneratingDocuments = false;
     }
 
     async init() {
@@ -1026,19 +1029,21 @@ renderVenditore(venditore) {
         const savePraticaBtn = document.getElementById('save-pratica');
         const generateDocumentsBtn = document.getElementById('generate-documents');
 
-        if (savePraticaBtn) {
+        if (savePraticaBtn && !savePraticaBtn.hasAttribute('data-listener-attached')) {
             savePraticaBtn.addEventListener('click', () => {
                 this.savePratica();
             });
+            savePraticaBtn.setAttribute('data-listener-attached', 'true');
         }
 
-        if (generateDocumentsBtn) {
+        if (generateDocumentsBtn && !generateDocumentsBtn.hasAttribute('data-listener-attached')) {
             generateDocumentsBtn.addEventListener('click', () => {
                 this.saveAndGenerateDocuments();
             });
+            generateDocumentsBtn.setAttribute('data-listener-attached', 'true');
         }
 
-        console.log('✅ Save and Generate buttons inizializzati');
+        console.log('✅ Save and Generate buttons inizializzati (prevenendo duplicati)');
     }
 
     async savePratica() {
@@ -1246,14 +1251,25 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
     }
 
     async saveAndGenerateDocuments() {
+        // Prevenzione click multipli
+        if (this.isGeneratingDocuments) {
+            console.log('⏳ Generazione documenti già in corso, ignoro click multiplo');
+            return;
+        }
+
+        this.isGeneratingDocuments = true;
         console.log('🎯 Avvio salvataggio + generazione documenti');
 
-        // Prima salva la pratica
-        await this.savePratica();
+        try {
+            // Prima salva la pratica
+            await this.savePratica();
 
-        // Se il salvataggio è andato a buon fine, genera i documenti
-        if (!this.isDirty) { // isDirty viene settato a false dopo salvataggio riuscito
-            await this.generateDocuments();
+            // Se il salvataggio è andato a buon fine, genera i documenti
+            if (!this.isDirty) { // isDirty viene settato a false dopo salvataggio riuscito
+                await this.generateDocuments();
+            }
+        } finally {
+            this.isGeneratingDocuments = false;
         }
     }
 
