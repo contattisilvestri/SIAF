@@ -5,11 +5,11 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 3,
-    patch: 6,
+    patch: 7,
     date: '31/10/2025',
-    time: '09:30',
-    description: 'Fix lettera vuota - data-letter -> data-lettera',
-    color: '#4CAF50'  // Verde - bugfix operatori
+    time: '09:35',
+    description: 'Autocompletamento ricerca protocolli - UX migliorata',
+    color: '#9C27B0'  // Viola - nuova feature
 };
 
 class SiafApp {
@@ -226,9 +226,137 @@ class SiafApp {
                     btnCaricaPratica?.click();
                 }
             });
+
+            // Autocompletamento
+            this.initializeAutocomplete(protocolloLoad);
         }
 
         console.log('✅ Selezione pratica inizializzata');
+    }
+
+    // ========== BLOCCO 2.6: AUTOCOMPLETAMENTO RICERCA ==========
+    initializeAutocomplete(inputElement) {
+        const dropdown = document.getElementById('autocomplete-dropdown');
+        let debounceTimer;
+        let selectedIndex = -1;
+
+        inputElement.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+
+            // Reset selezione
+            selectedIndex = -1;
+
+            // Debounce per evitare troppe chiamate
+            clearTimeout(debounceTimer);
+
+            if (query.length < 2) {
+                this.hideAutocomplete(dropdown);
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                this.performSearch(query, dropdown);
+            }, 300);
+        });
+
+        // Gestione navigazione con tastiera
+        inputElement.addEventListener('keydown', (e) => {
+            const items = dropdown.querySelectorAll('.autocomplete-item');
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                this.updateSelection(items, selectedIndex);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedIndex = Math.max(selectedIndex - 1, -1);
+                this.updateSelection(items, selectedIndex);
+            } else if (e.key === 'Enter' && selectedIndex >= 0) {
+                e.preventDefault();
+                const selectedItem = items[selectedIndex];
+                const protocollo = selectedItem.dataset.protocollo;
+                this.selectAutocompleteItem(protocollo, inputElement, dropdown);
+            } else if (e.key === 'Escape') {
+                this.hideAutocomplete(dropdown);
+            }
+        });
+
+        // Chiudi dropdown cliccando fuori
+        document.addEventListener('click', (e) => {
+            if (!inputElement.contains(e.target) && !dropdown.contains(e.target)) {
+                this.hideAutocomplete(dropdown);
+            }
+        });
+    }
+
+    async performSearch(query, dropdown) {
+        try {
+            const url = `${this.appsScriptUrl}?action=search&term=${encodeURIComponent(query)}&type=protocollo`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.success && data.results && data.results.length > 0) {
+                this.showAutocompleteResults(data.results, dropdown);
+            } else {
+                this.showNoResults(dropdown);
+            }
+        } catch (error) {
+            console.error('Errore ricerca autocompletamento:', error);
+            this.hideAutocomplete(dropdown);
+        }
+    }
+
+    showAutocompleteResults(results, dropdown) {
+        // Limita a max 5 risultati
+        const limitedResults = results.slice(0, 5);
+
+        dropdown.innerHTML = limitedResults.map(result => `
+            <div class="autocomplete-item" data-protocollo="${result.protocollo}">
+                <div>
+                    <div class="autocomplete-protocollo">${result.protocollo}</div>
+                    <div class="autocomplete-operatore">${result.operatore || 'N/A'}</div>
+                </div>
+                <div class="autocomplete-data">${result.data_compilazione || ''}</div>
+            </div>
+        `).join('');
+
+        // Aggiungi click listeners
+        dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const protocollo = item.dataset.protocollo;
+                const inputElement = document.getElementById('protocollo-load');
+                this.selectAutocompleteItem(protocollo, inputElement, dropdown);
+            });
+        });
+
+        dropdown.style.display = 'block';
+    }
+
+    showNoResults(dropdown) {
+        dropdown.innerHTML = '<div class="autocomplete-no-results">Nessun risultato trovato</div>';
+        dropdown.style.display = 'block';
+    }
+
+    hideAutocomplete(dropdown) {
+        dropdown.style.display = 'none';
+        dropdown.innerHTML = '';
+    }
+
+    updateSelection(items, selectedIndex) {
+        items.forEach((item, index) => {
+            if (index === selectedIndex) {
+                item.classList.add('selected');
+            } else {
+                item.classList.remove('selected');
+            }
+        });
+    }
+
+    selectAutocompleteItem(protocollo, inputElement, dropdown) {
+        inputElement.value = protocollo;
+        this.hideAutocomplete(dropdown);
+        // Carica automaticamente la pratica
+        this.caricaPraticaEsistente(protocollo);
     }
 
     startNuovaPratica() {
