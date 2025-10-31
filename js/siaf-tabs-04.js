@@ -5,7 +5,7 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 4,
-    patch: 7,
+    patch: 8,
     date: '31/10/2025',
     time: '09:45',
     description: 'Fix doppia generazione cartelle - prevenzione click multipli',
@@ -1189,7 +1189,7 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
 
         // Salva mappali per ogni direzione
         ['nord', 'est', 'sud', 'ovest'].forEach(direzione => {
-            const mappaliInputs = document.querySelectorAll(`input[id^="mappale-${immobileId}-${direzione}-"]`);
+            const mappaliInputs = document.querySelectorAll(`input[id^="confine_${immobileId}_${direzione}_"]`);
             const mappaliValues = [];
 
             mappaliInputs.forEach(input => {
@@ -1199,6 +1199,8 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
             if (mappaliValues.length > 0) {
                 immobile.confini[direzione] = mappaliValues;
             }
+
+            console.log(`📍 Confini ${direzione} per immobile ${immobileId}:`, mappaliValues);
         });
     }
 
