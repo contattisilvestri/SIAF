@@ -1,4 +1,8 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
+// 🚀 VERSION: PRATICA-FORM-v2.3.1-FINAL-2025-10-31-16:30
+console.log('%c🚀 PRATICA-FORM v2.3.1-FINAL-2025-10-31-16:30 🚀', 'background: #FF9800; color: white; font-size: 16px; font-weight: bold; padding: 10px; border-radius: 5px;');
+console.log('%c📅 Last Update: 31/10/2025 16:30 - Versione ricostruita da zero', 'background: #E91E63; color: white; font-size: 12px; padding: 5px;');
+
 class SiafApp {
     constructor() {
         this.currentTab = 'pratica';
