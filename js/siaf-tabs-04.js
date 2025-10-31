@@ -5,7 +5,7 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 4,
-    patch: 2,
+    patch: 3,
     date: '31/10/2025',
     time: '09:45',
     description: 'Fix doppia generazione cartelle - prevenzione click multipli',
@@ -1504,7 +1504,7 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
             via: '',
             numero: '',
             intestatari: [{ nome: '', cognome: '' }],
-            blocchiCatastali: [],
+            blocchiCatastali: [],  // Inizialmente vuoto - l'utente sceglierà il tipo
             confini: {
                 nord: [''],
                 est: [''],
@@ -1512,14 +1512,6 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                 ovest: ['']
             }
         };
-
-        // Aggiungi primo blocco catastale (sempre Fabbricati)
-        immobile.blocchiCatastali.push({
-            id: 1,
-            descrizione: 'distinta nel catasto dei fabbricati al',
-            tipoCatasto: 'fabbricati',
-            righe: [this.createEmptyFabbricatoRow()]
-        });
 
         this.immobili.push(immobile);
         console.log(`✅ Immobile ${immobile.id} aggiunto. Totale immobili:`, this.immobili.length);
@@ -1687,6 +1679,21 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
     }
 
     renderBlocchiCatastali(immobile) {
+        // Se non ci sono blocchi, mostra pulsanti di selezione tipo
+        if (immobile.blocchiCatastali.length === 0) {
+            return `
+                <div class="tipo-selection-chips">
+                    <button type="button" class="chip-button" onclick="window.siafApp.addFirstBloccoCatastale(${immobile.id}, 'fabbricati')">
+                        🏢 Fabbricati
+                    </button>
+                    <button type="button" class="chip-button" onclick="window.siafApp.addFirstBloccoCatastale(${immobile.id}, 'terreni')">
+                        🌾 Terreni
+                    </button>
+                </div>
+            `;
+        }
+
+        // Altrimenti renderizza i blocchi normali
         return immobile.blocchiCatastali.map(blocco => `
             <div id="blocco-${immobile.id}-${blocco.id}" class="blocco-catastale">
                 <div class="blocco-header">
@@ -1696,10 +1703,17 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                         ''}
                 </div>
 
-                <!-- Dropdown Descrizione -->
-                ${blocco.id === 1 ? '' : this.renderDescrizioneDropdown(immobile.id, blocco.id, blocco.descrizione)}
+                <!-- Nota/Descrizione con pulsante -->
+                <div class="nota-section">
+                    <button type="button" class="btn-nota" onclick="window.siafApp.toggleNotaDropdown(${immobile.id}, ${blocco.id})">
+                        📝 Aggiungi nota
+                    </button>
+                    <div id="nota-dropdown-${immobile.id}-${blocco.id}" class="nota-dropdown" style="display: none;">
+                        ${this.renderNotaDropdown(immobile.id, blocco.id, blocco.descrizione, blocco.descrizioneCustom)}
+                    </div>
+                </div>
 
-                <!-- Tipo Catasto -->
+                <!-- Tipo Catasto (solo per blocchi aggiuntivi) -->
                 ${blocco.id === 1 ? '' : this.renderTipoCatastoSelector(immobile.id, blocco.id, blocco.tipoCatasto)}
 
                 <!-- Righe Catastali -->
@@ -1710,6 +1724,27 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                 <button type="button" class="btn-add-catasto-row" onclick="window.siafApp.addRigaCatastale(${immobile.id}, ${blocco.id})">➕ Aggiungi Riga</button>
             </div>
         `).join('');
+    }
+
+    renderNotaDropdown(immobileId, bloccoId, selectedValue, customText) {
+        const options = [
+            { value: '', text: '-- Nessuna nota --' },
+            { value: 'parte_area_sedime', text: "parte di area di sedime" },
+            { value: 'area_sedime', text: "area di sedime" },
+            { value: 'area_cortiliva', text: "corte/aia" },
+            { value: 'custom', text: 'Altro (scrivi manualmente)' }
+        ];
+
+        return `
+            <select class="nota-select" id="nota-${immobileId}-${bloccoId}"
+                    onchange="window.siafApp.handleNotaChange(${immobileId}, ${bloccoId})">
+                ${options.map(opt => `<option value="${opt.value}" ${opt.value === selectedValue ? 'selected' : ''}>${opt.text}</option>`).join('')}
+            </select>
+            <textarea class="nota-custom" id="nota-custom-${immobileId}-${bloccoId}"
+                      placeholder="Inserisci nota personalizzata"
+                      onchange="window.siafApp.handleNotaCustomChange(${immobileId}, ${bloccoId})"
+                      style="${selectedValue === 'custom' ? 'display: block;' : 'display: none;'}">${customText || ''}</textarea>
+        `;
     }
 
     renderDescrizioneDropdown(immobileId, bloccoId, selectedValue) {
@@ -1947,12 +1982,81 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         console.log(`💾 Salvati dati intestatari immobile ${immobileId}`);
     }
 
+    addFirstBloccoCatastale(immobileId, tipo) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        if (immobile && immobile.blocchiCatastali.length === 0) {
+            const newBlocco = {
+                id: 1,
+                descrizione: '',
+                descrizioneCustom: '',
+                tipoCatasto: tipo,
+                righe: [tipo === 'fabbricati' ? this.createEmptyFabbricatoRow() : this.createEmptyTerrenoRow()]
+            };
+            immobile.blocchiCatastali.push(newBlocco);
+
+            // Re-renderizza i blocchi (da chip a blocco vero)
+            this.refreshBlocchiCatastali(immobileId);
+            this.isDirty = true;
+
+            console.log(`✅ Creato primo blocco catastale ${tipo} per immobile ${immobileId}`);
+        }
+    }
+
+    toggleNotaDropdown(immobileId, bloccoId) {
+        const dropdown = document.getElementById(`nota-dropdown-${immobileId}-${bloccoId}`);
+        if (dropdown) {
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+    }
+
+    handleNotaChange(immobileId, bloccoId) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        const blocco = immobile?.blocchiCatastali.find(b => b.id === bloccoId);
+
+        if (blocco) {
+            const select = document.getElementById(`nota-${immobileId}-${bloccoId}`);
+            const customTextarea = document.getElementById(`nota-custom-${immobileId}-${bloccoId}`);
+
+            if (select) {
+                blocco.descrizione = select.value;
+
+                // Mostra/nascondi textarea custom
+                if (customTextarea) {
+                    customTextarea.style.display = select.value === 'custom' ? 'block' : 'none';
+                    if (select.value === 'custom') {
+                        blocco.descrizioneCustom = customTextarea.value;
+                    } else {
+                        blocco.descrizioneCustom = '';
+                    }
+                }
+
+                this.isDirty = true;
+                console.log(`📝 Nota aggiornata per blocco ${bloccoId}: ${blocco.descrizione}`);
+            }
+        }
+    }
+
+    handleNotaCustomChange(immobileId, bloccoId) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        const blocco = immobile?.blocchiCatastali.find(b => b.id === bloccoId);
+
+        if (blocco) {
+            const customTextarea = document.getElementById(`nota-custom-${immobileId}-${bloccoId}`);
+            if (customTextarea) {
+                blocco.descrizioneCustom = customTextarea.value;
+                this.isDirty = true;
+                console.log(`📝 Nota custom aggiornata per blocco ${bloccoId}: ${blocco.descrizioneCustom}`);
+            }
+        }
+    }
+
     addBloccoCatastale(immobileId) {
         const immobile = this.immobili.find(i => i.id === immobileId);
         if (immobile) {
             const newBlocco = {
                 id: immobile.blocchiCatastali.length + 1,
                 descrizione: 'area_sedime',
+                descrizioneCustom: '',
                 tipoCatasto: 'terreni',
                 righe: [this.createEmptyTerrenoRow()]
             };
@@ -1982,8 +2086,15 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                     <button type="button" class="btn-remove-block" onclick="window.siafApp.removeBloccoCatastale(${immobileId}, ${blocco.id})">❌ Rimuovi Blocco</button>
                 </div>
 
-                <!-- Dropdown Descrizione -->
-                ${this.renderDescrizioneDropdown(immobileId, blocco.id, blocco.descrizione)}
+                <!-- Nota/Descrizione con pulsante -->
+                <div class="nota-section">
+                    <button type="button" class="btn-nota" onclick="window.siafApp.toggleNotaDropdown(${immobileId}, ${blocco.id})">
+                        📝 Aggiungi nota
+                    </button>
+                    <div id="nota-dropdown-${immobileId}-${blocco.id}" class="nota-dropdown" style="display: none;">
+                        ${this.renderNotaDropdown(immobileId, blocco.id, blocco.descrizione, blocco.descrizioneCustom)}
+                    </div>
+                </div>
 
                 <!-- Tipo Catasto -->
                 ${this.renderTipoCatastoSelector(immobileId, blocco.id, blocco.tipoCatasto)}
