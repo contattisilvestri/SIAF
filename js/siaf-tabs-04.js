@@ -5,7 +5,7 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 4,
-    patch: 4,
+    patch: 5,
     date: '31/10/2025',
     time: '09:45',
     description: 'Fix doppia generazione cartelle - prevenzione click multipli',
@@ -1628,11 +1628,20 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                 <div class="field-card">
                     <div class="field-header">
                         <h4>📋 Descrizione Catastale</h4>
-                        <button type="button" class="btn btn-sm" onclick="window.siafApp.addBloccoCatastale(${immobile.id})">➕ Aggiungi Blocco</button>
                     </div>
                     <div id="blocchi-${immobile.id}">
                         ${this.renderBlocchiCatastali(immobile)}
                     </div>
+                    ${immobile.blocchiCatastali.length > 0 ? `
+                        <div class="add-blocco-buttons">
+                            <button type="button" class="btn-add-blocco-tipo" onclick="window.siafApp.addBloccoCatastale(${immobile.id}, 'fabbricati')">
+                                🏢 Aggiungi blocco fabbricati
+                            </button>
+                            <button type="button" class="btn-add-blocco-tipo" onclick="window.siafApp.addBloccoCatastale(${immobile.id}, 'terreni')">
+                                🌾 Aggiungi blocco terreni
+                            </button>
+                        </div>
+                    ` : ''}
                 </div>
 
                 <!-- Confini -->
@@ -1712,9 +1721,6 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                         ${this.renderNotaDropdown(immobile.id, blocco.id, blocco.descrizione, blocco.descrizioneCustom)}
                     </div>
                 </div>
-
-                <!-- Tipo Catasto (solo per blocchi aggiuntivi) -->
-                ${blocco.id === 1 ? '' : this.renderTipoCatastoSelector(immobile.id, blocco.id, blocco.tipoCatasto)}
 
                 <!-- Righe Catastali -->
                 <div id="righe-${immobile.id}-${blocco.id}">
@@ -2052,64 +2058,26 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         }
     }
 
-    addBloccoCatastale(immobileId) {
+    addBloccoCatastale(immobileId, tipo) {
         const immobile = this.immobili.find(i => i.id === immobileId);
         if (immobile) {
             const newBlocco = {
                 id: immobile.blocchiCatastali.length + 1,
-                descrizione: 'area_sedime',
+                descrizione: '',
                 descrizioneCustom: '',
-                tipoCatasto: 'terreni',
-                righe: [this.createEmptyTerrenoRow()]
+                tipoCatasto: tipo,
+                righe: [tipo === 'fabbricati' ? this.createEmptyFabbricatoRow() : this.createEmptyTerrenoRow()]
             };
             immobile.blocchiCatastali.push(newBlocco);
 
-            // Invece di refresh completo, aggiungi solo il nuovo blocco
-            this.appendNewBlocco(immobileId, newBlocco);
+            // Refresh completo per mostrare anche i nuovi pulsanti
+            this.refreshBlocchiCatastali(immobileId);
             this.isDirty = true;
 
-            console.log(`✅ Aggiunto blocco catastale ${newBlocco.id} per immobile ${immobileId}`);
+            console.log(`✅ Aggiunto blocco catastale ${tipo} ${newBlocco.id} per immobile ${immobileId}`);
         }
     }
 
-    appendNewBlocco(immobileId, blocco) {
-        const container = document.getElementById(`blocchi-${immobileId}`);
-        if (container) {
-            const bloccoHtml = this.renderSingleBloccoCatastale(immobileId, blocco);
-            container.insertAdjacentHTML('beforeend', bloccoHtml);
-        }
-    }
-
-    renderSingleBloccoCatastale(immobileId, blocco) {
-        return `
-            <div id="blocco-${immobileId}-${blocco.id}" class="blocco-catastale">
-                <div class="blocco-header">
-                    <h4>📊 Blocco Catastale ${blocco.id}</h4>
-                    <button type="button" class="btn-remove-block" onclick="window.siafApp.removeBloccoCatastale(${immobileId}, ${blocco.id})">❌ Rimuovi Blocco</button>
-                </div>
-
-                <!-- Nota/Descrizione con pulsante -->
-                <div class="nota-section">
-                    <button type="button" class="btn-nota" onclick="window.siafApp.toggleNotaDropdown(${immobileId}, ${blocco.id})">
-                        📝 Aggiungi nota
-                    </button>
-                    <div id="nota-dropdown-${immobileId}-${blocco.id}" class="nota-dropdown" style="display: none;">
-                        ${this.renderNotaDropdown(immobileId, blocco.id, blocco.descrizione, blocco.descrizioneCustom)}
-                    </div>
-                </div>
-
-                <!-- Tipo Catasto -->
-                ${this.renderTipoCatastoSelector(immobileId, blocco.id, blocco.tipoCatasto)}
-
-                <!-- Righe Catastali -->
-                <div id="righe-${immobileId}-${blocco.id}">
-                    ${this.renderRigheCatastali(immobileId, blocco)}
-                </div>
-
-                <button type="button" class="btn-add-catasto-row" onclick="window.siafApp.addRigaCatastale(${immobileId}, ${blocco.id})">➕ Aggiungi Riga</button>
-            </div>
-        `;
-    }
 
     removeBloccoCatastale(immobileId, bloccoId) {
         const immobile = this.immobili.find(i => i.id === immobileId);
