@@ -16,13 +16,25 @@ class SiafDocumentGenerator {
     // BLOCCO 2: Inizializzazione pulsante e eventi
     initializeGenerateButton() {
         const generateBtn = document.getElementById('generate-documents');
-        
+
         if (generateBtn) {
-            generateBtn.addEventListener('click', () => {
+            // Previene click multipli con debounce
+            let lastClickTime = 0;
+            const DEBOUNCE_MS = 2000; // 2 secondi di debounce
+
+            generateBtn.addEventListener('click', (e) => {
+                const now = Date.now();
+                if (now - lastClickTime < DEBOUNCE_MS) {
+                    console.log('⚠️ Click ignorato - debounce attivo');
+                    e.preventDefault();
+                    return;
+                }
+                lastClickTime = now;
+
                 console.log('📁 Click genera documenti');
                 this.handleGenerateDocuments();
             });
-            console.log('✅ Pulsante genera documenti inizializzato');
+            console.log('✅ Pulsante genera documenti inizializzato con debounce');
         } else {
             console.error('❌ Pulsante generate-documents non trovato!');
         }
@@ -31,35 +43,55 @@ class SiafDocumentGenerator {
     // BLOCCO 3: Gestione principale del processo di generazione
     async handleGenerateDocuments() {
         if (this.isGenerating) {
-            console.log('⚠️ Generazione già in corso...');
+            console.log('⚠️ Generazione già in corso - richiesta ignorata');
             return;
         }
 
+        const generateBtn = document.getElementById('generate-documents');
+
         try {
             this.isGenerating = true;
+
+            // Lock forte sul bottone
+            if (generateBtn) {
+                generateBtn.disabled = true;
+                generateBtn.style.opacity = '0.5';
+                generateBtn.style.pointerEvents = 'none';
+            }
+
             this.showGenerateLoading();
 
             // STEP 1: Salva prima la pratica
             console.log('📝 Step 1: Salvataggio pratica...');
             const saveResult = await this.savePraticaFirst();
-            
+
             if (!saveResult.success) {
                 throw new Error('Errore salvataggio pratica: ' + saveResult.error);
             }
 
-            // STEP 2: Raccogli dati completi per generazione
-            console.log('📊 Step 2: Raccolta dati per generazione...');
-            const generationData = this.collectGenerationData(saveResult);
+            console.log('✅ Pratica salvata con protocollo:', saveResult.protocollo);
 
-            // STEP 3: Chiama backend per generazione cartelle/documenti
-            console.log('🏗️ Step 3: Generazione cartelle e documenti...');
+            // STEP 2: Ricarica dati DAL DATABASE (non dal frontend)
+            console.log('📊 Step 2: Ricaricamento dati dal database...');
+            const dbData = await this.loadPraticaFromDB(saveResult.protocollo);
+
+            if (!dbData.success) {
+                throw new Error('Errore caricamento pratica da DB: ' + dbData.error);
+            }
+
+            // STEP 3: Prepara dati per generazione usando dati dal DB
+            console.log('📦 Step 3: Preparazione dati per generazione...');
+            const generationData = this.prepareGenerationDataFromDB(dbData, saveResult.protocollo);
+
+            // STEP 4: Chiama backend per generazione cartelle/documenti
+            console.log('🏗️ Step 4: Generazione cartelle e documenti...');
             const generateResult = await this.callGenerateBackend(generationData);
 
             if (!generateResult.success) {
                 throw new Error('Errore generazione: ' + generateResult.error);
             }
 
-            // STEP 4: Mostra risultati
+            // STEP 5: Mostra risultati
             this.showGenerateSuccess(generateResult);
 
         } catch (error) {
@@ -67,6 +99,15 @@ class SiafDocumentGenerator {
             this.showGenerateError(error);
         } finally {
             this.isGenerating = false;
+
+            // Unlock bottone dopo 3 secondi per sicurezza
+            setTimeout(() => {
+                if (generateBtn) {
+                    generateBtn.disabled = false;
+                    generateBtn.style.opacity = '1';
+                    generateBtn.style.pointerEvents = 'auto';
+                }
+            }, 3000);
         }
     }
 
@@ -116,26 +157,60 @@ class SiafDocumentGenerator {
         return result;
     }
 
-   // BLOCCO 5: Raccolta e preparazione dati per generazione
-collectGenerationData(saveResult) {
-    const formData = window.siafApp ? window.siafApp.collectAllFormData() : {};
-    
+   // BLOCCO 5: Caricamento pratica dal database
+async loadPraticaFromDB(protocollo) {
+    try {
+        const params = new URLSearchParams({
+            action: 'load',
+            protocollo: protocollo
+        });
+
+        const url = `${this.appsScriptUrl}?${params}`;
+        console.log('🔄 Caricando pratica dal DB:', protocollo);
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (!result.success) {
+            throw new Error(result.error || 'Errore caricamento pratica da DB');
+        }
+
+        console.log('✅ Pratica caricata dal DB:', result);
+        return result;
+
+    } catch (error) {
+        console.error('❌ Errore caricamento pratica da DB:', error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+   // BLOCCO 5B: Preparazione dati per generazione usando dati dal DATABASE
+prepareGenerationDataFromDB(dbData, protocollo) {
     const generationData = {
-        protocollo: saveResult.protocollo,
-        lettera: formData.lettera || '',
-        operatore: formData.operatore || '',
-        data_compilazione: formData.data_compilazione || '',
-        venditori: formData.venditori || [],
-        
+        protocollo: protocollo,
+        lettera: dbData.lettera || '',
+        operatore: dbData.operatore || '',
+        data_compilazione: dbData.data_compilazione || '',
+        venditori: dbData.venditori || [],
+        immobili: dbData.immobili || [],
+
         anno: new Date().getFullYear(),
         generazione_timestamp: new Date().toISOString(),
-        
+
         documenti_richiesti: [
             'incarico_mediazione'
         ]
     };
 
-    console.log('📦 Dati per generazione:', generationData);
+    console.log('📦 Dati preparati dal DB per generazione:', generationData);
     return generationData;
 }
 
