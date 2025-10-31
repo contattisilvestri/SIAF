@@ -4,8 +4,8 @@
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
-    minor: 3,
-    patch: 9,
+    minor: 4,
+    patch: 0,
     date: '31/10/2025',
     time: '09:45',
     description: 'Fix doppia generazione cartelle - prevenzione click multipli',
