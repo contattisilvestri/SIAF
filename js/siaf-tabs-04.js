@@ -547,7 +547,7 @@ class SiafApp {
             return;
         }
 
-        const lettera = selectedOption.dataset.letter;
+        const lettera = selectedOption.dataset.lettera;
         
         if (!lettera) {
             console.error('❌ Lettera operatore non trovata');
