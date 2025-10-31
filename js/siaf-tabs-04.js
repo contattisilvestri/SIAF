@@ -1179,7 +1179,7 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
             // Salva confini
             this.saveAllConfiniData(immobile.id);
 
-            console.log(`✅ Salvato immobile ${immobile.id}:`, immobile);
+            console.log(`✅ Salvato immobile ${immobile.id}:`, JSON.stringify(immobile, null, 2));
         });
     }
 
@@ -2104,21 +2104,51 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
     saveRigheCatastaliData(immobileId, bloccoId) {
         const immobile = this.immobili.find(i => i.id === immobileId);
         const blocco = immobile?.blocchiCatastali.find(b => b.id === bloccoId);
-        if (!blocco) return;
+        if (!blocco) {
+            console.warn(`❌ Blocco catastale non trovato: immobile ${immobileId}, blocco ${bloccoId}`);
+            return;
+        }
 
-        blocco.righe.forEach(riga => {
+        console.log(`🔍 DEBUG SAVE: Salvando righe catastali per immobile ${immobileId}, blocco ${bloccoId}`);
+        console.log(`🔍 DEBUG SAVE: Numero righe da salvare: ${blocco.righe.length}`);
+
+        blocco.righe.forEach((riga, rigaIndex) => {
+            console.log(`🔍 DEBUG SAVE: Processando riga ${rigaIndex + 1}, ID: ${riga.id}`);
+
             // Salva tutti i campi della riga catastale
             const fields = ['foglio', 'mappale', 'subalterno', 'categoria', 'classe', 'consistenza', 'rendita', 'superficie', 'reddito_dominicale', 'reddito_agrario'];
 
+            let campiSalvati = 0;
+            let campiVuoti = 0;
+
             fields.forEach(field => {
-                const fieldElement = document.getElementById(`${field}_${immobileId}_${bloccoId}_${riga.id}`);
+                const fieldId = `${field}_${immobileId}_${bloccoId}_${riga.id}`;
+                const fieldElement = document.getElementById(fieldId);
+
                 if (fieldElement) {
-                    riga[field] = fieldElement.value || '';
+                    const valorePrecedente = riga[field];
+                    const nuovoValore = fieldElement.value || '';
+                    riga[field] = nuovoValore;
+
+                    if (nuovoValore.trim() !== '') {
+                        campiSalvati++;
+                        console.log(`  ✅ ${field}: "${valorePrecedente}" → "${nuovoValore}"`);
+                    } else {
+                        campiVuoti++;
+                        if (valorePrecedente && valorePrecedente.trim() !== '') {
+                            console.log(`  ⚠️ ${field}: "${valorePrecedente}" → VUOTO (perso!)`);
+                        }
+                    }
+                } else {
+                    console.warn(`  ❌ Campo HTML non trovato: ${fieldId}`);
                 }
             });
+
+            console.log(`  📊 Riga ${rigaIndex + 1}: ${campiSalvati} campi salvati, ${campiVuoti} campi vuoti`);
         });
 
-        console.log(`💾 Salvati dati righe catastali ${immobileId}-${bloccoId}`);
+        console.log(`💾 ✅ Completato salvataggio righe catastali ${immobileId}-${bloccoId}`);
+        console.log(`💾 📋 Dati finali blocco:`, JSON.stringify(blocco, null, 2));
     }
 
     addMappaleConfine(immobileId, direzione) {
