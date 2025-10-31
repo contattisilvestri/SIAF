@@ -5,11 +5,11 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 3,
-    patch: 4,
+    patch: 6,
     date: '31/10/2025',
-    time: '09:21',
-    description: 'Versioning dinamico dai JS',
-    color: '#E91E63'  // Rosa - cambierò questo colore ad ogni versione
+    time: '09:30',
+    description: 'Fix lettera vuota - data-letter -> data-lettera',
+    color: '#4CAF50'  // Verde - bugfix operatori
 };
 
 class SiafApp {
@@ -931,7 +931,7 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
 
         const finalData = {
             // Dati operatore
-            lettera: selectedOption?.dataset.letter || '',
+            lettera: selectedOption?.dataset.lettera || '',
             operatore: selectedOption?.textContent || '',
             operatore_id: selectedOption?.value || '', // ID operatore per mapping template
 
