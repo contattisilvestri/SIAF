@@ -1,5 +1,5 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.3.2-FINAL-2025-10-31-09:11
+// 🚀 VERSION: SIAF-v2.3.3-FINAL-2025-10-31-09:16
 
 class SiafApp {
     constructor() {
@@ -2376,6 +2376,6 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ SIAF App pronta!');
 
     // 🚀 VERSION FINALE - Sempre ultimo messaggio in console
-    console.log('%c🚀 SIAF SYSTEM v2.3.2-FINAL-2025-10-31-09:11 🚀', 'background: #4CAF50; color: white; font-size: 16px; font-weight: bold; padding: 10px; border-radius: 5px;');
-    console.log('%c📅 Last Update: 31/10/2025 09:11 - Versioning migliorato + colori randomici', 'background: #2196F3; color: white; font-size: 12px; padding: 5px;');
+    console.log('%c🚀 SIAF SYSTEM v2.3.3-FINAL-2025-10-31-09:16 🚀', 'background: #4CAF50; color: white; font-size: 16px; font-weight: bold; padding: 10px; border-radius: 5px;');
+    console.log('%c📅 Last Update: 31/10/2025 09:16 - Fix cache JS + RegExp error', 'background: #2196F3; color: white; font-size: 12px; padding: 5px;');
 });
