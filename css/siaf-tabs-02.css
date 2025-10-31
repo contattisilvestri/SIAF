@@ -431,16 +431,118 @@ input:invalid, select:invalid {
     }
 }
 
+/* ========== CHIP BUTTONS CATASTO ========== */
+.tipo-selection-chips {
+    display: flex;
+    gap: 16px;
+    padding: 24px;
+    justify-content: center;
+    align-items: center;
+}
+
+.chip-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: #ffffff;
+    border: 2px solid #e9ecef;
+    border-radius: 24px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.chip-button:hover {
+    background: #0066cc;
+    color: #ffffff;
+    border-color: #0066cc;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,102,204,0.2);
+}
+
+.chip-button:active {
+    transform: translateY(0);
+}
+
+/* ========== NOTA SECTION ========== */
+.nota-section {
+    margin: 16px 0;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.btn-nota {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-nota:hover {
+    background: #0066cc;
+    color: #ffffff;
+    border-color: #0066cc;
+}
+
+.nota-dropdown {
+    margin-top: 12px;
+    padding: 12px;
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+}
+
+.nota-select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #ffffff;
+}
+
+.nota-custom {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+}
+
 @media (max-width: 480px) {
     .tab-btn .icon {
         font-size: 16px;
     }
-    
+
     .tab-btn .text {
         display: none;
     }
-    
+
     .field-card {
         padding: 16px;
+    }
+
+    .tipo-selection-chips {
+        flex-direction: column;
+        padding: 16px;
+    }
+
+    .chip-button {
+        width: 100%;
+        justify-content: center;
     }
 }
