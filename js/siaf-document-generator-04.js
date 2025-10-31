@@ -194,9 +194,12 @@ async loadPraticaFromDB(protocollo) {
 
    // BLOCCO 5B: Preparazione dati per generazione usando dati dal DATABASE
 prepareGenerationDataFromDB(dbData, protocollo) {
+    // Estrai lettera dal protocollo (formato: "A/2025/123" -> "A")
+    const lettera = this.extractLetteraFromProtocollo(protocollo);
+
     const generationData = {
         protocollo: protocollo,
-        lettera: dbData.lettera || '',
+        lettera: lettera,  // ✅ Estratta dal protocollo
         operatore: dbData.operatore || '',
         data_compilazione: dbData.data_compilazione || '',
         venditori: dbData.venditori || [],
@@ -212,6 +215,14 @@ prepareGenerationDataFromDB(dbData, protocollo) {
 
     console.log('📦 Dati preparati dal DB per generazione:', generationData);
     return generationData;
+}
+
+   // BLOCCO 5C: Estrazione lettera dal protocollo
+extractLetteraFromProtocollo(protocollo) {
+    // Formato protocollo: "A/2025/123" -> estrae "A"
+    if (!protocollo) return '';
+    const parts = protocollo.split('/');
+    return parts.length >= 1 ? parts[0] : '';
 }
 
    // BLOCCO 6: Chiamata al backend per generazione documenti
