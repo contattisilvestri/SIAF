@@ -92,13 +92,16 @@ class SiafDocumentGenerator {
     }
 
     async submitToAppsScript(formData) {
-        const params = new URLSearchParams({
-            action: 'save',
-            data: JSON.stringify(formData)
+        const response = await fetch(this.appsScriptUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                action: 'save',
+                data: JSON.stringify(formData)
+            })
         });
-        
-        const url = `${this.appsScriptUrl}?${params}`;
-        const response = await fetch(url);
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
