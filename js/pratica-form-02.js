@@ -441,7 +441,16 @@ class SiafApp {
         this.showSaveLoading();
 
         try {
-            const response = await fetch(`${this.appsScriptUrl}?action=save&data=${encodeURIComponent(JSON.stringify(formData))}`);
+            const response = await fetch(this.appsScriptUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    action: 'save',
+                    data: JSON.stringify(formData)
+                })
+            });
             const result = await response.json();
 
             if (result.success) {
@@ -472,7 +481,16 @@ class SiafApp {
         this.showSaveLoading();
 
         try {
-            const response = await fetch(`${this.appsScriptUrl}?action=generate_documents&data=${encodeURIComponent(JSON.stringify(formData))}`);
+            const response = await fetch(this.appsScriptUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    action: 'generate_documents',
+                    data: JSON.stringify(formData)
+                })
+            });
             const result = await response.json();
 
             if (result.success) {
