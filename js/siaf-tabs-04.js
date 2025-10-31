@@ -5,7 +5,7 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 4,
-    patch: 6,
+    patch: 7,
     date: '31/10/2025',
     time: '09:45',
     description: 'Fix doppia generazione cartelle - prevenzione click multipli',
@@ -1697,9 +1697,7 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
             <div id="blocco-${immobile.id}-${blocco.id}" class="blocco-catastale">
                 <div class="blocco-header">
                     <h4>📊 Blocco Catastale ${blocco.id}</h4>
-                    ${immobile.blocchiCatastali.length > 1 ?
-                        `<button type="button" class="btn-remove-block" onclick="window.siafApp.removeBloccoCatastale(${immobile.id}, ${blocco.id})">❌ Rimuovi Blocco</button>` :
-                        ''}
+                    <button type="button" class="btn-remove-block" onclick="window.siafApp.removeBloccoCatastale(${immobile.id}, ${blocco.id})">❌ Rimuovi Blocco</button>
                 </div>
 
                 <!-- Nota/Descrizione con pulsante -->
@@ -2090,9 +2088,12 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
 
     removeBloccoCatastale(immobileId, bloccoId) {
         const immobile = this.immobili.find(i => i.id === immobileId);
-        if (immobile && immobile.blocchiCatastali.length > 1) {
+        if (immobile) {
+            // Permette di rimuovere anche l'ultimo blocco per tornare ai chip buttons
             immobile.blocchiCatastali = immobile.blocchiCatastali.filter(b => b.id !== bloccoId);
             this.refreshBlocchiCatastali(immobileId);
+            this.isDirty = true;
+            console.log(`🗑️ Rimosso blocco ${bloccoId}, blocchi rimanenti: ${immobile.blocchiCatastali.length}`);
         }
     }
 
