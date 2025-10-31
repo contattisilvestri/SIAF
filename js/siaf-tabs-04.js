@@ -5,11 +5,11 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 3,
-    patch: 7,
+    patch: 8,
     date: '31/10/2025',
-    time: '09:35',
-    description: 'Autocompletamento ricerca protocolli - UX migliorata',
-    color: '#9C27B0'  // Viola - nuova feature
+    time: '09:40',
+    description: 'Operatore bloccato in edit - sicurezza protocolli',
+    color: '#FF5722'  // Arancione - sicurezza
 };
 
 class SiafApp {
@@ -420,6 +420,11 @@ class SiafApp {
                         break;
                     }
                 }
+
+                // Disabilita dropdown operatore in modalità edit
+                if (this.praticaMode === 'edit') {
+                    this.lockOperatoreField(operatoreSelect, praticaData.operatore);
+                }
             }
         }
 
@@ -445,6 +450,42 @@ class SiafApp {
         if (praticaData.immobili && Array.isArray(praticaData.immobili)) {
             this.populateImmobili(praticaData.immobili);
         }
+    }
+
+    lockOperatoreField(operatoreSelect, operatoreName) {
+        // Disabilita il dropdown
+        operatoreSelect.disabled = true;
+
+        // Aggiunge stile visivo per indicare che è bloccato
+        operatoreSelect.style.backgroundColor = '#f8f9fa';
+        operatoreSelect.style.color = '#666';
+        operatoreSelect.style.cursor = 'not-allowed';
+
+        // Aggiunge icona di blocco se non è già presente
+        const existingLock = operatoreSelect.parentNode.querySelector('.lock-indicator');
+        if (!existingLock) {
+            const lockIndicator = document.createElement('span');
+            lockIndicator.className = 'lock-indicator';
+            lockIndicator.innerHTML = '🔒';
+            lockIndicator.style.cssText = `
+                position: absolute;
+                right: 30px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #999;
+                font-size: 14px;
+                pointer-events: none;
+            `;
+
+            // Assicura che il parent abbia position relative
+            operatoreSelect.parentNode.style.position = 'relative';
+            operatoreSelect.parentNode.appendChild(lockIndicator);
+        }
+
+        // Aggiunge tooltip informativo
+        operatoreSelect.title = `Operatore bloccato: ${operatoreName}\nL'operatore non può essere modificato per pratiche esistenti`;
+
+        console.log(`🔒 Operatore bloccato in modalità edit: ${operatoreName}`);
     }
 
     populateImmobili(immobiliData) {
@@ -598,6 +639,33 @@ class SiafApp {
             protocolloField.value = '';
             protocolloField.placeholder = 'Seleziona operatore...';
             protocolloField.className = 'readonly-field';
+        }
+
+        // Sblocca campo operatore per nuove pratiche
+        this.unlockOperatoreField();
+    }
+
+    unlockOperatoreField() {
+        const operatoreSelect = document.getElementById('operatore');
+        if (operatoreSelect) {
+            // Riabilita il dropdown
+            operatoreSelect.disabled = false;
+
+            // Ripristina stile normale
+            operatoreSelect.style.backgroundColor = '';
+            operatoreSelect.style.color = '';
+            operatoreSelect.style.cursor = '';
+
+            // Rimuove icona di blocco se presente
+            const lockIndicator = operatoreSelect.parentNode.querySelector('.lock-indicator');
+            if (lockIndicator) {
+                lockIndicator.remove();
+            }
+
+            // Rimuove tooltip
+            operatoreSelect.title = '';
+
+            console.log('🔓 Campo operatore sbloccato per nuova pratica');
         }
     }
 
