@@ -467,6 +467,42 @@ input:invalid, select:invalid {
     transform: translateY(0);
 }
 
+/* ========== ADD BLOCCO BUTTONS ========== */
+.add-blocco-buttons {
+    display: flex;
+    gap: 12px;
+    padding: 16px 0;
+    justify-content: center;
+    margin-top: 16px;
+    border-top: 1px solid #e9ecef;
+}
+
+.btn-add-blocco-tipo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #ffffff;
+    border: 1px solid #0066cc;
+    border-radius: 8px;
+    color: #0066cc;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-add-blocco-tipo:hover {
+    background: #0066cc;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,102,204,0.2);
+}
+
+.btn-add-blocco-tipo:active {
+    transform: translateY(0);
+}
+
 /* ========== NOTA SECTION ========== */
 .nota-section {
     margin: 16px 0;
@@ -542,6 +578,15 @@ input:invalid, select:invalid {
     }
 
     .chip-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .add-blocco-buttons {
+        flex-direction: column;
+    }
+
+    .btn-add-blocco-tipo {
         width: 100%;
         justify-content: center;
     }
