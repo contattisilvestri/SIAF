@@ -5,7 +5,7 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 4,
-    patch: 1,
+    patch: 2,
     date: '31/10/2025',
     time: '09:45',
     description: 'Fix doppia generazione cartelle - prevenzione click multipli',
@@ -1538,11 +1538,10 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
             subalterno: '',
             categoria: '',
             classe: '',
-            consistenza: '',
-            rendita: '',
-            superficie: '',
-            reddito_dominicale: '',
-            reddito_agrario: ''
+            vani_mq: '',
+            superfici: '',
+            indirizzo_piano: '',
+            rendita: ''
         };
     }
 
@@ -1551,14 +1550,12 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
             id: 1,
             foglio: '',
             mappale: '',
-            subalterno: '',
-            categoria: '',
+            porzione: '',
+            qualita: '',
             classe: '',
-            consistenza: '',
-            rendita: '',
-            superficie: '',
-            reddito_dominicale: '',
-            reddito_agrario: ''
+            metri_quadrati: '',
+            dominicale: '',
+            agrario: ''
         };
     }
 
@@ -1775,7 +1772,9 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                 <div><label>Sub.</label><input type="text" id="subalterno_${immobileId}_${bloccoId}_${riga.id}" value="${riga.subalterno || ''}" placeholder="-"></div>
                 <div><label>Categoria</label><input type="text" id="categoria_${immobileId}_${bloccoId}_${riga.id}" value="${riga.categoria || ''}" placeholder="A/3"></div>
                 <div><label>Classe</label><input type="text" id="classe_${immobileId}_${bloccoId}_${riga.id}" value="${riga.classe || ''}" placeholder="1"></div>
-                <div><label>Consistenza</label><input type="text" id="consistenza_${immobileId}_${bloccoId}_${riga.id}" value="${riga.consistenza || ''}" placeholder="5,5"></div>
+                <div><label>Vani/mq</label><input type="text" id="vani_mq_${immobileId}_${bloccoId}_${riga.id}" value="${riga.vani_mq || ''}" placeholder="5,5"></div>
+                <div><label>Superfici</label><input type="text" id="superfici_${immobileId}_${bloccoId}_${riga.id}" value="${riga.superfici || ''}" placeholder="128"></div>
+                <div><label>Indirizzo/Piano</label><input type="text" id="indirizzo_piano_${immobileId}_${bloccoId}_${riga.id}" value="${riga.indirizzo_piano || ''}" placeholder="pt-1"></div>
                 <div><label>Rendita</label><input type="text" id="rendita_${immobileId}_${bloccoId}_${riga.id}" value="${riga.rendita || ''}" placeholder="298,25"></div>
             </div>
         `;
@@ -1786,11 +1785,12 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
             <div class="catasto-fields">
                 <div><label>Fog.</label><input type="text" id="foglio_${immobileId}_${bloccoId}_${riga.id}" value="${riga.foglio || ''}" placeholder="8"></div>
                 <div><label>Map.</label><input type="text" id="mappale_${immobileId}_${bloccoId}_${riga.id}" value="${riga.mappale || ''}" placeholder="1335"></div>
-                <div><label>Categoria</label><input type="text" id="categoria_${immobileId}_${bloccoId}_${riga.id}" value="${riga.categoria || ''}" placeholder="ente urbano"></div>
+                <div><label>Porz.</label><input type="text" id="porzione_${immobileId}_${bloccoId}_${riga.id}" value="${riga.porzione || ''}" placeholder="-"></div>
+                <div><label>Qualità</label><input type="text" id="qualita_${immobileId}_${bloccoId}_${riga.id}" value="${riga.qualita || ''}" placeholder="ente urbano"></div>
                 <div><label>Classe</label><input type="text" id="classe_${immobileId}_${bloccoId}_${riga.id}" value="${riga.classe || ''}" placeholder="1"></div>
-                <div><label>Superficie</label><input type="text" id="superficie_${immobileId}_${bloccoId}_${riga.id}" value="${riga.superficie || ''}" placeholder="745"></div>
-                <div><label>R.Dominicale</label><input type="text" id="reddito_dominicale_${immobileId}_${bloccoId}_${riga.id}" value="${riga.reddito_dominicale || ''}" placeholder="0,62"></div>
-                <div><label>R.Agrario</label><input type="text" id="reddito_agrario_${immobileId}_${bloccoId}_${riga.id}" value="${riga.reddito_agrario || ''}" placeholder="0,34"></div>
+                <div><label>Mq</label><input type="text" id="metri_quadrati_${immobileId}_${bloccoId}_${riga.id}" value="${riga.metri_quadrati || ''}" placeholder="745"></div>
+                <div><label>Dominicale</label><input type="text" id="dominicale_${immobileId}_${bloccoId}_${riga.id}" value="${riga.dominicale || ''}" placeholder="0,62"></div>
+                <div><label>Agrario</label><input type="text" id="agrario_${immobileId}_${bloccoId}_${riga.id}" value="${riga.agrario || ''}" placeholder="0,34"></div>
             </div>
         `;
     }
@@ -2114,13 +2114,17 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         }
 
         console.log(`🔍 DEBUG SAVE: Salvando righe catastali per immobile ${immobileId}, blocco ${bloccoId}`);
+        console.log(`🔍 DEBUG SAVE: Tipo catasto: ${blocco.tipoCatasto}`);
         console.log(`🔍 DEBUG SAVE: Numero righe da salvare: ${blocco.righe.length}`);
+
+        // Definisci campi diversi in base al tipo di catasto
+        const fieldsFabbricati = ['foglio', 'mappale', 'subalterno', 'categoria', 'classe', 'vani_mq', 'superfici', 'indirizzo_piano', 'rendita'];
+        const fieldsTerreni = ['foglio', 'mappale', 'porzione', 'qualita', 'classe', 'metri_quadrati', 'dominicale', 'agrario'];
+
+        const fields = blocco.tipoCatasto === 'fabbricati' ? fieldsFabbricati : fieldsTerreni;
 
         blocco.righe.forEach((riga, rigaIndex) => {
             console.log(`🔍 DEBUG SAVE: Processando riga ${rigaIndex + 1}, ID: ${riga.id}`);
-
-            // Salva tutti i campi della riga catastale
-            const fields = ['foglio', 'mappale', 'subalterno', 'categoria', 'classe', 'consistenza', 'rendita', 'superficie', 'reddito_dominicale', 'reddito_agrario'];
 
             let campiSalvati = 0;
             let campiVuoti = 0;
@@ -2221,25 +2225,43 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         const blocco = immobile?.blocchiCatastali.find(b => b.id === bloccoId);
 
         if (blocco) {
-            const newRiga = {
-                id: blocco.righe.length + 1,
-                foglio: '',
-                mappale: '',
-                subalterno: '',
-                categoria: '',
-                classe: '',
-                consistenza: '',
-                rendita: '',
-                superficie: '',
-                reddito_dominicale: '',
-                reddito_agrario: ''
+            // Crea riga con struttura corretta in base al tipo di catasto
+            let newRiga = {
+                id: blocco.righe.length + 1
             };
+
+            if (blocco.tipoCatasto === 'fabbricati') {
+                newRiga = {
+                    ...newRiga,
+                    foglio: '',
+                    mappale: '',
+                    subalterno: '',
+                    categoria: '',
+                    classe: '',
+                    vani_mq: '',
+                    superfici: '',
+                    indirizzo_piano: '',
+                    rendita: ''
+                };
+            } else {
+                newRiga = {
+                    ...newRiga,
+                    foglio: '',
+                    mappale: '',
+                    porzione: '',
+                    qualita: '',
+                    classe: '',
+                    metri_quadrati: '',
+                    dominicale: '',
+                    agrario: ''
+                };
+            }
 
             blocco.righe.push(newRiga);
             this.appendNewRigaCatastale(immobileId, bloccoId, newRiga);
             this.isDirty = true;
 
-            console.log(`✅ Aggiunta riga catastale ${newRiga.id} per blocco ${bloccoId}`);
+            console.log(`✅ Aggiunta riga catastale ${newRiga.id} per blocco ${bloccoId} (tipo: ${blocco.tipoCatasto})`);
         }
     }
 
@@ -2256,45 +2278,65 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         const blocco = immobile?.blocchiCatastali.find(b => b.id === bloccoId);
         const isFabbricati = blocco?.tipoCatasto === 'fabbricati';
 
-        return `
-            <div class="catasto-row">
-                <div class="catasto-fields">
-                    <input type="text" id="foglio_${immobileId}_${bloccoId}_${riga.id}"
-                           value="${riga.foglio}" placeholder="Foglio">
-                    <input type="text" id="mappale_${immobileId}_${bloccoId}_${riga.id}"
-                           value="${riga.mappale}" placeholder="Mappale">
-                    ${isFabbricati ?
-                        `<input type="text" id="subalterno_${immobileId}_${bloccoId}_${riga.id}"
-                                value="${riga.subalterno}" placeholder="Sub">` : ''}
-                    ${isFabbricati ?
-                        `<input type="text" id="categoria_${immobileId}_${bloccoId}_${riga.id}"
-                                value="${riga.categoria}" placeholder="Cat">` : ''}
-                    ${isFabbricati ?
-                        `<input type="text" id="classe_${immobileId}_${bloccoId}_${riga.id}"
-                                value="${riga.classe}" placeholder="Classe">` : ''}
-                    ${isFabbricati ?
-                        `<input type="text" id="consistenza_${immobileId}_${bloccoId}_${riga.id}"
-                                value="${riga.consistenza}" placeholder="Consist">` : ''}
-                    ${isFabbricati ?
-                        `<input type="text" id="rendita_${immobileId}_${bloccoId}_${riga.id}"
-                                value="${riga.rendita}" placeholder="Rendita">` : ''}
-                    ${!isFabbricati ?
-                        `<input type="text" id="superficie_${immobileId}_${bloccoId}_${riga.id}"
-                                value="${riga.superficie}" placeholder="Superficie">` : ''}
-                    ${!isFabbricati ?
-                        `<input type="text" id="reddito_dominicale_${immobileId}_${bloccoId}_${riga.id}"
-                                value="${riga.reddito_dominicale}" placeholder="R.Dom">` : ''}
-                    ${!isFabbricati ?
-                        `<input type="text" id="reddito_agrario_${immobileId}_${bloccoId}_${riga.id}"
-                                value="${riga.reddito_agrario}" placeholder="R.Agr">` : ''}
+        if (isFabbricati) {
+            return `
+                <div class="catasto-row">
+                    <div class="catasto-fields">
+                        <input type="text" id="foglio_${immobileId}_${bloccoId}_${riga.id}"
+                               value="${riga.foglio || ''}" placeholder="Foglio">
+                        <input type="text" id="mappale_${immobileId}_${bloccoId}_${riga.id}"
+                               value="${riga.mappale || ''}" placeholder="Mappale">
+                        <input type="text" id="subalterno_${immobileId}_${bloccoId}_${riga.id}"
+                               value="${riga.subalterno || ''}" placeholder="Sub">
+                        <input type="text" id="categoria_${immobileId}_${bloccoId}_${riga.id}"
+                               value="${riga.categoria || ''}" placeholder="Cat">
+                        <input type="text" id="classe_${immobileId}_${bloccoId}_${riga.id}"
+                               value="${riga.classe || ''}" placeholder="Classe">
+                        <input type="text" id="vani_mq_${immobileId}_${bloccoId}_${riga.id}"
+                               value="${riga.vani_mq || ''}" placeholder="Vani/mq">
+                        <input type="text" id="superfici_${immobileId}_${bloccoId}_${riga.id}"
+                               value="${riga.superfici || ''}" placeholder="Superfici">
+                        <input type="text" id="indirizzo_piano_${immobileId}_${bloccoId}_${riga.id}"
+                               value="${riga.indirizzo_piano || ''}" placeholder="Ind/Piano">
+                        <input type="text" id="rendita_${immobileId}_${bloccoId}_${riga.id}"
+                               value="${riga.rendita || ''}" placeholder="Rendita">
+                    </div>
+                    ${showRemoveButton ?
+                        `<button type="button" class="btn-remove-mappale"
+                                 onclick="window.siafApp.removeRigaCatastale(${immobileId}, ${bloccoId}, ${riga.id})">
+                            ❌ Rimuovi
+                         </button>` : ''}
                 </div>
-                ${showRemoveButton ?
-                    `<button type="button" class="btn-remove-mappale"
-                             onclick="window.siafApp.removeRigaCatastale(${immobileId}, ${bloccoId}, ${riga.id})">
-                        ❌ Rimuovi
-                     </button>` : ''}
-            </div>
-        `;
+            `;
+        } else {
+            return `
+                <div class="catasto-row">
+                    <div class="catasto-fields">
+                        <input type="text" id="foglio_${immobileId}_${bloccoId}_${riga.id}"
+                               value="${riga.foglio || ''}" placeholder="Foglio">
+                        <input type="text" id="mappale_${immobileId}_${bloccoId}_${riga.id}"
+                               value="${riga.mappale || ''}" placeholder="Mappale">
+                        <input type="text" id="porzione_${immobileId}_${bloccoId}_${riga.id}"
+                               value="${riga.porzione || ''}" placeholder="Porz">
+                        <input type="text" id="qualita_${immobileId}_${bloccoId}_${riga.id}"
+                               value="${riga.qualita || ''}" placeholder="Qualità">
+                        <input type="text" id="classe_${immobileId}_${bloccoId}_${riga.id}"
+                               value="${riga.classe || ''}" placeholder="Classe">
+                        <input type="text" id="metri_quadrati_${immobileId}_${bloccoId}_${riga.id}"
+                               value="${riga.metri_quadrati || ''}" placeholder="Mq">
+                        <input type="text" id="dominicale_${immobileId}_${bloccoId}_${riga.id}"
+                               value="${riga.dominicale || ''}" placeholder="Dominicale">
+                        <input type="text" id="agrario_${immobileId}_${bloccoId}_${riga.id}"
+                               value="${riga.agrario || ''}" placeholder="Agrario">
+                    </div>
+                    ${showRemoveButton ?
+                        `<button type="button" class="btn-remove-mappale"
+                                 onclick="window.siafApp.removeRigaCatastale(${immobileId}, ${bloccoId}, ${riga.id})">
+                            ❌ Rimuovi
+                         </button>` : ''}
+                </div>
+            `;
+        }
     }
 
     // ========== FUNZIONI MAPPALI CONFINI (APPEND-ONLY) ==========
