@@ -5,7 +5,7 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 4,
-    patch: 3,
+    patch: 4,
     date: '31/10/2025',
     time: '09:45',
     description: 'Fix doppia generazione cartelle - prevenzione click multipli',
@@ -1729,10 +1729,12 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
     renderNotaDropdown(immobileId, bloccoId, selectedValue, customText) {
         const options = [
             { value: '', text: '-- Nessuna nota --' },
-            { value: 'parte_area_sedime', text: "parte di area di sedime" },
-            { value: 'area_sedime', text: "area di sedime" },
-            { value: 'area_cortiliva', text: "corte/aia" },
-            { value: 'custom', text: 'Altro (scrivi manualmente)' }
+            { value: 'area_sedime', text: "l'area di sedime di pertinenza è distinta nel catasto dei terreni al" },
+            { value: 'area_cortiliva', text: "l'area cortiliva di pertinenza è distinta nel catasto dei terreni al" },
+            { value: 'parte_area_sedime', text: "parte dell'area di sedime di pertinenza è distinta nel catasto dei terreni al" },
+            { value: 'parte_area_cortiliva', text: "parte dell'area cortiliva di pertinenza è distinta nel catasto dei terreni al" },
+            { value: 'area_sedime_e_cortiliva', text: "l'area di sedime e parte dell'area cortiliva di pertinenza è distinta nel catasto dei terreni al" },
+            { value: 'custom', text: 'Inserisci testo manualmente' }
         ];
 
         return `
