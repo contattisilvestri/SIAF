@@ -1,5 +1,16 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.3.3-FINAL-2025-10-31-09:16
+// 🚀 VERSION: SIAF-v2.3.4-FINAL-2025-10-31-09:21
+
+// Sistema versioning dinamico
+window.SIAF_VERSION = {
+    major: 2,
+    minor: 3,
+    patch: 4,
+    date: '31/10/2025',
+    time: '09:21',
+    description: 'Versioning dinamico dai JS',
+    color: '#E91E63'  // Rosa - cambierò questo colore ad ogni versione
+};
 
 class SiafApp {
     constructor() {
@@ -2366,6 +2377,54 @@ const COMUNI_FREQUENTI_DEFAULT = [
     { comune: "Bondeno", provincia: "Ferrara" }
 ];
 
+// BLOCCO 6: Sistema versioning dinamico
+function updateVersionIndicator() {
+    const version = window.SIAF_VERSION;
+    const indicator = document.getElementById('version-indicator');
+
+    if (indicator && version) {
+        // Aggiorna contenuto
+        indicator.textContent = `📅 SIAF v${version.major}.${version.minor}.${version.patch} - ${version.date.slice(0, 5)} ${version.time}`;
+
+        // Aggiorna colore (con variazione randomica)
+        const colors = ['#FF5722', '#9C27B0', '#3F51B5', '#009688', '#FF9800', '#E91E63', '#673AB7', '#4CAF50', '#F44336', '#2196F3'];
+        const baseColor = version.color;
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        indicator.style.background = randomColor;
+
+        // Aggiungi animazione e eventi
+        indicator.style.animation = 'pulse 2s infinite';
+
+        // Aggiungi CSS per animazione e hover
+        if (!document.getElementById('version-styles')) {
+            const style = document.createElement('style');
+            style.id = 'version-styles';
+            style.textContent = `
+                @keyframes pulse {
+                    0% { transform: scale(1); }
+                    50% { transform: scale(1.05); }
+                    100% { transform: scale(1); }
+                }
+                #version-indicator:hover {
+                    background: #000 !important;
+                    cursor: pointer;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Aggiungi evento click (solo una volta)
+        if (!indicator.hasAttribute('data-click-added')) {
+            indicator.addEventListener('click', function() {
+                alert(`🚀 SIAF SYSTEM v${version.major}.${version.minor}.${version.patch}\n📅 ${version.date} ${version.time}\n🔧 ${version.description}\n🎨 Colore: ${randomColor}\n💾 File JS caricato correttamente!`);
+            });
+            indicator.setAttribute('data-click-added', 'true');
+        }
+
+        console.log(`✅ Version indicator aggiornato: v${version.major}.${version.minor}.${version.patch}`);
+    }
+}
+
 // BLOCCO 7: Inizializzazione app quando DOM è pronto
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Inizializzazione SIAF App...');
@@ -2375,7 +2434,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     console.log('✅ SIAF App pronta!');
 
+    // Aggiorna indicatore versione dinamicamente
+    updateVersionIndicator();
+
     // 🚀 VERSION FINALE - Sempre ultimo messaggio in console
-    console.log('%c🚀 SIAF SYSTEM v2.3.3-FINAL-2025-10-31-09:16 🚀', 'background: #4CAF50; color: white; font-size: 16px; font-weight: bold; padding: 10px; border-radius: 5px;');
-    console.log('%c📅 Last Update: 31/10/2025 09:16 - Fix cache JS + RegExp error', 'background: #2196F3; color: white; font-size: 12px; padding: 5px;');
+    const version = window.SIAF_VERSION;
+    console.log(`%c🚀 SIAF SYSTEM v${version.major}.${version.minor}.${version.patch}-FINAL-${version.date.replace(/\//g, '-')}-${version.time.replace(':', '')} 🚀`, `background: ${version.color}; color: white; font-size: 16px; font-weight: bold; padding: 10px; border-radius: 5px;`);
+    console.log(`%c📅 Last Update: ${version.date} ${version.time} - ${version.description}`, 'background: #2196F3; color: white; font-size: 12px; padding: 5px;');
 });
