@@ -5,7 +5,7 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 4,
-    patch: 5,
+    patch: 6,
     date: '31/10/2025',
     time: '09:45',
     description: 'Fix doppia generazione cartelle - prevenzione click multipli',
@@ -1632,16 +1632,6 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                     <div id="blocchi-${immobile.id}">
                         ${this.renderBlocchiCatastali(immobile)}
                     </div>
-                    ${immobile.blocchiCatastali.length > 0 ? `
-                        <div class="add-blocco-buttons">
-                            <button type="button" class="btn-add-blocco-tipo" onclick="window.siafApp.addBloccoCatastale(${immobile.id}, 'fabbricati')">
-                                🏢 Aggiungi blocco fabbricati
-                            </button>
-                            <button type="button" class="btn-add-blocco-tipo" onclick="window.siafApp.addBloccoCatastale(${immobile.id}, 'terreni')">
-                                🌾 Aggiungi blocco terreni
-                            </button>
-                        </div>
-                    ` : ''}
                 </div>
 
                 <!-- Confini -->
@@ -1702,8 +1692,8 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
             `;
         }
 
-        // Altrimenti renderizza i blocchi normali
-        return immobile.blocchiCatastali.map(blocco => `
+        // Altrimenti renderizza i blocchi normali + pulsanti aggiungi blocco
+        const blocchiHtml = immobile.blocchiCatastali.map(blocco => `
             <div id="blocco-${immobile.id}-${blocco.id}" class="blocco-catastale">
                 <div class="blocco-header">
                     <h4>📊 Blocco Catastale ${blocco.id}</h4>
@@ -1730,6 +1720,20 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                 <button type="button" class="btn-add-catasto-row" onclick="window.siafApp.addRigaCatastale(${immobile.id}, ${blocco.id})">➕ Aggiungi Riga</button>
             </div>
         `).join('');
+
+        // Aggiungi i pulsanti per aggiungere altri blocchi alla fine
+        const addButtonsHtml = `
+            <div class="add-blocco-buttons">
+                <button type="button" class="btn-add-blocco-tipo" onclick="window.siafApp.addBloccoCatastale(${immobile.id}, 'fabbricati')">
+                    🏢 Aggiungi blocco fabbricati
+                </button>
+                <button type="button" class="btn-add-blocco-tipo" onclick="window.siafApp.addBloccoCatastale(${immobile.id}, 'terreni')">
+                    🌾 Aggiungi blocco terreni
+                </button>
+            </div>
+        `;
+
+        return blocchiHtml + addButtonsHtml;
     }
 
     renderNotaDropdown(immobileId, bloccoId, selectedValue, customText) {
@@ -2059,8 +2063,10 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
     }
 
     addBloccoCatastale(immobileId, tipo) {
+        console.log(`🔵 addBloccoCatastale chiamato: immobileId=${immobileId}, tipo=${tipo}`);
         const immobile = this.immobili.find(i => i.id === immobileId);
         if (immobile) {
+            console.log(`🔵 Immobile trovato, blocchi attuali: ${immobile.blocchiCatastali.length}`);
             const newBlocco = {
                 id: immobile.blocchiCatastali.length + 1,
                 descrizione: '',
@@ -2069,12 +2075,15 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                 righe: [tipo === 'fabbricati' ? this.createEmptyFabbricatoRow() : this.createEmptyTerrenoRow()]
             };
             immobile.blocchiCatastali.push(newBlocco);
+            console.log(`🔵 Nuovo blocco aggiunto, totale blocchi: ${immobile.blocchiCatastali.length}`);
 
             // Refresh completo per mostrare anche i nuovi pulsanti
             this.refreshBlocchiCatastali(immobileId);
             this.isDirty = true;
 
             console.log(`✅ Aggiunto blocco catastale ${tipo} ${newBlocco.id} per immobile ${immobileId}`);
+        } else {
+            console.error(`❌ Immobile ${immobileId} non trovato!`);
         }
     }
 
