@@ -1534,10 +1534,11 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
             subalterno: '',
             categoria: '',
             classe: '',
-            vani_mq: '',
-            superfici: '',
-            indirizzo_piano: '',
-            rendita: ''
+            consistenza: '',
+            rendita: '',
+            superficie: '',
+            reddito_dominicale: '',
+            reddito_agrario: ''
         };
     }
 
@@ -1546,12 +1547,14 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
             id: 1,
             foglio: '',
             mappale: '',
-            porzione: '',
-            qualita: '',
+            subalterno: '',
+            categoria: '',
             classe: '',
-            metri_quadrati: '',
-            dominicale: '',
-            agrario: ''
+            consistenza: '',
+            rendita: '',
+            superficie: '',
+            reddito_dominicale: '',
+            reddito_agrario: ''
         };
     }
 
@@ -1763,15 +1766,13 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
     renderRigaFabbricati(immobileId, bloccoId, riga) {
         return `
             <div class="catasto-fields">
-                <div><label>Fog.</label><input type="text" id="fog_${immobileId}_${bloccoId}_${riga.id}" value="${riga.foglio}" placeholder="8"></div>
-                <div><label>Map.</label><input type="text" id="map_${immobileId}_${bloccoId}_${riga.id}" value="${riga.mappale}" placeholder="1335"></div>
-                <div><label>Sub.</label><input type="text" id="sub_${immobileId}_${bloccoId}_${riga.id}" value="${riga.subalterno}" placeholder="-"></div>
-                <div><label>Categoria</label><input type="text" id="cat_${immobileId}_${bloccoId}_${riga.id}" value="${riga.categoria}" placeholder="A/3"></div>
-                <div><label>Classe</label><input type="text" id="classe_${immobileId}_${bloccoId}_${riga.id}" value="${riga.classe}" placeholder="1"></div>
-                <div><label>Vani/mq</label><input type="text" id="vani_${immobileId}_${bloccoId}_${riga.id}" value="${riga.vani_mq}" placeholder="5,5"></div>
-                <div><label>Superfici</label><input type="text" id="sup_${immobileId}_${bloccoId}_${riga.id}" value="${riga.superfici}" placeholder="128"></div>
-                <div><label>Indirizzo/Piano</label><input type="text" id="ind_${immobileId}_${bloccoId}_${riga.id}" value="${riga.indirizzo_piano}" placeholder="pt-1"></div>
-                <div><label>Rendita</label><input type="text" id="rend_${immobileId}_${bloccoId}_${riga.id}" value="${riga.rendita}" placeholder="298,25"></div>
+                <div><label>Fog.</label><input type="text" id="foglio_${immobileId}_${bloccoId}_${riga.id}" value="${riga.foglio || ''}" placeholder="8"></div>
+                <div><label>Map.</label><input type="text" id="mappale_${immobileId}_${bloccoId}_${riga.id}" value="${riga.mappale || ''}" placeholder="1335"></div>
+                <div><label>Sub.</label><input type="text" id="subalterno_${immobileId}_${bloccoId}_${riga.id}" value="${riga.subalterno || ''}" placeholder="-"></div>
+                <div><label>Categoria</label><input type="text" id="categoria_${immobileId}_${bloccoId}_${riga.id}" value="${riga.categoria || ''}" placeholder="A/3"></div>
+                <div><label>Classe</label><input type="text" id="classe_${immobileId}_${bloccoId}_${riga.id}" value="${riga.classe || ''}" placeholder="1"></div>
+                <div><label>Consistenza</label><input type="text" id="consistenza_${immobileId}_${bloccoId}_${riga.id}" value="${riga.consistenza || ''}" placeholder="5,5"></div>
+                <div><label>Rendita</label><input type="text" id="rendita_${immobileId}_${bloccoId}_${riga.id}" value="${riga.rendita || ''}" placeholder="298,25"></div>
             </div>
         `;
     }
@@ -1779,14 +1780,13 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
     renderRigaTerreni(immobileId, bloccoId, riga) {
         return `
             <div class="catasto-fields">
-                <div><label>Fog.</label><input type="text" id="fog_${immobileId}_${bloccoId}_${riga.id}" value="${riga.foglio}" placeholder="8"></div>
-                <div><label>Map.</label><input type="text" id="map_${immobileId}_${bloccoId}_${riga.id}" value="${riga.mappale}" placeholder="1335"></div>
-                <div><label>Porz.</label><input type="text" id="porz_${immobileId}_${bloccoId}_${riga.id}" value="${riga.porzione}" placeholder="-"></div>
-                <div><label>Qualità</label><input type="text" id="qual_${immobileId}_${bloccoId}_${riga.id}" value="${riga.qualita}" placeholder="ente urbano"></div>
-                <div><label>Classe</label><input type="text" id="classe_${immobileId}_${bloccoId}_${riga.id}" value="${riga.classe}" placeholder="1"></div>
-                <div><label>Mq</label><input type="text" id="mq_${immobileId}_${bloccoId}_${riga.id}" value="${riga.metri_quadrati}" placeholder="745"></div>
-                <div><label>Dominicale</label><input type="text" id="dom_${immobileId}_${bloccoId}_${riga.id}" value="${riga.dominicale}" placeholder="0,62"></div>
-                <div><label>Agrario</label><input type="text" id="agr_${immobileId}_${bloccoId}_${riga.id}" value="${riga.agrario}" placeholder="0,34"></div>
+                <div><label>Fog.</label><input type="text" id="foglio_${immobileId}_${bloccoId}_${riga.id}" value="${riga.foglio || ''}" placeholder="8"></div>
+                <div><label>Map.</label><input type="text" id="mappale_${immobileId}_${bloccoId}_${riga.id}" value="${riga.mappale || ''}" placeholder="1335"></div>
+                <div><label>Categoria</label><input type="text" id="categoria_${immobileId}_${bloccoId}_${riga.id}" value="${riga.categoria || ''}" placeholder="ente urbano"></div>
+                <div><label>Classe</label><input type="text" id="classe_${immobileId}_${bloccoId}_${riga.id}" value="${riga.classe || ''}" placeholder="1"></div>
+                <div><label>Superficie</label><input type="text" id="superficie_${immobileId}_${bloccoId}_${riga.id}" value="${riga.superficie || ''}" placeholder="745"></div>
+                <div><label>R.Dominicale</label><input type="text" id="reddito_dominicale_${immobileId}_${bloccoId}_${riga.id}" value="${riga.reddito_dominicale || ''}" placeholder="0,62"></div>
+                <div><label>R.Agrario</label><input type="text" id="reddito_agrario_${immobileId}_${bloccoId}_${riga.id}" value="${riga.reddito_agrario || ''}" placeholder="0,34"></div>
             </div>
         `;
     }
