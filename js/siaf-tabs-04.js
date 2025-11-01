@@ -5,9 +5,8 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 4,
-    patch: 8,
-    date: '31/10/2025',
-    time: '09:45',
+    patch: 9,
+    date: '01/11/2025',
     description: 'Fix doppia generazione cartelle - prevenzione click multipli',
     color: '#4CAF50'  // Verde - bugfix importante
 };
@@ -1179,8 +1178,80 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
             // Salva confini
             this.saveAllConfiniData(immobile.id);
 
+            // Salva stato immobile
+            this.saveStatoImmobileData(immobile.id);
+
             console.log(`✅ Salvato immobile ${immobile.id}:`, JSON.stringify(immobile, null, 2));
         });
+    }
+
+    saveStatoImmobileData(immobileId) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        if (!immobile) return;
+
+        // Helper functions
+        const getValue = (id) => document.getElementById(id)?.value || '';
+        const getRadioValue = (name) => {
+            const selected = document.querySelector(`input[name="${name}"]:checked`);
+            return selected?.value || '';
+        };
+        const isChecked = (id) => document.getElementById(id)?.checked || false;
+
+        // Inizializza stato se non esiste
+        if (!immobile.stato) {
+            immobile.stato = {};
+        }
+
+        // Occupazione
+        immobile.stato.occupazione = getRadioValue(`occupazione_${immobileId}`);
+
+        // Locazione (se occupazione = locato)
+        immobile.stato.locazione = {
+            inquilino: getValue(`inquilino_${immobileId}`),
+            canone_annuo: getValue(`canone_${immobileId}`),
+            scadenza_contratto: getValue(`scadenza_${immobileId}`)
+        };
+
+        // Conformità
+        immobile.stato.conformita = {
+            edilizia: isChecked(`conf_edilizia_${immobileId}`),
+            catastale: isChecked(`conf_catastale_${immobileId}`),
+            impianti: isChecked(`conf_impianti_${immobileId}`)
+        };
+
+        // Vincoli
+        immobile.stato.vincoli = {
+            iscrizioni_pregiudizievoli: isChecked(`iscriz_preg_${immobileId}`),
+            vincoli_servitu: isChecked(`vincoli_serv_${immobileId}`)
+        };
+
+        // Certificazione energetica
+        const modalitaCert = getRadioValue(`cert_modalita_${immobileId}`);
+        const classeSelect = getValue(`cert_classe_select_${immobileId}`);
+        const classeText = getValue(`cert_classe_text_${immobileId}`);
+
+        immobile.stato.certificazione_energetica = {
+            modalita: modalitaCert,
+            classe: classeSelect || classeText, // Usa dropdown, se vuoto usa testo libero
+            consumo_kwh: getValue(`cert_consumo_${immobileId}`),
+            codice_attestato: getValue(`cert_codice_${immobileId}`),
+            data_emissione: getValue(`cert_data_${immobileId}`),
+            certificatore: getValue(`cert_certificatore_${immobileId}`)
+        };
+
+        // Documenti consegnati
+        const documenti = [];
+        if (isChecked(`doc_titoli_${immobileId}`)) documenti.push('titoli_provenienza');
+        if (isChecked(`doc_planimetria_${immobileId}`)) documenti.push('planimetria');
+        if (isChecked(`doc_visure_${immobileId}`)) documenti.push('visure');
+        if (isChecked(`doc_ape_${immobileId}`)) documenti.push('ape');
+
+        const altroDoc = getValue(`doc_altro_${immobileId}`);
+        if (altroDoc) documenti.push(`altro: ${altroDoc}`);
+
+        immobile.stato.documenti_consegnati = documenti;
+
+        console.log(`🏠 Stato salvato per immobile ${immobileId}:`, immobile.stato);
     }
 
     saveAllConfiniData(immobileId) {
@@ -1512,6 +1583,32 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                 est: [''],
                 sud: [''],
                 ovest: ['']
+            },
+            stato: {
+                occupazione: '',
+                locazione: {
+                    inquilino: '',
+                    canone_annuo: '',
+                    scadenza_contratto: ''
+                },
+                conformita: {
+                    edilizia: false,
+                    catastale: false,
+                    impianti: false
+                },
+                vincoli: {
+                    iscrizioni_pregiudizievoli: false,
+                    vincoli_servitu: false
+                },
+                certificazione_energetica: {
+                    modalita: '',
+                    classe: '',
+                    consumo_kwh: '',
+                    codice_attestato: '',
+                    data_emissione: '',
+                    certificatore: ''
+                },
+                documenti_consegnati: []
             }
         };
 
@@ -1641,6 +1738,12 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                     <h4>🧭 Confini</h4>
                     ${this.renderConfini(immobile)}
                 </div>
+
+                <!-- STATO IMMOBILE -->
+                <div class="stato-immobile-section">
+                    <h4>🏠 Stato Immobile</h4>
+                    ${this.renderStatoImmobile(immobile)}
+                </div>
             </div>
         `;
 
@@ -1654,6 +1757,9 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                     this.populateComuniDropdown(immobile.id, immobile.provincia, immobile.comune);
                 }, 200);
             }
+
+            // Inizializza event listeners per stato immobile
+            this.initializeStatoEventListeners(immobile.id);
         }, 100);
 
         console.log(`✅ Immobile ${immobile.id} renderizzato`);
@@ -1867,6 +1973,179 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                     ''}
             </span>
         `).join('');
+    }
+
+    // BLOCCO: Render Stato Immobile
+    renderStatoImmobile(immobile) {
+        const stato = immobile.stato || {};
+        const id = immobile.id;
+
+        return `
+            <div class="stato-form">
+                <!-- Occupazione -->
+                <div class="form-group">
+                    <label><strong>Occupazione:</strong></label>
+                    <div class="radio-group">
+                        <label>
+                            <input type="radio" name="occupazione_${id}" value="libero" ${stato.occupazione === 'libero' ? 'checked' : ''}>
+                            Libero
+                        </label>
+                        <label>
+                            <input type="radio" name="occupazione_${id}" value="occupato_proprietario" ${stato.occupazione === 'occupato_proprietario' ? 'checked' : ''}>
+                            Utilizzato dal proprietario
+                        </label>
+                        <label>
+                            <input type="radio" name="occupazione_${id}" value="locato" ${stato.occupazione === 'locato' ? 'checked' : ''}>
+                            Locato a uso abitativo
+                        </label>
+                    </div>
+
+                    <!-- Campi condizionali se locato -->
+                    <div id="locazione-fields-${id}" class="conditional-fields" style="display: ${stato.occupazione === 'locato' ? 'block' : 'none'}">
+                        <input type="text" id="inquilino_${id}" placeholder="Nome inquilino" value="${stato.locazione?.inquilino || ''}">
+                        <input type="number" id="canone_${id}" placeholder="Canone annuo €" value="${stato.locazione?.canone_annuo || ''}">
+                        <input type="date" id="scadenza_${id}" value="${stato.locazione?.scadenza_contratto || ''}">
+                    </div>
+                </div>
+
+                <!-- Conformità -->
+                <div class="form-group">
+                    <label><strong>Conformità:</strong></label>
+                    <div class="checkbox-group">
+                        <label>
+                            <input type="checkbox" id="conf_edilizia_${id}" ${stato.conformita?.edilizia ? 'checked' : ''}>
+                            Conforme norme edilizie/urbanistiche
+                        </label>
+                        <label>
+                            <input type="checkbox" id="conf_catastale_${id}" ${stato.conformita?.catastale ? 'checked' : ''}>
+                            Conforme norme catastali
+                        </label>
+                        <label>
+                            <input type="checkbox" id="conf_impianti_${id}" ${stato.conformita?.impianti ? 'checked' : ''}>
+                            Impianti conformi normative
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Vincoli -->
+                <div class="form-group">
+                    <label><strong>Vincoli:</strong></label>
+                    <div class="checkbox-group">
+                        <label>
+                            <input type="checkbox" id="iscriz_preg_${id}" ${stato.vincoli?.iscrizioni_pregiudizievoli ? 'checked' : ''}>
+                            Iscrizioni/trascrizioni pregiudizievoli
+                        </label>
+                        <label>
+                            <input type="checkbox" id="vincoli_serv_${id}" ${stato.vincoli?.vincoli_servitu ? 'checked' : ''}>
+                            Vincoli e/o servitù attive/passive
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Certificazione Energetica -->
+                <div class="form-group">
+                    <label><strong>Certificazione Energetica:</strong></label>
+                    <div class="radio-group">
+                        <label>
+                            <input type="radio" name="cert_modalita_${id}" value="da_predisporre" ${stato.certificazione_energetica?.modalita === 'da_predisporre' ? 'checked' : ''}>
+                            Da predisporre (cura venditore)
+                        </label>
+                        <label>
+                            <input type="radio" name="cert_modalita_${id}" value="commissionata" ${stato.certificazione_energetica?.modalita === 'commissionata' ? 'checked' : ''}>
+                            Commissionata all'Agenzia
+                        </label>
+                        <label>
+                            <input type="radio" name="cert_modalita_${id}" value="non_soggetto" ${stato.certificazione_energetica?.modalita === 'non_soggetto' ? 'checked' : ''}>
+                            Non soggetto
+                        </label>
+                        <label>
+                            <input type="radio" name="cert_modalita_${id}" value="gia_presente" ${stato.certificazione_energetica?.modalita === 'gia_presente' ? 'checked' : ''}>
+                            Già presente
+                        </label>
+                    </div>
+
+                    <!-- Campi condizionali se già presente -->
+                    <div id="cert-fields-${id}" class="conditional-fields" style="display: ${stato.certificazione_energetica?.modalita === 'gia_presente' ? 'block' : 'none'}">
+                        <label>Classe energetica:</label>
+                        <select id="cert_classe_select_${id}">
+                            <option value="">Seleziona...</option>
+                            ${['A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G'].map(classe =>
+                                `<option value="${classe}" ${stato.certificazione_energetica?.classe === classe ? 'selected' : ''}>${classe}</option>`
+                            ).join('')}
+                        </select>
+                        <span style="margin: 0 10px;">oppure:</span>
+                        <input type="text" id="cert_classe_text_${id}" placeholder="Classe personalizzata" value="${stato.certificazione_energetica?.classe && !['A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G'].includes(stato.certificazione_energetica.classe) ? stato.certificazione_energetica.classe : ''}">
+
+                        <input type="number" id="cert_consumo_${id}" placeholder="Consumo kWh/mq anno" value="${stato.certificazione_energetica?.consumo_kwh || ''}">
+                        <input type="text" id="cert_codice_${id}" placeholder="Codice attestato" value="${stato.certificazione_energetica?.codice_attestato || ''}">
+                        <input type="date" id="cert_data_${id}" value="${stato.certificazione_energetica?.data_emissione || ''}">
+                        <input type="text" id="cert_certificatore_${id}" placeholder="Certificatore" value="${stato.certificazione_energetica?.certificatore || ''}">
+                    </div>
+                </div>
+
+                <!-- Documenti Consegnati -->
+                <div class="form-group">
+                    <label><strong>Documenti consegnati:</strong></label>
+                    <div class="checkbox-group">
+                        <label>
+                            <input type="checkbox" id="doc_titoli_${id}" ${stato.documenti_consegnati?.includes('titoli_provenienza') ? 'checked' : ''}>
+                            Copia titoli di provenienza
+                        </label>
+                        <label>
+                            <input type="checkbox" id="doc_planimetria_${id}" ${stato.documenti_consegnati?.includes('planimetria') ? 'checked' : ''}>
+                            Planimetria catastale
+                        </label>
+                        <label>
+                            <input type="checkbox" id="doc_visure_${id}" ${stato.documenti_consegnati?.includes('visure') ? 'checked' : ''}>
+                            Visure catastali
+                        </label>
+                        <label>
+                            <input type="checkbox" id="doc_ape_${id}" ${stato.documenti_consegnati?.includes('ape') ? 'checked' : ''}>
+                            APE (Attestato Prestazione Energetica)
+                        </label>
+                    </div>
+                    <label>Altro:</label>
+                    <input type="text" id="doc_altro_${id}" placeholder="Altri documenti..." value="${stato.documenti_consegnati?.find(d => d.startsWith('altro:'))?.substring(6) || ''}">
+                </div>
+            </div>
+        `;
+    }
+
+    // BLOCCO: Inizializzazione Event Listeners Stato Immobile
+    initializeStatoEventListeners(immobileId) {
+        // Event listener per mostrare/nascondere campi locazione
+        const occupazioneRadios = document.querySelectorAll(`input[name="occupazione_${immobileId}"]`);
+        const locazioneFields = document.getElementById(`locazione-fields-${immobileId}`);
+
+        if (occupazioneRadios && locazioneFields) {
+            occupazioneRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    if (e.target.value === 'locato') {
+                        locazioneFields.style.display = 'block';
+                    } else {
+                        locazioneFields.style.display = 'none';
+                    }
+                });
+            });
+            console.log(`✅ Event listeners occupazione inizializzati per immobile ${immobileId}`);
+        }
+
+        // Event listener per mostrare/nascondere campi certificazione energetica
+        const certRadios = document.querySelectorAll(`input[name="cert_modalita_${immobileId}"]`);
+        const certFields = document.getElementById(`cert-fields-${immobileId}`);
+
+        if (certRadios && certFields) {
+            certRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    if (e.target.value === 'gia_presente') {
+                        certFields.style.display = 'block';
+                    } else {
+                        certFields.style.display = 'none';
+                    }
+                });
+            });
+            console.log(`✅ Event listeners certificazione inizializzati per immobile ${immobileId}`);
+        }
     }
 
     // Funzioni di gestione eventi
