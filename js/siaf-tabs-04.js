@@ -5,7 +5,7 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 5,
-    patch: 2,
+    patch: 3,
     date: '31/10/2025',
     time: '09:45',
     description: 'Fix doppia generazione cartelle - prevenzione click multipli',
