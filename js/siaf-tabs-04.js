@@ -5,7 +5,7 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 5,
-    patch: 6,
+    patch: 7,
     date: '31/10/2025',
     time: '09:45',
     description: 'Fix doppia generazione cartelle - prevenzione click multipli',
@@ -1820,23 +1820,25 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                                 </div>
                             </div>
 
-                            ${calcolati.prezzo_vendita ? `
-                                <div class="prezzo-info-row">
-                                    <span class="prezzo-info-label">Prezzo in lettere:</span>
-                                    <span class="prezzo-info-value prezzo-in-lettere">${calcolati.prezzo_vendita_lettere}</span>
-                                </div>
-                            ` : ''}
+                            <div id="output_prezzo_${immobile.id}" class="prezzo-output-container">
+                                ${calcolati.prezzo_vendita ? `
+                                    <div class="prezzo-info-row">
+                                        <span class="prezzo-info-label">Prezzo in lettere:</span>
+                                        <span class="prezzo-info-value prezzo-in-lettere">${calcolati.prezzo_vendita_lettere}</span>
+                                    </div>
+                                ` : ''}
 
-                            ${calcolati.prezzo_minimo ? `
-                                <div class="prezzo-info-row">
-                                    <span class="prezzo-info-label">Prezzo minimo (dopo riduzione):</span>
-                                    <span class="prezzo-info-value">€ ${calcolati.prezzo_minimo.toLocaleString('it-IT')}</span>
-                                </div>
-                                <div class="prezzo-info-row">
-                                    <span class="prezzo-info-label">Prezzo minimo in lettere:</span>
-                                    <span class="prezzo-info-value prezzo-in-lettere">${calcolati.prezzo_minimo_lettere}</span>
-                                </div>
-                            ` : ''}
+                                ${calcolati.prezzo_minimo ? `
+                                    <div class="prezzo-info-row">
+                                        <span class="prezzo-info-label">Prezzo minimo (dopo riduzione):</span>
+                                        <span class="prezzo-info-value">€ ${calcolati.prezzo_minimo.toLocaleString('it-IT')}</span>
+                                    </div>
+                                    <div class="prezzo-info-row">
+                                        <span class="prezzo-info-label">Prezzo minimo in lettere:</span>
+                                        <span class="prezzo-info-value prezzo-in-lettere">${calcolati.prezzo_minimo_lettere}</span>
+                                    </div>
+                                ` : ''}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -1888,23 +1890,25 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                         </div>
                     </div>
 
-                    ${calcolati.prezzo_vendita ? `
-                        <div class="prezzo-info-row">
-                            <span class="prezzo-info-label">Prezzo in lettere:</span>
-                            <span class="prezzo-info-value prezzo-in-lettere">${calcolati.prezzo_vendita_lettere}</span>
-                        </div>
-                    ` : ''}
+                    <div id="output_prezzo_forfettario" class="prezzo-output-container">
+                        ${calcolati.prezzo_vendita ? `
+                            <div class="prezzo-info-row">
+                                <span class="prezzo-info-label">Prezzo in lettere:</span>
+                                <span class="prezzo-info-value prezzo-in-lettere">${calcolati.prezzo_vendita_lettere}</span>
+                            </div>
+                        ` : ''}
 
-                    ${calcolati.prezzo_minimo ? `
-                        <div class="prezzo-info-row">
-                            <span class="prezzo-info-label">Prezzo minimo (dopo riduzione):</span>
-                            <span class="prezzo-info-value">€ ${calcolati.prezzo_minimo.toLocaleString('it-IT')}</span>
-                        </div>
-                        <div class="prezzo-info-row">
-                            <span class="prezzo-info-label">Prezzo minimo in lettere:</span>
-                            <span class="prezzo-info-value prezzo-in-lettere">${calcolati.prezzo_minimo_lettere}</span>
-                        </div>
-                    ` : ''}
+                        ${calcolati.prezzo_minimo ? `
+                            <div class="prezzo-info-row">
+                                <span class="prezzo-info-label">Prezzo minimo (dopo riduzione):</span>
+                                <span class="prezzo-info-value">€ ${calcolati.prezzo_minimo.toLocaleString('it-IT')}</span>
+                            </div>
+                            <div class="prezzo-info-row">
+                                <span class="prezzo-info-label">Prezzo minimo in lettere:</span>
+                                <span class="prezzo-info-value prezzo-in-lettere">${calcolati.prezzo_minimo_lettere}</span>
+                            </div>
+                        ` : ''}
+                    </div>
                 </div>
             </div>
         `;
@@ -1968,8 +1972,43 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
 
         this.isDirty = true;
 
-        // Re-render per aggiornare calcoli
-        this.renderSezionePrezzo();
+        // Aggiorna solo i campi di output senza ri-renderizzare tutto
+        this.updatePrezzoOutputSingolo(immobileId);
+    }
+
+    updatePrezzoOutputSingolo(immobileId) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        if (!immobile || !immobile.condizioni_economiche) return;
+
+        const outputContainer = document.getElementById(`output_prezzo_${immobileId}`);
+        if (!outputContainer) return;
+
+        const calcolati = calcolaValoriCondizioni(immobile.condizioni_economiche);
+
+        let html = '';
+        if (calcolati.prezzo_vendita) {
+            html += `
+                <div class="prezzo-info-row">
+                    <span class="prezzo-info-label">Prezzo in lettere:</span>
+                    <span class="prezzo-info-value prezzo-in-lettere">${calcolati.prezzo_vendita_lettere}</span>
+                </div>
+            `;
+        }
+
+        if (calcolati.prezzo_minimo) {
+            html += `
+                <div class="prezzo-info-row">
+                    <span class="prezzo-info-label">Prezzo minimo (dopo riduzione):</span>
+                    <span class="prezzo-info-value">€ ${calcolati.prezzo_minimo.toLocaleString('it-IT')}</span>
+                </div>
+                <div class="prezzo-info-row">
+                    <span class="prezzo-info-label">Prezzo minimo in lettere:</span>
+                    <span class="prezzo-info-value prezzo-in-lettere">${calcolati.prezzo_minimo_lettere}</span>
+                </div>
+            `;
+        }
+
+        outputContainer.innerHTML = html;
     }
 
     updatePrezzoForfettario() {
@@ -1981,8 +2020,40 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
 
         this.isDirty = true;
 
-        // Re-render per aggiornare calcoli
-        this.renderSezionePrezzo();
+        // Aggiorna solo i campi di output senza ri-renderizzare tutto
+        this.updatePrezzoOutputForfettario();
+    }
+
+    updatePrezzoOutputForfettario() {
+        const outputContainer = document.getElementById('output_prezzo_forfettario');
+        if (!outputContainer) return;
+
+        const calcolati = calcolaValoriCondizioni(this.condizioniEconomiche.prezzo_forfettario);
+
+        let html = '';
+        if (calcolati.prezzo_vendita) {
+            html += `
+                <div class="prezzo-info-row">
+                    <span class="prezzo-info-label">Prezzo in lettere:</span>
+                    <span class="prezzo-info-value prezzo-in-lettere">${calcolati.prezzo_vendita_lettere}</span>
+                </div>
+            `;
+        }
+
+        if (calcolati.prezzo_minimo) {
+            html += `
+                <div class="prezzo-info-row">
+                    <span class="prezzo-info-label">Prezzo minimo (dopo riduzione):</span>
+                    <span class="prezzo-info-value">€ ${calcolati.prezzo_minimo.toLocaleString('it-IT')}</span>
+                </div>
+                <div class="prezzo-info-row">
+                    <span class="prezzo-info-label">Prezzo minimo in lettere:</span>
+                    <span class="prezzo-info-value prezzo-in-lettere">${calcolati.prezzo_minimo_lettere}</span>
+                </div>
+            `;
+        }
+
+        outputContainer.innerHTML = html;
     }
 
     applicaCondizioniATutti() {
