@@ -4,9 +4,10 @@
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
-    minor: 4,
+    minor: 3,
     patch: 9,
-    date: '01/11/2025',
+    date: '31/10/2025',
+    time: '09:45',
     description: 'Fix doppia generazione cartelle - prevenzione click multipli',
     color: '#4CAF50'  // Verde - bugfix importante
 };
@@ -1975,137 +1976,151 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         `).join('');
     }
 
-    // BLOCCO: Render Stato Immobile
+    // BLOCCO: Render Stato Immobile - Design Moderno
     renderStatoImmobile(immobile) {
         const stato = immobile.stato || {};
         const id = immobile.id;
 
         return `
             <div class="stato-form">
-                <!-- Occupazione -->
+                <!-- OCCUPAZIONE -->
                 <div class="form-group">
-                    <label><strong>Occupazione:</strong></label>
+                    <label>Occupazione:</label>
                     <div class="radio-group">
-                        <label>
-                            <input type="radio" name="occupazione_${id}" value="libero" ${stato.occupazione === 'libero' ? 'checked' : ''}>
-                            Libero
-                        </label>
-                        <label>
-                            <input type="radio" name="occupazione_${id}" value="occupato_proprietario" ${stato.occupazione === 'occupato_proprietario' ? 'checked' : ''}>
-                            Utilizzato dal proprietario
-                        </label>
-                        <label>
-                            <input type="radio" name="occupazione_${id}" value="locato" ${stato.occupazione === 'locato' ? 'checked' : ''}>
-                            Locato a uso abitativo
-                        </label>
+                        <input type="radio" name="occupazione_${id}" id="occ_libero_${id}" value="libero" ${stato.occupazione === 'libero' ? 'checked' : ''}>
+                        <label for="occ_libero_${id}">Libero</label>
+
+                        <input type="radio" name="occupazione_${id}" id="occ_proprietario_${id}" value="occupato_proprietario" ${stato.occupazione === 'occupato_proprietario' ? 'checked' : ''}>
+                        <label for="occ_proprietario_${id}">Utilizzato dal proprietario</label>
+
+                        <input type="radio" name="occupazione_${id}" id="occ_locato_${id}" value="locato" ${stato.occupazione === 'locato' ? 'checked' : ''}>
+                        <label for="occ_locato_${id}">Locato a uso abitativo</label>
                     </div>
 
-                    <!-- Campi condizionali se locato -->
+                    <!-- Campi condizionali locazione -->
                     <div id="locazione-fields-${id}" class="conditional-fields" style="display: ${stato.occupazione === 'locato' ? 'block' : 'none'}">
-                        <input type="text" id="inquilino_${id}" placeholder="Nome inquilino" value="${stato.locazione?.inquilino || ''}">
-                        <input type="number" id="canone_${id}" placeholder="Canone annuo €" value="${stato.locazione?.canone_annuo || ''}">
-                        <input type="date" id="scadenza_${id}" value="${stato.locazione?.scadenza_contratto || ''}">
+                        <div class="conditional-fields-grid">
+                            <div>
+                                <label>Nome inquilino</label>
+                                <input type="text" id="inquilino_${id}" placeholder="es. Mario Rossi" value="${stato.locazione?.inquilino || ''}">
+                            </div>
+                            <div>
+                                <label>Canone annuo €</label>
+                                <input type="number" id="canone_${id}" placeholder="es. 6000" value="${stato.locazione?.canone_annuo || ''}">
+                            </div>
+                            <div>
+                                <label>Scadenza contratto</label>
+                                <input type="date" id="scadenza_${id}" value="${stato.locazione?.scadenza_contratto || ''}">
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Conformità -->
+                <!-- CONFORMITÀ (3 elementi in riga) -->
                 <div class="form-group">
-                    <label><strong>Conformità:</strong></label>
-                    <div class="checkbox-group">
-                        <label>
-                            <input type="checkbox" id="conf_edilizia_${id}" ${stato.conformita?.edilizia ? 'checked' : ''}>
-                            Conforme norme edilizie/urbanistiche
-                        </label>
-                        <label>
-                            <input type="checkbox" id="conf_catastale_${id}" ${stato.conformita?.catastale ? 'checked' : ''}>
-                            Conforme norme catastali
-                        </label>
-                        <label>
-                            <input type="checkbox" id="conf_impianti_${id}" ${stato.conformita?.impianti ? 'checked' : ''}>
-                            Impianti conformi normative
-                        </label>
+                    <label>Conformità:</label>
+                    <div class="checkbox-group checkbox-group-3">
+                        <input type="checkbox" id="conf_edilizia_${id}" ${stato.conformita?.edilizia ? 'checked' : ''}>
+                        <label for="conf_edilizia_${id}">Conforme norme edilizie/urbanistiche</label>
+
+                        <input type="checkbox" id="conf_catastale_${id}" ${stato.conformita?.catastale ? 'checked' : ''}>
+                        <label for="conf_catastale_${id}">Conforme norme catastali</label>
+
+                        <input type="checkbox" id="conf_impianti_${id}" ${stato.conformita?.impianti ? 'checked' : ''}>
+                        <label for="conf_impianti_${id}">Impianti conformi normative</label>
                     </div>
                 </div>
 
-                <!-- Vincoli -->
+                <!-- VINCOLI (2 elementi in riga) -->
                 <div class="form-group">
-                    <label><strong>Vincoli:</strong></label>
-                    <div class="checkbox-group">
-                        <label>
-                            <input type="checkbox" id="iscriz_preg_${id}" ${stato.vincoli?.iscrizioni_pregiudizievoli ? 'checked' : ''}>
-                            Iscrizioni/trascrizioni pregiudizievoli
-                        </label>
-                        <label>
-                            <input type="checkbox" id="vincoli_serv_${id}" ${stato.vincoli?.vincoli_servitu ? 'checked' : ''}>
-                            Vincoli e/o servitù attive/passive
-                        </label>
+                    <label>Vincoli:</label>
+                    <div class="checkbox-group checkbox-group-3">
+                        <input type="checkbox" id="iscriz_preg_${id}" ${stato.vincoli?.iscrizioni_pregiudizievoli ? 'checked' : ''}>
+                        <label for="iscriz_preg_${id}">Iscrizioni/trascrizioni pregiudizievoli</label>
+
+                        <input type="checkbox" id="vincoli_serv_${id}" ${stato.vincoli?.vincoli_servitu ? 'checked' : ''}>
+                        <label for="vincoli_serv_${id}">Vincoli e/o servitù attive/passive</label>
                     </div>
                 </div>
 
-                <!-- Certificazione Energetica -->
+                <!-- CERTIFICAZIONE ENERGETICA (4 pulsanti) -->
                 <div class="form-group">
-                    <label><strong>Certificazione Energetica:</strong></label>
+                    <label>Certificazione Energetica:</label>
                     <div class="radio-group">
-                        <label>
-                            <input type="radio" name="cert_modalita_${id}" value="da_predisporre" ${stato.certificazione_energetica?.modalita === 'da_predisporre' ? 'checked' : ''}>
-                            Da predisporre (cura venditore)
-                        </label>
-                        <label>
-                            <input type="radio" name="cert_modalita_${id}" value="commissionata" ${stato.certificazione_energetica?.modalita === 'commissionata' ? 'checked' : ''}>
-                            Commissionata all'Agenzia
-                        </label>
-                        <label>
-                            <input type="radio" name="cert_modalita_${id}" value="non_soggetto" ${stato.certificazione_energetica?.modalita === 'non_soggetto' ? 'checked' : ''}>
-                            Non soggetto
-                        </label>
-                        <label>
-                            <input type="radio" name="cert_modalita_${id}" value="gia_presente" ${stato.certificazione_energetica?.modalita === 'gia_presente' ? 'checked' : ''}>
-                            Già presente
-                        </label>
+                        <input type="radio" name="cert_modalita_${id}" id="cert_predisporre_${id}" value="da_predisporre" ${stato.certificazione_energetica?.modalita === 'da_predisporre' ? 'checked' : ''}>
+                        <label for="cert_predisporre_${id}">Da predisporre<br><small>(cura venditore)</small></label>
+
+                        <input type="radio" name="cert_modalita_${id}" id="cert_commissionata_${id}" value="commissionata" ${stato.certificazione_energetica?.modalita === 'commissionata' ? 'checked' : ''}>
+                        <label for="cert_commissionata_${id}">Commissionata all'Agenzia</label>
+
+                        <input type="radio" name="cert_modalita_${id}" id="cert_non_soggetto_${id}" value="non_soggetto" ${stato.certificazione_energetica?.modalita === 'non_soggetto' ? 'checked' : ''}>
+                        <label for="cert_non_soggetto_${id}">Non soggetto</label>
+
+                        <input type="radio" name="cert_modalita_${id}" id="cert_presente_${id}" value="gia_presente" ${stato.certificazione_energetica?.modalita === 'gia_presente' ? 'checked' : ''}>
+                        <label for="cert_presente_${id}">Già presente</label>
                     </div>
 
-                    <!-- Campi condizionali se già presente -->
+                    <!-- Campi condizionali certificazione -->
                     <div id="cert-fields-${id}" class="conditional-fields" style="display: ${stato.certificazione_energetica?.modalita === 'gia_presente' ? 'block' : 'none'}">
-                        <label>Classe energetica:</label>
-                        <select id="cert_classe_select_${id}">
-                            <option value="">Seleziona...</option>
-                            ${['A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G'].map(classe =>
-                                `<option value="${classe}" ${stato.certificazione_energetica?.classe === classe ? 'selected' : ''}>${classe}</option>`
-                            ).join('')}
-                        </select>
-                        <span style="margin: 0 10px;">oppure:</span>
-                        <input type="text" id="cert_classe_text_${id}" placeholder="Classe personalizzata" value="${stato.certificazione_energetica?.classe && !['A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G'].includes(stato.certificazione_energetica.classe) ? stato.certificazione_energetica.classe : ''}">
+                        <div>
+                            <label>Classe energetica</label>
+                            <div class="dual-input-container">
+                                <select id="cert_classe_select_${id}">
+                                    <option value="">Seleziona...</option>
+                                    ${['A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G'].map(classe =>
+                                        `<option value="${classe}" ${stato.certificazione_energetica?.classe === classe ? 'selected' : ''}>${classe}</option>`
+                                    ).join('')}
+                                </select>
+                                <span class="dual-input-separator">oppure</span>
+                                <input type="text" id="cert_classe_text_${id}" placeholder="Classe personalizzata" value="${stato.certificazione_energetica?.classe && !['A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G'].includes(stato.certificazione_energetica.classe) ? stato.certificazione_energetica.classe : ''}">
+                            </div>
+                        </div>
 
-                        <input type="number" id="cert_consumo_${id}" placeholder="Consumo kWh/mq anno" value="${stato.certificazione_energetica?.consumo_kwh || ''}">
-                        <input type="text" id="cert_codice_${id}" placeholder="Codice attestato" value="${stato.certificazione_energetica?.codice_attestato || ''}">
-                        <input type="date" id="cert_data_${id}" value="${stato.certificazione_energetica?.data_emissione || ''}">
-                        <input type="text" id="cert_certificatore_${id}" placeholder="Certificatore" value="${stato.certificazione_energetica?.certificatore || ''}">
+                        <div class="conditional-fields-grid">
+                            <div>
+                                <label>Consumo kWh/mq anno</label>
+                                <input type="number" id="cert_consumo_${id}" placeholder="es. 120" value="${stato.certificazione_energetica?.consumo_kwh || ''}">
+                            </div>
+                            <div>
+                                <label>Codice attestato</label>
+                                <input type="text" id="cert_codice_${id}" placeholder="es. ABC123XYZ" value="${stato.certificazione_energetica?.codice_attestato || ''}">
+                            </div>
+                        </div>
+
+                        <div class="conditional-fields-grid">
+                            <div>
+                                <label>Data emissione</label>
+                                <input type="date" id="cert_data_${id}" value="${stato.certificazione_energetica?.data_emissione || ''}">
+                            </div>
+                            <div>
+                                <label>Certificatore</label>
+                                <input type="text" id="cert_certificatore_${id}" placeholder="es. Ing. Mario Rossi" value="${stato.certificazione_energetica?.certificatore || ''}">
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Documenti Consegnati -->
+                <!-- DOCUMENTI CONSEGNATI (4 checkbox + altro) -->
                 <div class="form-group">
-                    <label><strong>Documenti consegnati:</strong></label>
+                    <label>Documenti consegnati:</label>
                     <div class="checkbox-group">
-                        <label>
-                            <input type="checkbox" id="doc_titoli_${id}" ${stato.documenti_consegnati?.includes('titoli_provenienza') ? 'checked' : ''}>
-                            Copia titoli di provenienza
-                        </label>
-                        <label>
-                            <input type="checkbox" id="doc_planimetria_${id}" ${stato.documenti_consegnati?.includes('planimetria') ? 'checked' : ''}>
-                            Planimetria catastale
-                        </label>
-                        <label>
-                            <input type="checkbox" id="doc_visure_${id}" ${stato.documenti_consegnati?.includes('visure') ? 'checked' : ''}>
-                            Visure catastali
-                        </label>
-                        <label>
-                            <input type="checkbox" id="doc_ape_${id}" ${stato.documenti_consegnati?.includes('ape') ? 'checked' : ''}>
-                            APE (Attestato Prestazione Energetica)
-                        </label>
+                        <input type="checkbox" id="doc_titoli_${id}" ${stato.documenti_consegnati?.includes('titoli_provenienza') ? 'checked' : ''}>
+                        <label for="doc_titoli_${id}">Copia titoli di provenienza</label>
+
+                        <input type="checkbox" id="doc_planimetria_${id}" ${stato.documenti_consegnati?.includes('planimetria') ? 'checked' : ''}>
+                        <label for="doc_planimetria_${id}">Planimetria catastale</label>
+
+                        <input type="checkbox" id="doc_visure_${id}" ${stato.documenti_consegnati?.includes('visure') ? 'checked' : ''}>
+                        <label for="doc_visure_${id}">Visure catastali</label>
+
+                        <input type="checkbox" id="doc_ape_${id}" ${stato.documenti_consegnati?.includes('ape') ? 'checked' : ''}>
+                        <label for="doc_ape_${id}">APE (Attestato Prestazione Energetica)</label>
                     </div>
-                    <label>Altro:</label>
-                    <input type="text" id="doc_altro_${id}" placeholder="Altri documenti..." value="${stato.documenti_consegnati?.find(d => d.startsWith('altro:'))?.substring(6) || ''}">
+
+                    <div style="margin-top: 12px;">
+                        <label>Altro:</label>
+                        <textarea id="doc_altro_${id}" placeholder="Altri documenti consegnati..." rows="2">${stato.documenti_consegnati?.find(d => d.startsWith('altro:'))?.substring(6) || ''}</textarea>
+                    </div>
                 </div>
             </div>
         `;
