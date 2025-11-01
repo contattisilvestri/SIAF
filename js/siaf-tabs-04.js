@@ -5,7 +5,7 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 5,
-    patch: 0,
+    patch: 1,
     date: '31/10/2025',
     time: '09:45',
     description: 'Fix doppia generazione cartelle - prevenzione click multipli',
@@ -1988,13 +1988,13 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                     <label>Occupazione:</label>
                     <div class="radio-group">
                         <input type="radio" name="occupazione_${id}" id="occ_libero_${id}" value="libero" ${stato.occupazione === 'libero' ? 'checked' : ''}>
-                        <label for="occ_libero_${id}">Libero</label>
+                        <label for="occ_libero_${id}" class="stato-success">Libero</label>
 
                         <input type="radio" name="occupazione_${id}" id="occ_proprietario_${id}" value="occupato_proprietario" ${stato.occupazione === 'occupato_proprietario' ? 'checked' : ''}>
-                        <label for="occ_proprietario_${id}">Utilizzato dal proprietario</label>
+                        <label for="occ_proprietario_${id}" class="stato-success">Utilizzato dal proprietario</label>
 
                         <input type="radio" name="occupazione_${id}" id="occ_locato_${id}" value="locato" ${stato.occupazione === 'locato' ? 'checked' : ''}>
-                        <label for="occ_locato_${id}">Locato a uso abitativo</label>
+                        <label for="occ_locato_${id}" class="stato-neutral">Locato a uso abitativo</label>
                     </div>
 
                     <!-- Campi condizionali locazione -->
@@ -2021,13 +2021,13 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                     <label>Conformità:</label>
                     <div class="checkbox-group checkbox-group-3">
                         <input type="checkbox" id="conf_edilizia_${id}" ${stato.conformita?.edilizia ? 'checked' : ''}>
-                        <label for="conf_edilizia_${id}">Conforme norme edilizie/urbanistiche</label>
+                        <label for="conf_edilizia_${id}" class="stato-success">Conforme norme edilizie/urbanistiche</label>
 
                         <input type="checkbox" id="conf_catastale_${id}" ${stato.conformita?.catastale ? 'checked' : ''}>
-                        <label for="conf_catastale_${id}">Conforme norme catastali</label>
+                        <label for="conf_catastale_${id}" class="stato-success">Conforme norme catastali</label>
 
                         <input type="checkbox" id="conf_impianti_${id}" ${stato.conformita?.impianti ? 'checked' : ''}>
-                        <label for="conf_impianti_${id}">Impianti conformi normative</label>
+                        <label for="conf_impianti_${id}" class="stato-success">Impianti conformi normative</label>
                     </div>
                 </div>
 
@@ -2036,10 +2036,10 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                     <label>Vincoli:</label>
                     <div class="checkbox-group checkbox-group-3">
                         <input type="checkbox" id="iscriz_preg_${id}" ${stato.vincoli?.iscrizioni_pregiudizievoli ? 'checked' : ''}>
-                        <label for="iscriz_preg_${id}">Iscrizioni/trascrizioni pregiudizievoli</label>
+                        <label for="iscriz_preg_${id}" class="stato-danger">Iscrizioni/trascrizioni pregiudizievoli</label>
 
                         <input type="checkbox" id="vincoli_serv_${id}" ${stato.vincoli?.vincoli_servitu ? 'checked' : ''}>
-                        <label for="vincoli_serv_${id}">Vincoli e/o servitù attive/passive</label>
+                        <label for="vincoli_serv_${id}" class="stato-danger">Vincoli e/o servitù attive/passive</label>
                     </div>
                 </div>
 
@@ -2048,16 +2048,16 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                     <label>Certificazione Energetica:</label>
                     <div class="radio-group">
                         <input type="radio" name="cert_modalita_${id}" id="cert_predisporre_${id}" value="da_predisporre" ${stato.certificazione_energetica?.modalita === 'da_predisporre' ? 'checked' : ''}>
-                        <label for="cert_predisporre_${id}">Da predisporre<br><small>(cura venditore)</small></label>
+                        <label for="cert_predisporre_${id}" class="stato-warning">Da predisporre<br><small>(cura venditore)</small></label>
 
                         <input type="radio" name="cert_modalita_${id}" id="cert_commissionata_${id}" value="commissionata" ${stato.certificazione_energetica?.modalita === 'commissionata' ? 'checked' : ''}>
-                        <label for="cert_commissionata_${id}">Commissionata all'Agenzia</label>
+                        <label for="cert_commissionata_${id}" class="stato-success">Commissionata all'Agenzia</label>
 
                         <input type="radio" name="cert_modalita_${id}" id="cert_non_soggetto_${id}" value="non_soggetto" ${stato.certificazione_energetica?.modalita === 'non_soggetto' ? 'checked' : ''}>
-                        <label for="cert_non_soggetto_${id}">Non soggetto</label>
+                        <label for="cert_non_soggetto_${id}" class="stato-success">Non soggetto</label>
 
                         <input type="radio" name="cert_modalita_${id}" id="cert_presente_${id}" value="gia_presente" ${stato.certificazione_energetica?.modalita === 'gia_presente' ? 'checked' : ''}>
-                        <label for="cert_presente_${id}">Già presente</label>
+                        <label for="cert_presente_${id}" class="stato-success">Già presente</label>
                     </div>
 
                     <!-- Campi condizionali certificazione -->
@@ -2105,16 +2105,16 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                     <label>Documenti consegnati:</label>
                     <div class="checkbox-group">
                         <input type="checkbox" id="doc_titoli_${id}" ${stato.documenti_consegnati?.includes('titoli_provenienza') ? 'checked' : ''}>
-                        <label for="doc_titoli_${id}">Copia titoli di provenienza</label>
+                        <label for="doc_titoli_${id}" class="stato-success">Copia titoli di provenienza</label>
 
                         <input type="checkbox" id="doc_planimetria_${id}" ${stato.documenti_consegnati?.includes('planimetria') ? 'checked' : ''}>
-                        <label for="doc_planimetria_${id}">Planimetria catastale</label>
+                        <label for="doc_planimetria_${id}" class="stato-success">Planimetria catastale</label>
 
                         <input type="checkbox" id="doc_visure_${id}" ${stato.documenti_consegnati?.includes('visure') ? 'checked' : ''}>
-                        <label for="doc_visure_${id}">Visure catastali</label>
+                        <label for="doc_visure_${id}" class="stato-success">Visure catastali</label>
 
                         <input type="checkbox" id="doc_ape_${id}" ${stato.documenti_consegnati?.includes('ape') ? 'checked' : ''}>
-                        <label for="doc_ape_${id}">APE (Attestato Prestazione Energetica)</label>
+                        <label for="doc_ape_${id}" class="stato-success">APE (Attestato Prestazione Energetica)</label>
                     </div>
 
                     <div style="margin-top: 12px;">
