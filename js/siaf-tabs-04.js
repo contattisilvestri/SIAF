@@ -5,7 +5,7 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 5,
-    patch: 4,
+    patch: 5,
     date: '31/10/2025',
     time: '09:45',
     description: 'Fix doppia generazione cartelle - prevenzione click multipli',
@@ -1804,7 +1804,7 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                                 <div class="field-group">
                                     <label for="prezzo_vendita_${immobile.id}">Prezzo richiesto €</label>
                                     <input type="number" id="prezzo_vendita_${immobile.id}"
-                                           min="0" step="1000"
+                                           min="0"
                                            placeholder="es. 60000"
                                            value="${cond.prezzo_vendita || ''}"
                                            data-immobile-id="${immobile.id}">
@@ -1873,7 +1873,7 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                         <div class="field-group">
                             <label for="prezzo_totale_forfettario">Prezzo totale richiesto €</label>
                             <input type="number" id="prezzo_totale_forfettario"
-                                   min="0" step="1000"
+                                   min="0"
                                    placeholder="es. 140000"
                                    value="${cond.prezzo_totale || ''}">
                         </div>
