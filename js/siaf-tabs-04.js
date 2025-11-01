@@ -5,7 +5,7 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 5,
-    patch: 1,
+    patch: 2,
     date: '31/10/2025',
     time: '09:45',
     description: 'Fix doppia generazione cartelle - prevenzione click multipli',
@@ -37,6 +37,30 @@ class SiafApp {
 
         // Controllo prevenzione doppia generazione documenti
         this.isGeneratingDocuments = false;
+
+        // Condizioni Economiche (a livello pratica)
+        this.condizioniEconomiche = {
+            modalita_prezzo: 'singola', // 'singola' o 'offerta_unica'
+            prezzo_forfettario: {
+                prezzo_totale: 0,
+                percentuale_riduzione: 0
+            },
+            compenso: {
+                percentuale_provvigione: 3,
+                soglia_minima: 50000,
+                importo_minimo: 1500
+            },
+            durata: {
+                data_inizio: '',
+                data_fine: '',
+                tipo_rinnovo: 'cessato', // 'cessato', 'tacito_unico', 'tacito_continuo'
+                giorni_preavviso: 30
+            },
+            esclusiva: {
+                attiva: false,
+                testo_custom: ''
+            }
+        };
     }
 
     async init() {
@@ -51,6 +75,7 @@ class SiafApp {
         this.initializeForm();
         this.initializeVenditori();
         this.initializeImmobili();
+        this.initializeCondizioniTab();
         this.initializeActions();
 
         // Auto-popola data
@@ -453,6 +478,11 @@ class SiafApp {
         if (praticaData.immobili && Array.isArray(praticaData.immobili)) {
             this.populateImmobili(praticaData.immobili);
         }
+
+        // Popola condizioni economiche
+        if (praticaData.condizioni_economiche) {
+            this.populateCondizioniEconomiche(praticaData.condizioni_economiche);
+        }
     }
 
     lockOperatoreField(operatoreSelect, operatoreName) {
@@ -517,6 +547,10 @@ class SiafApp {
                     est: [''],
                     sud: [''],
                     ovest: ['']
+                },
+                condizioni_economiche: immobileData.condizioni_economiche || {
+                    prezzo_vendita: 0,
+                    percentuale_riduzione: 0
                 }
             };
 
@@ -573,6 +607,98 @@ class SiafApp {
                 fieldElement.value = venditore[field];
             }
         });
+    }
+
+    // ========== BLOCCO 2.9: POPOLAMENTO CONDIZIONI ECONOMICHE ==========
+    populateCondizioniEconomiche(condizioniData) {
+        console.log('💰 Popolamento condizioni economiche:', condizioniData);
+
+        // Aggiorna oggetto interno
+        if (condizioniData) {
+            this.condizioniEconomiche = {
+                modalita_prezzo: condizioniData.modalita_prezzo || 'singola',
+                prezzo_forfettario: condizioniData.prezzo_forfettario || {
+                    prezzo_totale: 0,
+                    percentuale_riduzione: 0
+                },
+                compenso: condizioniData.compenso || {
+                    percentuale_provvigione: 3,
+                    soglia_minima: 50000,
+                    importo_minimo: 1500
+                },
+                durata: condizioniData.durata || {
+                    data_inizio: '',
+                    data_fine: '',
+                    tipo_rinnovo: 'cessato',
+                    giorni_preavviso: 30
+                },
+                esclusiva: condizioniData.esclusiva || {
+                    attiva: false,
+                    testo_custom: ''
+                }
+            };
+        }
+
+        // Popola toggle OFFERTA UNICA
+        const toggleOfferta = document.getElementById('toggle-offerta-unica');
+        if (toggleOfferta) {
+            toggleOfferta.checked = this.condizioniEconomiche.modalita_prezzo === 'offerta_unica';
+        }
+
+        // Popola compenso mediazione
+        const percProvvigione = document.getElementById('percentuale_provvigione');
+        if (percProvvigione) percProvvigione.value = this.condizioniEconomiche.compenso.percentuale_provvigione || 3;
+
+        const sogliaMinima = document.getElementById('soglia_minima');
+        if (sogliaMinima) sogliaMinima.value = this.condizioniEconomiche.compenso.soglia_minima || 50000;
+
+        const importoMinimo = document.getElementById('importo_minimo');
+        if (importoMinimo) importoMinimo.value = this.condizioniEconomiche.compenso.importo_minimo || 1500;
+
+        // Popola durata incarico
+        const dataInizio = document.getElementById('data_inizio_incarico');
+        if (dataInizio) dataInizio.value = this.condizioniEconomiche.durata.data_inizio || '';
+
+        const dataFine = document.getElementById('data_fine_incarico');
+        if (dataFine) dataFine.value = this.condizioniEconomiche.durata.data_fine || '';
+
+        // Popola tipo rinnovo
+        const tipoRinnovo = this.condizioniEconomiche.durata.tipo_rinnovo || 'cessato';
+        const rinnovoRadio = document.querySelector(`input[name="tipo_rinnovo"][value="${tipoRinnovo}"]`);
+        if (rinnovoRadio) {
+            rinnovoRadio.checked = true;
+
+            // Mostra/nascondi giorni preavviso
+            const giorniSection = document.getElementById('giorni-preavviso-section');
+            if (giorniSection) {
+                giorniSection.style.display = tipoRinnovo === 'tacito_continuo' ? 'block' : 'none';
+            }
+        }
+
+        const giorniPreavviso = document.getElementById('giorni_preavviso');
+        if (giorniPreavviso) giorniPreavviso.value = this.condizioniEconomiche.durata.giorni_preavviso || 30;
+
+        // Popola esclusiva
+        const esclusivaCheckbox = document.getElementById('esclusiva_attiva');
+        if (esclusivaCheckbox) {
+            esclusivaCheckbox.checked = this.condizioniEconomiche.esclusiva.attiva || false;
+
+            // Mostra/nascondi testo custom
+            const testoSection = document.getElementById('esclusiva-testo-section');
+            if (testoSection) {
+                testoSection.style.display = esclusivaCheckbox.checked ? 'block' : 'none';
+            }
+        }
+
+        const esclusivaTesto = document.getElementById('esclusiva_testo');
+        if (esclusivaTesto) esclusivaTesto.value = this.condizioniEconomiche.esclusiva.testo_custom || '';
+
+        // Renderizza sezione prezzo (include dati immobili già caricati)
+        setTimeout(() => {
+            this.renderSezionePrezzo();
+        }, 200);
+
+        console.log('✅ Condizioni economiche popolate');
     }
 
     formatDateForDisplay(date) {
@@ -1130,6 +1256,9 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         // Prima salva tutti i dati degli immobili dai campi HTML
         this.saveAllImmobiliData();
 
+        // Aggiorna condizioni economiche da form
+        this.updateCondizioniEconomiche();
+
         const finalData = {
             // Dati operatore
             lettera: selectedOption?.dataset.lettera || '',
@@ -1143,7 +1272,10 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
             venditori: venditoriData,
 
             // Immobili (JSON)
-            immobili: this.immobili
+            immobili: this.immobili,
+
+            // Condizioni Economiche (JSON)
+            condizioni_economiche: this.condizioniEconomiche
         };
         
         console.log('🎯 Final form data:', finalData);
@@ -1568,6 +1700,371 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         console.log('✅ Sistema immobili inizializzato');
     }
 
+    // ========== BLOCCO: SISTEMA CONDIZIONI ECONOMICHE ==========
+
+    initializeCondizioniTab() {
+        console.log('💰 Inizializzando tab Condizioni Economiche...');
+
+        // Event listener toggle OFFERTA UNICA
+        const toggleOfferta = document.getElementById('toggle-offerta-unica');
+        if (toggleOfferta) {
+            toggleOfferta.addEventListener('change', () => {
+                this.handleToggleOffertaUnica();
+            });
+            console.log('✅ Toggle offerta unica inizializzato');
+        }
+
+        // Event listeners tipo rinnovo
+        const rinnovoRadios = document.querySelectorAll('input[name="tipo_rinnovo"]');
+        rinnovoRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const giorniSection = document.getElementById('giorni-preavviso-section');
+                if (e.target.value === 'tacito_continuo') {
+                    giorniSection.style.display = 'block';
+                } else {
+                    giorniSection.style.display = 'none';
+                }
+            });
+        });
+
+        // Event listener esclusiva
+        const esclusivaCheckbox = document.getElementById('esclusiva_attiva');
+        if (esclusivaCheckbox) {
+            esclusivaCheckbox.addEventListener('change', (e) => {
+                const testoSection = document.getElementById('esclusiva-testo-section');
+                testoSection.style.display = e.target.checked ? 'block' : 'none';
+            });
+        }
+
+        // Event listeners calcoli automatici compenso
+        const provvigioneInput = document.getElementById('percentuale_provvigione');
+        const sogliaInput = document.getElementById('soglia_minima');
+        const importoInput = document.getElementById('importo_minimo');
+
+        if (provvigioneInput) {
+            provvigioneInput.addEventListener('input', () => {
+                this.updateCondizioniEconomiche();
+                this.refreshSezionePrezzoIfNeeded();
+            });
+        }
+
+        // Rendering iniziale sezione prezzo
+        this.renderSezionePrezzo();
+
+        console.log('✅ Tab Condizioni Economiche inizializzato');
+    }
+
+    handleToggleOffertaUnica() {
+        const toggle = document.getElementById('toggle-offerta-unica');
+        const isOffertaUnica = toggle.checked;
+
+        this.condizioniEconomiche.modalita_prezzo = isOffertaUnica ? 'offerta_unica' : 'singola';
+
+        console.log(`🔄 Modalità prezzo cambiata: ${this.condizioniEconomiche.modalita_prezzo}`);
+
+        // Re-render sezione prezzo
+        this.renderSezionePrezzo();
+    }
+
+    renderSezionePrezzo() {
+        const container = document.getElementById('sezione-prezzo');
+        if (!container) return;
+
+        const isOffertaUnica = this.condizioniEconomiche.modalita_prezzo === 'offerta_unica';
+
+        if (isOffertaUnica) {
+            container.innerHTML = this.renderSezionePrezzoForfettaria();
+        } else {
+            container.innerHTML = this.renderSezionePrezzoSingola();
+        }
+
+        // Inizializza event listeners per i campi prezzo
+        this.initializePrezzoEventListeners();
+    }
+
+    renderSezionePrezzoSingola() {
+        let html = '<div class="prezzo-section">';
+        html += '<h3>💰 Prezzo di Vendita per Immobile</h3>';
+
+        // Filtra immobili con dati compilati (provincia e comune)
+        const immobiliCompilati = this.immobili.filter(imm => imm.provincia && imm.comune);
+
+        if (immobiliCompilati.length === 0) {
+            html += '<p style="color: #6c757d; font-style: italic; padding: 20px; text-align: center;">Nessun immobile compilato. Completa almeno un immobile nella tab "Immobile Prima".</p>';
+        } else {
+            immobiliCompilati.forEach((immobile, index) => {
+                const cond = immobile.condizioni_economiche || { prezzo_vendita: 0, percentuale_riduzione: 0 };
+                const calcolati = calcolaValoriCondizioni(cond);
+
+                html += `
+                    <div class="prezzo-immobile-card">
+                        <h4>🏠 Immobile ${index + 1}: ${immobile.comune} (${immobile.provincia})</h4>
+                        <div class="condizioni-form">
+                            <div class="field-row">
+                                <div class="field-group">
+                                    <label for="prezzo_vendita_${immobile.id}">Prezzo richiesto €</label>
+                                    <input type="number" id="prezzo_vendita_${immobile.id}"
+                                           min="0" step="1000"
+                                           placeholder="es. 60000"
+                                           value="${cond.prezzo_vendita || ''}"
+                                           data-immobile-id="${immobile.id}">
+                                </div>
+                                <div class="field-group">
+                                    <label for="percentuale_riduzione_${immobile.id}">Riduzione max %</label>
+                                    <input type="number" id="percentuale_riduzione_${immobile.id}"
+                                           min="0" max="100" step="0.5"
+                                           placeholder="es. 5"
+                                           value="${cond.percentuale_riduzione || ''}"
+                                           data-immobile-id="${immobile.id}">
+                                </div>
+                            </div>
+
+                            ${calcolati.prezzo_vendita ? `
+                                <div class="prezzo-info-row">
+                                    <span class="prezzo-info-label">Prezzo in lettere:</span>
+                                    <span class="prezzo-info-value prezzo-in-lettere">${calcolati.prezzo_vendita_lettere}</span>
+                                </div>
+                            ` : ''}
+
+                            ${calcolati.prezzo_minimo ? `
+                                <div class="prezzo-info-row">
+                                    <span class="prezzo-info-label">Prezzo minimo (dopo riduzione):</span>
+                                    <span class="prezzo-info-value">€ ${calcolati.prezzo_minimo.toLocaleString('it-IT')}</span>
+                                </div>
+                                <div class="prezzo-info-row">
+                                    <span class="prezzo-info-label">Prezzo minimo in lettere:</span>
+                                    <span class="prezzo-info-value prezzo-in-lettere">${calcolati.prezzo_minimo_lettere}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Pulsante "Applica a tutti"
+            if (immobiliCompilati.length > 1) {
+                html += `
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button type="button" class="btn-applica-tutti" onclick="window.siafApp.applicaCondizioniATutti()">
+                            🔄 Applica condizioni Immobile 1 a tutti
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        html += '</div>';
+        return html;
+    }
+
+    renderSezionePrezzoForfettaria() {
+        const cond = this.condizioniEconomiche.prezzo_forfettario;
+        const calcolati = calcolaValoriCondizioni({
+            prezzo_vendita: cond.prezzo_totale,
+            percentuale_riduzione: cond.percentuale_riduzione
+        });
+
+        let html = '<div class="prezzo-section">';
+        html += '<h3>🏢 Prezzo Unico Gruppo Immobili</h3>';
+        html += `
+            <div class="prezzo-immobile-card">
+                <div class="condizioni-form">
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="prezzo_totale_forfettario">Prezzo totale richiesto €</label>
+                            <input type="number" id="prezzo_totale_forfettario"
+                                   min="0" step="1000"
+                                   placeholder="es. 140000"
+                                   value="${cond.prezzo_totale || ''}">
+                        </div>
+                        <div class="field-group">
+                            <label for="percentuale_riduzione_forfettaria">Riduzione max %</label>
+                            <input type="number" id="percentuale_riduzione_forfettaria"
+                                   min="0" max="100" step="0.5"
+                                   placeholder="es. 5"
+                                   value="${cond.percentuale_riduzione || ''}">
+                        </div>
+                    </div>
+
+                    ${calcolati.prezzo_vendita ? `
+                        <div class="prezzo-info-row">
+                            <span class="prezzo-info-label">Prezzo in lettere:</span>
+                            <span class="prezzo-info-value prezzo-in-lettere">${calcolati.prezzo_vendita_lettere}</span>
+                        </div>
+                    ` : ''}
+
+                    ${calcolati.prezzo_minimo ? `
+                        <div class="prezzo-info-row">
+                            <span class="prezzo-info-label">Prezzo minimo (dopo riduzione):</span>
+                            <span class="prezzo-info-value">€ ${calcolati.prezzo_minimo.toLocaleString('it-IT')}</span>
+                        </div>
+                        <div class="prezzo-info-row">
+                            <span class="prezzo-info-label">Prezzo minimo in lettere:</span>
+                            <span class="prezzo-info-value prezzo-in-lettere">${calcolati.prezzo_minimo_lettere}</span>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+        html += '</div>';
+        return html;
+    }
+
+    initializePrezzoEventListeners() {
+        const isOffertaUnica = this.condizioniEconomiche.modalita_prezzo === 'offerta_unica';
+
+        if (isOffertaUnica) {
+            // Event listeners per prezzo forfettario
+            const prezzoInput = document.getElementById('prezzo_totale_forfettario');
+            const riduzioneInput = document.getElementById('percentuale_riduzione_forfettaria');
+
+            if (prezzoInput) {
+                prezzoInput.addEventListener('input', () => {
+                    this.updatePrezzoForfettario();
+                });
+            }
+
+            if (riduzioneInput) {
+                riduzioneInput.addEventListener('input', () => {
+                    this.updatePrezzoForfettario();
+                });
+            }
+        } else {
+            // Event listeners per prezzo singolo
+            this.immobili.forEach(immobile => {
+                const prezzoInput = document.getElementById(`prezzo_vendita_${immobile.id}`);
+                const riduzioneInput = document.getElementById(`percentuale_riduzione_${immobile.id}`);
+
+                if (prezzoInput) {
+                    prezzoInput.addEventListener('input', (e) => {
+                        this.updatePrezzoSingolo(immobile.id);
+                    });
+                }
+
+                if (riduzioneInput) {
+                    riduzioneInput.addEventListener('input', (e) => {
+                        this.updatePrezzoSingolo(immobile.id);
+                    });
+                }
+            });
+        }
+    }
+
+    updatePrezzoSingolo(immobileId) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        if (!immobile) return;
+
+        const prezzoInput = document.getElementById(`prezzo_vendita_${immobileId}`);
+        const riduzioneInput = document.getElementById(`percentuale_riduzione_${immobileId}`);
+
+        if (!immobile.condizioni_economiche) {
+            immobile.condizioni_economiche = { prezzo_vendita: 0, percentuale_riduzione: 0 };
+        }
+
+        immobile.condizioni_economiche.prezzo_vendita = parseFloat(prezzoInput.value) || 0;
+        immobile.condizioni_economiche.percentuale_riduzione = parseFloat(riduzioneInput.value) || 0;
+
+        this.isDirty = true;
+
+        // Re-render per aggiornare calcoli
+        this.renderSezionePrezzo();
+    }
+
+    updatePrezzoForfettario() {
+        const prezzoInput = document.getElementById('prezzo_totale_forfettario');
+        const riduzioneInput = document.getElementById('percentuale_riduzione_forfettaria');
+
+        this.condizioniEconomiche.prezzo_forfettario.prezzo_totale = parseFloat(prezzoInput.value) || 0;
+        this.condizioniEconomiche.prezzo_forfettario.percentuale_riduzione = parseFloat(riduzioneInput.value) || 0;
+
+        this.isDirty = true;
+
+        // Re-render per aggiornare calcoli
+        this.renderSezionePrezzo();
+    }
+
+    applicaCondizioniATutti() {
+        const immobiliCompilati = this.immobili.filter(imm => imm.provincia && imm.comune);
+        if (immobiliCompilati.length === 0) return;
+
+        const primoImmobile = immobiliCompilati[0];
+        const condizioniDaCopiare = primoImmobile.condizioni_economiche || { prezzo_vendita: 0, percentuale_riduzione: 0 };
+
+        immobiliCompilati.forEach((immobile, index) => {
+            if (index > 0) { // Salta il primo
+                immobile.condizioni_economiche = {
+                    prezzo_vendita: condizioniDaCopiare.prezzo_vendita,
+                    percentuale_riduzione: condizioniDaCopiare.percentuale_riduzione
+                };
+            }
+        });
+
+        this.isDirty = true;
+
+        // Re-render
+        this.renderSezionePrezzo();
+
+        console.log('✅ Condizioni applicate a tutti gli immobili');
+        alert('✅ Condizioni economiche del primo immobile applicate a tutti!');
+    }
+
+    updateCondizioniEconomiche() {
+        const provvigione = document.getElementById('percentuale_provvigione');
+        const soglia = document.getElementById('soglia_minima');
+        const importo = document.getElementById('importo_minimo');
+        const dataInizio = document.getElementById('data_inizio_incarico');
+        const dataFine = document.getElementById('data_fine_incarico');
+        const giorniPreavviso = document.getElementById('giorni_preavviso');
+        const esclusiva = document.getElementById('esclusiva_attiva');
+        const esclusivaTesto = document.getElementById('esclusiva_testo');
+
+        if (provvigione) {
+            this.condizioniEconomiche.compenso.percentuale_provvigione = parseFloat(provvigione.value) || 3;
+        }
+
+        if (soglia) {
+            this.condizioniEconomiche.compenso.soglia_minima = parseFloat(soglia.value) || 50000;
+        }
+
+        if (importo) {
+            this.condizioniEconomiche.compenso.importo_minimo = parseFloat(importo.value) || 1500;
+        }
+
+        if (dataInizio) {
+            this.condizioniEconomiche.durata.data_inizio = dataInizio.value;
+        }
+
+        if (dataFine) {
+            this.condizioniEconomiche.durata.data_fine = dataFine.value;
+        }
+
+        const tipoRinnovo = document.querySelector('input[name="tipo_rinnovo"]:checked');
+        if (tipoRinnovo) {
+            this.condizioniEconomiche.durata.tipo_rinnovo = tipoRinnovo.value;
+        }
+
+        if (giorniPreavviso) {
+            this.condizioniEconomiche.durata.giorni_preavviso = parseInt(giorniPreavviso.value) || 30;
+        }
+
+        if (esclusiva) {
+            this.condizioniEconomiche.esclusiva.attiva = esclusiva.checked;
+        }
+
+        if (esclusivaTesto) {
+            this.condizioniEconomiche.esclusiva.testo_custom = esclusivaTesto.value;
+        }
+
+        this.isDirty = true;
+    }
+
+    refreshSezionePrezzoIfNeeded() {
+        // Se siamo nella tab condizioni, re-render per aggiornare calcoli provvigione
+        if (this.currentTab === 'condizioni') {
+            this.renderSezionePrezzo();
+        }
+    }
+
     addImmobile() {
         console.log('🏠 Aggiungendo immobile...');
 
@@ -1610,6 +2107,10 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                     certificatore: ''
                 },
                 documenti_consegnati: []
+            },
+            condizioni_economiche: {
+                prezzo_vendita: 0,
+                percentuale_riduzione: 0
             }
         };
 
@@ -3098,6 +3599,155 @@ function updateVersionIndicator() {
 
         console.log(`✅ Version indicator aggiornato: v${version.major}.${version.minor}.${version.patch}`);
     }
+}
+
+// ========== BLOCCO: UTILITY FUNCTIONS - Conversione numeri in lettere ==========
+
+/**
+ * Converte un numero in formato lettere italiano
+ * @param {number} numero - Il numero da convertire
+ * @param {boolean} includiDecimali - Se true, aggiunge /00 per i decimali
+ * @returns {string} - Il numero in lettere
+ *
+ * Esempi:
+ * numeroInLettere(60000, true) → "sessantamila/00"
+ * numeroInLettere(3, false) → "tre"
+ * numeroInLettere(1500, true) → "millecinquecento/00"
+ */
+function numeroInLettere(numero, includiDecimali = true) {
+    if (numero === 0) return includiDecimali ? "zero/00" : "zero";
+    if (!numero || isNaN(numero)) return "";
+
+    const unita = ['', 'uno', 'due', 'tre', 'quattro', 'cinque', 'sei', 'sette', 'otto', 'nove'];
+    const decine = ['', 'dieci', 'venti', 'trenta', 'quaranta', 'cinquanta', 'sessanta', 'settanta', 'ottanta', 'novanta'];
+    const teens = ['dieci', 'undici', 'dodici', 'tredici', 'quattordici', 'quindici', 'sedici', 'diciassette', 'diciotto', 'diciannove'];
+
+    function convertiCentinaia(num) {
+        if (num === 0) return '';
+
+        let risultato = '';
+
+        // Centinaia
+        const centinaia = Math.floor(num / 100);
+        if (centinaia > 0) {
+            if (centinaia === 1) {
+                risultato += 'cento';
+            } else {
+                risultato += unita[centinaia] + 'cento';
+            }
+        }
+
+        // Decine e unità
+        const resto = num % 100;
+        if (resto >= 10 && resto < 20) {
+            risultato += teens[resto - 10];
+        } else {
+            const decina = Math.floor(resto / 10);
+            const unita_resto = resto % 10;
+
+            if (decina > 0) {
+                risultato += decine[decina];
+                // Eufonia: venti + uno = ventuno, venti + otto = ventotto
+                if (unita_resto === 1 || unita_resto === 8) {
+                    risultato = risultato.slice(0, -1); // Rimuovi ultima vocale
+                }
+            }
+
+            if (unita_resto > 0) {
+                risultato += unita[unita_resto];
+            }
+        }
+
+        return risultato;
+    }
+
+    let numInt = Math.floor(numero);
+    let risultato = '';
+
+    // Milioni
+    const milioni = Math.floor(numInt / 1000000);
+    if (milioni > 0) {
+        if (milioni === 1) {
+            risultato += 'unmilione';
+        } else {
+            risultato += convertiCentinaia(milioni) + 'milioni';
+        }
+        numInt %= 1000000;
+    }
+
+    // Migliaia
+    const migliaia = Math.floor(numInt / 1000);
+    if (migliaia > 0) {
+        if (migliaia === 1) {
+            risultato += 'mille';
+        } else {
+            risultato += convertiCentinaia(migliaia) + 'mila';
+        }
+        numInt %= 1000;
+    }
+
+    // Centinaia, decine, unità
+    if (numInt > 0) {
+        risultato += convertiCentinaia(numInt);
+    }
+
+    // Aggiungi decimali se richiesto
+    if (includiDecimali) {
+        const decimali = Math.round((numero - Math.floor(numero)) * 100);
+        risultato += '/' + decimali.toString().padStart(2, '0');
+    }
+
+    return risultato || 'zero';
+}
+
+/**
+ * Calcola automaticamente valori derivati per le condizioni economiche
+ * @param {object} condizioni - Oggetto condizioni economiche
+ * @returns {object} - Oggetto con valori calcolati e convertiti in lettere
+ */
+function calcolaValoriCondizioni(condizioni) {
+    const risultato = {};
+
+    // Prezzo e riduzione
+    if (condizioni.prezzo_vendita) {
+        risultato.prezzo_vendita = condizioni.prezzo_vendita;
+        risultato.prezzo_vendita_lettere = numeroInLettere(condizioni.prezzo_vendita, true);
+
+        if (condizioni.percentuale_riduzione) {
+            risultato.percentuale_riduzione = condizioni.percentuale_riduzione;
+            risultato.percentuale_riduzione_lettere = numeroInLettere(condizioni.percentuale_riduzione, false);
+
+            // Calcola prezzo minimo
+            const prezzoMinimo = condizioni.prezzo_vendita * (1 - condizioni.percentuale_riduzione / 100);
+            risultato.prezzo_minimo = Math.round(prezzoMinimo);
+            risultato.prezzo_minimo_lettere = numeroInLettere(risultato.prezzo_minimo, true);
+        }
+    }
+
+    // Provvigione
+    if (condizioni.percentuale_provvigione) {
+        risultato.percentuale_provvigione = condizioni.percentuale_provvigione;
+        risultato.percentuale_provvigione_lettere = numeroInLettere(condizioni.percentuale_provvigione, false);
+
+        if (condizioni.prezzo_vendita) {
+            const provvigioneEuro = condizioni.prezzo_vendita * (condizioni.percentuale_provvigione / 100);
+            risultato.provvigione_euro = Math.round(provvigioneEuro);
+            risultato.provvigione_euro_lettere = numeroInLettere(risultato.provvigione_euro, true);
+        }
+    }
+
+    // Soglia minima e importo minimo
+    if (condizioni.soglia_minima) {
+        risultato.soglia_minima = condizioni.soglia_minima;
+        risultato.soglia_minima_lettere = numeroInLettere(condizioni.soglia_minima, true);
+    }
+
+    if (condizioni.importo_minimo) {
+        risultato.importo_minimo = condizioni.importo_minimo;
+        risultato.importo_minimo_lettere = numeroInLettere(condizioni.importo_minimo, true);
+    }
+
+    return risultato;
 }
 
 // BLOCCO 7: Inizializzazione app quando DOM è pronto
