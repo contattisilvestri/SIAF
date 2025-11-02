@@ -5,7 +5,7 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 6,
-    patch: 0,
+    patch: 1,
     date: '31/10/2025',
     time: '09:45',
     description: 'Fix doppia generazione cartelle - prevenzione click multipli',
@@ -84,6 +84,9 @@ class SiafApp {
         this.initializeImmobili();
         this.initializeCondizioniTab();
         this.initializeActions();
+
+        // Renderizza ultime pratiche
+        this.renderUltimePratiche();
 
         // Auto-popola data
         this.setCurrentDate();
@@ -497,6 +500,12 @@ class SiafApp {
         // Popola condizioni economiche
         if (praticaData.condizioni_economiche) {
             this.populateCondizioniEconomiche(praticaData.condizioni_economiche);
+        }
+
+        // Aggiungi alle pratiche recenti
+        if (praticaData.protocollo && praticaData.venditori && praticaData.venditori.length > 0) {
+            const cognomeVenditore = praticaData.venditori[0]?.cognome || 'Sconosciuto';
+            this.addPraticaRecente(praticaData.protocollo, cognomeVenditore);
         }
     }
 
@@ -1346,8 +1355,16 @@ renderVenditore(venditore) {
                 if (formTitle) {
                     formTitle.textContent = `📝 Modifica Pratica - ${result.protocollo}`;
                 }
+
+                // Aggiungi alle pratiche recenti
+                const cognomeVenditore = this.venditori[0]?.cognome || 'Sconosciuto';
+                this.addPraticaRecente(result.protocollo, cognomeVenditore);
+            } else if (this.praticaMode === 'edit' && this.currentProtocollo) {
+                // Se è un edit, aggiorna comunque le pratiche recenti
+                const cognomeVenditore = this.venditori[0]?.cognome || 'Sconosciuto';
+                this.addPraticaRecente(this.currentProtocollo, cognomeVenditore);
             }
-            
+
         } catch (error) {
             this.showSaveError(error);
         }
@@ -3746,6 +3763,101 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                 <span class="provincia">(${item.provincia})</span>
             </button>
         `).join('');
+    }
+
+    // ========== BLOCCO: GESTIONE ULTIME PRATICHE ==========
+
+    /**
+     * Aggiunge una pratica alla lista delle pratiche recenti
+     * @param {string} protocollo - Numero protocollo (es. "3764/L")
+     * @param {string} cognomeVenditore - Cognome del primo venditore
+     */
+    addPraticaRecente(protocollo, cognomeVenditore) {
+        const pratiche = this.getPraticheRecenti();
+
+        // Crea oggetto pratica
+        const nuovaPratica = {
+            protocollo: protocollo,
+            cognome: cognomeVenditore,
+            timestamp: new Date().toISOString(),
+            dataFormattata: new Date().toLocaleDateString('it-IT', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            })
+        };
+
+        // Rimuovi duplicati (stesso protocollo)
+        const senzaDuplicati = pratiche.filter(p => p.protocollo !== protocollo);
+
+        // Aggiungi in testa
+        senzaDuplicati.unshift(nuovaPratica);
+
+        // Mantieni solo ultime 10
+        const ultime10 = senzaDuplicati.slice(0, 10);
+
+        // Salva in localStorage
+        try {
+            localStorage.setItem('siaf_pratiche_recenti', JSON.stringify(ultime10));
+            console.log(`✅ Pratica ${protocollo} aggiunta alle recenti`);
+        } catch (error) {
+            console.error('Errore salvataggio pratiche recenti:', error);
+        }
+
+        // Re-render della sezione
+        this.renderUltimePratiche();
+    }
+
+    /**
+     * Recupera le pratiche recenti da localStorage
+     * @returns {Array} Lista pratiche recenti
+     */
+    getPraticheRecenti() {
+        try {
+            const data = localStorage.getItem('siaf_pratiche_recenti');
+            return data ? JSON.parse(data) : [];
+        } catch (error) {
+            console.error('Errore lettura pratiche recenti:', error);
+            return [];
+        }
+    }
+
+    /**
+     * Renderizza la sezione ultime pratiche
+     */
+    renderUltimePratiche() {
+        const container = document.getElementById('ultime-pratiche-container');
+        if (!container) return;
+
+        const pratiche = this.getPraticheRecenti();
+
+        if (pratiche.length === 0) {
+            container.innerHTML = `
+                <div class="ultime-pratiche-empty">
+                    Nessuna pratica recente. Le pratiche salvate o caricate appariranno qui.
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = pratiche.map(pratica => `
+            <button type="button" class="pratica-recente-btn" onclick="window.siafApp.caricaPraticaRecente('${pratica.protocollo}')">
+                <div class="pratica-recente-protocollo">${pratica.protocollo}</div>
+                <div class="pratica-recente-venditore">${pratica.cognome}</div>
+                <div class="pratica-recente-data">${pratica.dataFormattata}</div>
+            </button>
+        `).join('');
+
+        console.log(`📋 Renderizzate ${pratiche.length} pratiche recenti`);
+    }
+
+    /**
+     * Carica una pratica dalla lista recenti
+     * @param {string} protocollo - Numero protocollo da caricare
+     */
+    async caricaPraticaRecente(protocollo) {
+        console.log(`📂 Caricamento pratica recente: ${protocollo}`);
+        await this.caricaPraticaEsistente(protocollo);
     }
 }
 
