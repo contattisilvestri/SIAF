@@ -5,7 +5,7 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 5,
-    patch: 7,
+    patch: 8,
     date: '31/10/2025',
     time: '09:45',
     description: 'Fix doppia generazione cartelle - prevenzione click multipli',
@@ -54,11 +54,18 @@ class SiafApp {
                 data_inizio: '',
                 data_fine: '',
                 tipo_rinnovo: 'cessato', // 'cessato', 'tacito_unico', 'tacito_continuo'
-                giorni_preavviso: 30
+                giorni_preavviso: 5
             },
             esclusiva: {
                 attiva: false,
                 testo_custom: ''
+            },
+            condizioni_pagamento: {
+                giorni_versamento: 15,
+                percentuale_anticipo: 10,
+                modalita_saldo: 'assegno_circolare', // 'assegno_circolare', 'bonifico_istantaneo', 'altro'
+                saldo_altro_testo: '',
+                giorni_stipula_atto: 150
             }
         };
     }
@@ -630,7 +637,7 @@ class SiafApp {
                     data_inizio: '',
                     data_fine: '',
                     tipo_rinnovo: 'cessato',
-                    giorni_preavviso: 30
+                    giorni_preavviso: 5
                 },
                 esclusiva: condizioniData.esclusiva || {
                     attiva: false,
@@ -676,7 +683,7 @@ class SiafApp {
         }
 
         const giorniPreavviso = document.getElementById('giorni_preavviso');
-        if (giorniPreavviso) giorniPreavviso.value = this.condizioniEconomiche.durata.giorni_preavviso || 30;
+        if (giorniPreavviso) giorniPreavviso.value = this.condizioniEconomiche.durata.giorni_preavviso || 5;
 
         // Popola esclusiva
         const esclusivaCheckbox = document.getElementById('esclusiva_attiva');
@@ -692,6 +699,29 @@ class SiafApp {
 
         const esclusivaTesto = document.getElementById('esclusiva_testo');
         if (esclusivaTesto) esclusivaTesto.value = this.condizioniEconomiche.esclusiva.testo_custom || '';
+
+        // Popola condizioni di pagamento
+        const giorniVersamento = document.getElementById('giorni_versamento');
+        if (giorniVersamento) giorniVersamento.value = this.condizioniEconomiche.condizioni_pagamento.giorni_versamento || 15;
+
+        const percAnticipo = document.getElementById('percentuale_anticipo');
+        if (percAnticipo) percAnticipo.value = this.condizioniEconomiche.condizioni_pagamento.percentuale_anticipo || 10;
+
+        const modalitaSaldo = this.condizioniEconomiche.condizioni_pagamento.modalita_saldo || 'assegno_circolare';
+        const saldoRadio = document.querySelector(`input[name="modalita_saldo"][value="${modalitaSaldo}"]`);
+        if (saldoRadio) {
+            saldoRadio.checked = true;
+            const altroSection = document.getElementById('saldo-altro-section');
+            if (altroSection) {
+                altroSection.style.display = modalitaSaldo === 'altro' ? 'block' : 'none';
+            }
+        }
+
+        const saldoAltroTesto = document.getElementById('saldo_altro_testo');
+        if (saldoAltroTesto) saldoAltroTesto.value = this.condizioniEconomiche.condizioni_pagamento.saldo_altro_testo || '';
+
+        const giorniStipula = document.getElementById('giorni_stipula_atto');
+        if (giorniStipula) giorniStipula.value = this.condizioniEconomiche.condizioni_pagamento.giorni_stipula_atto || 150;
 
         // Renderizza sezione prezzo (include dati immobili già caricati)
         setTimeout(() => {
@@ -1736,6 +1766,19 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
             });
         }
 
+        // Event listeners modalità saldo (condizioni pagamento)
+        const saldoRadios = document.querySelectorAll('input[name="modalita_saldo"]');
+        saldoRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const altroSection = document.getElementById('saldo-altro-section');
+                if (e.target.value === 'altro') {
+                    altroSection.style.display = 'block';
+                } else {
+                    altroSection.style.display = 'none';
+                }
+            });
+        });
+
         // Event listeners calcoli automatici compenso
         const provvigioneInput = document.getElementById('percentuale_provvigione');
         const sogliaInput = document.getElementById('soglia_minima');
@@ -2117,7 +2160,7 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         }
 
         if (giorniPreavviso) {
-            this.condizioniEconomiche.durata.giorni_preavviso = parseInt(giorniPreavviso.value) || 30;
+            this.condizioniEconomiche.durata.giorni_preavviso = parseInt(giorniPreavviso.value) || 5;
         }
 
         if (esclusiva) {
@@ -2126,6 +2169,33 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
 
         if (esclusivaTesto) {
             this.condizioniEconomiche.esclusiva.testo_custom = esclusivaTesto.value;
+        }
+
+        // Condizioni di pagamento
+        const giorniVersamento = document.getElementById('giorni_versamento');
+        const percAnticipo = document.getElementById('percentuale_anticipo');
+        const modalitaSaldo = document.querySelector('input[name="modalita_saldo"]:checked');
+        const saldoAltroTesto = document.getElementById('saldo_altro_testo');
+        const giorniStipula = document.getElementById('giorni_stipula_atto');
+
+        if (giorniVersamento) {
+            this.condizioniEconomiche.condizioni_pagamento.giorni_versamento = parseInt(giorniVersamento.value) || 15;
+        }
+
+        if (percAnticipo) {
+            this.condizioniEconomiche.condizioni_pagamento.percentuale_anticipo = parseFloat(percAnticipo.value) || 10;
+        }
+
+        if (modalitaSaldo) {
+            this.condizioniEconomiche.condizioni_pagamento.modalita_saldo = modalitaSaldo.value;
+        }
+
+        if (saldoAltroTesto) {
+            this.condizioniEconomiche.condizioni_pagamento.saldo_altro_testo = saldoAltroTesto.value;
+        }
+
+        if (giorniStipula) {
+            this.condizioniEconomiche.condizioni_pagamento.giorni_stipula_atto = parseInt(giorniStipula.value) || 150;
         }
 
         this.isDirty = true;
