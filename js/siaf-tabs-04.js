@@ -5,7 +5,7 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 6,
-    patch: 1,
+    patch: 2,
     date: '31/10/2025',
     time: '09:45',
     description: 'Fix doppia generazione cartelle - prevenzione click multipli',
@@ -3876,28 +3876,59 @@ async function loadItalyGeoData() {
         return ITALY_GEO_DATA; // Già caricato
     }
 
-    try {
-        console.log('🌍 Caricamento geodati italiani...');
-        const response = await fetch(ITALY_GEO_URL);
+    // Retry logic: max 2 tentativi
+    const maxRetries = 2;
+    let lastError = null;
 
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            console.log(`🌍 Caricamento geodati italiani... (tentativo ${attempt}/${maxRetries})`);
+
+            // AbortController per timeout di 5 secondi
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+            const response = await fetch(ITALY_GEO_URL, {
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+            ITALY_GEO_DATA = data;
+
+            // Processa i dati per creare la struttura province->comuni
+            processGeoDataForDropdowns();
+
+            console.log(`✅ Caricati ${data.length} comuni italiani`);
+            return data;
+
+        } catch (error) {
+            lastError = error;
+
+            if (error.name === 'AbortError') {
+                console.warn(`⏱️ Timeout caricamento geodati (tentativo ${attempt}/${maxRetries})`);
+            } else {
+                console.warn(`⚠️ Errore caricamento geodati (tentativo ${attempt}/${maxRetries}):`, error.message);
+            }
+
+            // Se non è l'ultimo tentativo, aspetta 1 secondo prima di riprovare
+            if (attempt < maxRetries) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
         }
-
-        const data = await response.json();
-        ITALY_GEO_DATA = data;
-
-        // Processa i dati per creare la struttura province->comuni
-        processGeoDataForDropdowns();
-
-        console.log(`✅ Caricati ${data.length} comuni italiani`);
-        return data;
-
-    } catch (error) {
-        console.warn('⚠️ Errore caricamento geodati:', error);
-        // Fallback ai dati di base per il Nord Italia
-        return getFallbackGeoData();
     }
+
+    // Tutti i tentativi falliti - usa fallback
+    console.warn('❌ Impossibile caricare geodati completi dopo', maxRetries, 'tentativi');
+    console.warn('📍 Utilizzo dati fallback (Nord Italia)');
+    console.warn('💡 L\'applicazione funzionerà con un subset limitato di province/comuni');
+
+    return getFallbackGeoData();
 }
 
 // Processa i dati per creare la struttura ottimizzata per dropdown
@@ -4145,19 +4176,34 @@ function calcolaValoriCondizioni(condizioni) {
 }
 
 // BLOCCO 7: Inizializzazione app quando DOM è pronto
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     console.log('🚀 Inizializzazione SIAF App...');
 
-    window.siafApp = new SiafApp();
-    window.siafApp.init();
+    try {
+        window.siafApp = new SiafApp();
+        await window.siafApp.init();  // ← AWAIT per aspettare completamento
 
-    console.log('✅ SIAF App pronta!');
+        console.log('✅ SIAF App pronta!');
 
-    // Aggiorna indicatore versione dinamicamente
-    updateVersionIndicator();
+        // Aggiorna indicatore versione SOLO dopo init() completato
+        updateVersionIndicator();
 
-    // 🚀 VERSION FINALE - Sempre ultimo messaggio in console
-    const version = window.SIAF_VERSION;
-    console.log(`%c🚀 SIAF SYSTEM v${version.major}.${version.minor}.${version.patch}-FINAL-${version.date.replace(/\//g, '-')}-${version.time.replace(':', '')} 🚀`, `background: ${version.color}; color: white; font-size: 16px; font-weight: bold; padding: 10px; border-radius: 5px;`);
-    console.log(`%c📅 Last Update: ${version.date} ${version.time} - ${version.description}`, 'background: #2196F3; color: white; font-size: 12px; padding: 5px;');
+        // 🚀 VERSION FINALE - Sempre ultimo messaggio in console
+        const version = window.SIAF_VERSION;
+        console.log(`%c🚀 SIAF SYSTEM v${version.major}.${version.minor}.${version.patch}-FINAL-${version.date.replace(/\//g, '-')}-${version.time.replace(':', '')} 🚀`, `background: ${version.color}; color: white; font-size: 16px; font-weight: bold; padding: 10px; border-radius: 5px;`);
+        console.log(`%c📅 Last Update: ${version.date} ${version.time} - ${version.description}`, 'background: #2196F3; color: white; font-size: 12px; padding: 5px;');
+
+    } catch (error) {
+        console.error('❌ ERRORE CRITICO durante inizializzazione:', error);
+
+        // Aggiorna indicatore con stato errore
+        const indicator = document.getElementById('version-indicator');
+        if (indicator) {
+            indicator.textContent = '❌ Errore caricamento';
+            indicator.style.background = '#dc3545';
+            indicator.style.color = 'white';
+        }
+
+        alert('Errore durante il caricamento dell\'applicazione.\n\nRicarica la pagina (Ctrl+F5) o contatta l\'assistenza se il problema persiste.');
+    }
 });
