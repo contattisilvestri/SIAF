@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.3.4-FINAL-2025-10-31-09:21
+// 🚀 VERSION: SIAF-v2.3.10-FINAL-2025-11-03-15:30
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
     minor: 6,
-    patch: 2,
-    date: '31/10/2025',
-    time: '09:45',
-    description: 'Fix doppia generazione cartelle - prevenzione click multipli',
-    color: '#4CAF50'  // Verde - bugfix importante
+    patch: 3,
+    date: '03/11/2025',
+    time: '15:30',
+    description: 'UI esclusiva: pulsanti radio + campo spese NON esclusiva',
+    color: '#9C27B0'  // Viola - feature UI
 };
 
 class SiafApp {
@@ -58,7 +58,8 @@ class SiafApp {
             },
             esclusiva: {
                 attiva: false,
-                testo_custom: ''
+                testo_custom: '',
+                spese_massime: 0
             },
             condizioni_pagamento: {
                 giorni_versamento: 15,
@@ -801,20 +802,35 @@ class SiafApp {
         const giorniPreavviso = document.getElementById('giorni_preavviso');
         if (giorniPreavviso) giorniPreavviso.value = this.condizioniEconomiche.durata.giorni_preavviso || 5;
 
-        // Popola esclusiva
-        const esclusivaCheckbox = document.getElementById('esclusiva_attiva');
-        if (esclusivaCheckbox) {
-            esclusivaCheckbox.checked = this.condizioniEconomiche.esclusiva.attiva || false;
+        // Popola esclusiva (radio buttons)
+        const esclusivaTipo = this.condizioniEconomiche.esclusiva.attiva ? 'esclusiva' : 'non_esclusiva';
+        const esclusivaRadio = document.querySelector(`input[name="esclusiva_tipo"][value="${esclusivaTipo}"]`);
+        if (esclusivaRadio) {
+            esclusivaRadio.checked = true;
 
-            // Mostra/nascondi testo custom
-            const testoSection = document.getElementById('esclusiva-testo-section');
-            if (testoSection) {
-                testoSection.style.display = esclusivaCheckbox.checked ? 'block' : 'none';
+            // Mostra/nascondi campi appropriati
+            const esclusivaFields = document.getElementById('esclusiva-fields');
+            const nonEsclusivaFields = document.getElementById('non-esclusiva-fields');
+            if (esclusivaTipo === 'esclusiva') {
+                if (esclusivaFields) esclusivaFields.style.display = 'block';
+                if (nonEsclusivaFields) nonEsclusivaFields.style.display = 'none';
+            } else {
+                if (esclusivaFields) esclusivaFields.style.display = 'none';
+                if (nonEsclusivaFields) nonEsclusivaFields.style.display = 'block';
             }
         }
 
+        // Popola testo custom esclusiva
         const esclusivaTesto = document.getElementById('esclusiva_testo');
-        if (esclusivaTesto) esclusivaTesto.value = this.condizioniEconomiche.esclusiva.testo_custom || '';
+        if (esclusivaTesto) {
+            esclusivaTesto.value = this.condizioniEconomiche.esclusiva.testo_custom || '';
+        }
+
+        // Popola spese massime (NON esclusiva)
+        const speseMassime = document.getElementById('spese_massime');
+        if (speseMassime) {
+            speseMassime.value = this.condizioniEconomiche.esclusiva.spese_massime || '';
+        }
 
         // Popola condizioni di pagamento
         const giorniVersamento = document.getElementById('giorni_versamento');
@@ -1881,14 +1897,22 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
             });
         });
 
-        // Event listener esclusiva
-        const esclusivaCheckbox = document.getElementById('esclusiva_attiva');
-        if (esclusivaCheckbox) {
-            esclusivaCheckbox.addEventListener('change', (e) => {
-                const testoSection = document.getElementById('esclusiva-testo-section');
-                testoSection.style.display = e.target.checked ? 'block' : 'none';
+        // Event listener esclusiva (radio buttons)
+        const esclusivaTipoRadios = document.querySelectorAll('input[name="esclusiva_tipo"]');
+        esclusivaTipoRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const esclusivaFields = document.getElementById('esclusiva-fields');
+                const nonEsclusivaFields = document.getElementById('non-esclusiva-fields');
+
+                if (e.target.value === 'esclusiva') {
+                    esclusivaFields.style.display = 'block';
+                    nonEsclusivaFields.style.display = 'none';
+                } else {
+                    esclusivaFields.style.display = 'none';
+                    nonEsclusivaFields.style.display = 'block';
+                }
             });
-        }
+        });
 
         // Event listeners modalità saldo (condizioni pagamento)
         const saldoRadios = document.querySelectorAll('input[name="modalita_saldo"]');
@@ -2255,8 +2279,9 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         const dataInizio = document.getElementById('data_inizio_incarico');
         const dataFine = document.getElementById('data_fine_incarico');
         const giorniPreavviso = document.getElementById('giorni_preavviso');
-        const esclusiva = document.getElementById('esclusiva_attiva');
+        const esclusivaTipo = document.querySelector('input[name="esclusiva_tipo"]:checked');
         const esclusivaTesto = document.getElementById('esclusiva_testo');
+        const speseMassime = document.getElementById('spese_massime');
 
         if (provvigione) {
             this.condizioniEconomiche.compenso.percentuale_provvigione = parseFloat(provvigione.value) || 3;
@@ -2287,12 +2312,19 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
             this.condizioniEconomiche.durata.giorni_preavviso = parseInt(giorniPreavviso.value) || 5;
         }
 
-        if (esclusiva) {
-            this.condizioniEconomiche.esclusiva.attiva = esclusiva.checked;
+        // Salva tipo esclusiva (da radio button)
+        if (esclusivaTipo) {
+            this.condizioniEconomiche.esclusiva.attiva = (esclusivaTipo.value === 'esclusiva');
         }
 
+        // Salva testo custom esclusiva
         if (esclusivaTesto) {
             this.condizioniEconomiche.esclusiva.testo_custom = esclusivaTesto.value;
+        }
+
+        // Salva spese massime (NON esclusiva)
+        if (speseMassime) {
+            this.condizioniEconomiche.esclusiva.spese_massime = parseFloat(speseMassime.value) || 0;
         }
 
         // Condizioni di pagamento
