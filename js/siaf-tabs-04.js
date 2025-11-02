@@ -4,8 +4,8 @@
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
-    minor: 5,
-    patch: 9,
+    minor: 6,
+    patch: 0,
     date: '31/10/2025',
     time: '09:45',
     description: 'Fix doppia generazione cartelle - prevenzione click multipli',
@@ -152,23 +152,31 @@ class SiafApp {
         document.querySelectorAll('.tab-panel').forEach(panel => {
             panel.classList.remove('active');
         });
-        
+
         // Rimuovi active da tutti i button
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.classList.remove('active');
         });
-        
+
         // Mostra tab target
         const targetPanel = document.getElementById(`tab-${tabName}`);
         const targetButton = document.querySelector(`[data-tab="${tabName}"]`);
-        
+
         if (targetPanel && targetButton) {
             targetPanel.classList.add('active');
             targetButton.classList.add('active');
             this.currentTab = tabName;
-            
+
             console.log(`📂 Switched to tab: ${tabName}`);
-            
+
+            // Se si sta passando alla tab condizioni, aggiorna la sezione prezzo
+            if (tabName === 'condizioni') {
+                setTimeout(() => {
+                    this.renderSezionePrezzo();
+                    console.log('🔄 Sezione prezzo aggiornata dopo switch a tab condizioni');
+                }, 50);
+            }
+
             // Aggiorna progress
             this.updateTabProgress();
         }
@@ -2362,6 +2370,14 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         this.renderImmobile(immobile);
         this.updateTabProgress();
 
+        // Se siamo nella tab condizioni, aggiorna la sezione prezzo
+        if (this.currentTab === 'condizioni') {
+            setTimeout(() => {
+                this.renderSezionePrezzo();
+                console.log('🔄 Sezione prezzo aggiornata dopo aggiunta immobile');
+            }, 100);
+        }
+
         console.log('📊 Array immobili attuale:', this.immobili);
     }
 
@@ -3345,6 +3361,14 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         this.updateTabProgress();
         this.isDirty = true;
 
+        // Se siamo nella tab condizioni, aggiorna la sezione prezzo
+        if (this.currentTab === 'condizioni') {
+            setTimeout(() => {
+                this.renderSezionePrezzo();
+                console.log('🔄 Sezione prezzo aggiornata dopo rimozione immobile');
+            }, 100);
+        }
+
         console.log(`❌ Rimosso immobile ${id}`);
     }
 
@@ -3661,6 +3685,14 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
             }
 
             this.populateComuniDropdown(immobileId, provincia);
+
+            // Se siamo nella tab condizioni, aggiorna la sezione prezzo
+            if (this.currentTab === 'condizioni') {
+                setTimeout(() => {
+                    this.renderSezionePrezzo();
+                    console.log('🔄 Sezione prezzo aggiornata dopo cambio provincia');
+                }, 100);
+            }
         }
     }
 
@@ -3681,6 +3713,14 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
 
             // Aggiorna la UI dei comuni recenti per tutti gli immobili
             this.refreshComuniRecentiUI();
+
+            // Se siamo nella tab condizioni, aggiorna la sezione prezzo
+            if (this.currentTab === 'condizioni') {
+                setTimeout(() => {
+                    this.renderSezionePrezzo();
+                    console.log('🔄 Sezione prezzo aggiornata dopo cambio comune');
+                }, 100);
+            }
         }
     }
 
