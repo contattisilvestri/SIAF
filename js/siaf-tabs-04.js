@@ -5,7 +5,7 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 5,
-    patch: 8,
+    patch: 9,
     date: '31/10/2025',
     time: '09:45',
     description: 'Fix doppia generazione cartelle - prevenzione click multipli',
@@ -558,11 +558,17 @@ class SiafApp {
                 condizioni_economiche: immobileData.condizioni_economiche || {
                     prezzo_vendita: 0,
                     percentuale_riduzione: 0
-                }
+                },
+                stato: immobileData.stato || {}
             };
 
             this.immobili.push(immobile);
             this.renderImmobile(immobile);
+
+            // Popola i campi HTML dopo il render
+            setTimeout(() => {
+                this.populateSingleImmobile(immobile);
+            }, 100);
 
             console.log(`✅ Ricostruito immobile ${immobile.id}:`, immobile);
         });
@@ -571,6 +577,99 @@ class SiafApp {
         if (this.immobili.length === 0) {
             this.addImmobile();
         }
+    }
+
+    populateSingleImmobile(immobile) {
+        if (!immobile || !immobile.stato) return;
+
+        const id = immobile.id;
+        const stato = immobile.stato;
+
+        console.log(`🏠 Popolamento campi immobile ${id}:`, stato);
+
+        // Helper per settare radio button
+        const setRadio = (name, value) => {
+            if (!value) return;
+            const radio = document.querySelector(`input[name="${name}"][value="${value}"]`);
+            if (radio) {
+                radio.checked = true;
+                // Trigger change event per mostrare/nascondere campi condizionali
+                radio.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        };
+
+        // Helper per settare checkbox
+        const setCheckbox = (id, checked) => {
+            const checkbox = document.getElementById(id);
+            if (checkbox) checkbox.checked = !!checked;
+        };
+
+        // Helper per settare valore campo
+        const setValue = (id, value) => {
+            const field = document.getElementById(id);
+            if (field && value) field.value = value;
+        };
+
+        // 1. OCCUPAZIONE
+        if (stato.occupazione) {
+            setRadio(`occupazione_${id}`, stato.occupazione);
+        }
+
+        // 2. LOCAZIONE (se occupazione = locato)
+        if (stato.locazione) {
+            setValue(`inquilino_${id}`, stato.locazione.inquilino);
+            setValue(`canone_${id}`, stato.locazione.canone_annuo);
+            setValue(`scadenza_${id}`, stato.locazione.scadenza_contratto);
+        }
+
+        // 3. CONFORMITÀ
+        if (stato.conformita) {
+            setCheckbox(`conf_edilizia_${id}`, stato.conformita.edilizia);
+            setCheckbox(`conf_catastale_${id}`, stato.conformita.catastale);
+            setCheckbox(`conf_impianti_${id}`, stato.conformita.impianti);
+        }
+
+        // 4. VINCOLI
+        if (stato.vincoli) {
+            setCheckbox(`iscriz_preg_${id}`, stato.vincoli.iscrizioni_pregiudizievoli);
+            setCheckbox(`vincoli_serv_${id}`, stato.vincoli.vincoli_servitu);
+        }
+
+        // 5. CERTIFICAZIONE ENERGETICA
+        if (stato.certificazione_energetica) {
+            const cert = stato.certificazione_energetica;
+
+            // Modalità
+            if (cert.modalita) {
+                setRadio(`cert_modalita_${id}`, cert.modalita);
+            }
+
+            // Classe (dropdown o testo)
+            setValue(`cert_classe_select_${id}`, cert.classe);
+            setValue(`cert_classe_text_${id}`, cert.classe);
+
+            // Altri campi
+            setValue(`cert_consumo_${id}`, cert.consumo_kwh);
+            setValue(`cert_codice_${id}`, cert.codice_attestato);
+            setValue(`cert_data_${id}`, cert.data_emissione);
+            setValue(`cert_certificatore_${id}`, cert.certificatore);
+        }
+
+        // 6. DOCUMENTI CONSEGNATI
+        if (stato.documenti_consegnati && Array.isArray(stato.documenti_consegnati)) {
+            stato.documenti_consegnati.forEach(doc => {
+                if (doc === 'titoli_provenienza') setCheckbox(`doc_titoli_${id}`, true);
+                else if (doc === 'planimetria') setCheckbox(`doc_planimetria_${id}`, true);
+                else if (doc === 'visure') setCheckbox(`doc_visure_${id}`, true);
+                else if (doc === 'ape') setCheckbox(`doc_ape_${id}`, true);
+                else if (doc.startsWith('altro:')) {
+                    const altroText = doc.replace('altro:', '').trim();
+                    setValue(`doc_altro_${id}`, altroText);
+                }
+            });
+        }
+
+        console.log(`✅ Campi stato immobile ${id} popolati`);
     }
 
     populateVenditori(venditoriData) {
