@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.3.11-FINAL-2025-11-03-16:00
+// 🚀 VERSION: SIAF-v2.3.12-FINAL-2025-11-03-17:00
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
     minor: 6,
-    patch: 5,
+    patch: 6,
     date: '03/11/2025',
-    time: '16:00',
-    description: 'Fix: esclusiva NON in esclusiva + path locale test',
-    color: '#4CAF50'  // Verde - bugfix
+    time: '17:00',
+    description: 'Sezione Corrispondenti e Autorizzazioni pubblicitarie',
+    color: '#9C27B0'  // Viola - feature
 };
 
 class SiafApp {
@@ -60,6 +60,12 @@ class SiafApp {
                 attiva: false,
                 testo_custom: '',
                 spese_massime: 0
+            },
+            autorizzazioni: {
+                cartello_vendita: true,
+                vetrine: true,
+                internet: true,
+                stampa: true
             },
             condizioni_pagamento: {
                 giorni_versamento: 15,
@@ -760,6 +766,19 @@ class SiafApp {
                     attiva: false,
                     testo_custom: '',
                     spese_massime: 0
+                },
+                autorizzazioni: condizioniData.autorizzazioni || {
+                    cartello_vendita: true,
+                    vetrine: true,
+                    internet: true,
+                    stampa: true
+                },
+                condizioni_pagamento: condizioniData.condizioni_pagamento || {
+                    giorni_versamento: 15,
+                    percentuale_anticipo: 10,
+                    modalita_saldo: 'assegno_circolare',
+                    saldo_altro_testo: '',
+                    giorni_stipula_atto: 150
                 }
             };
         }
@@ -832,6 +851,17 @@ class SiafApp {
         if (speseMassime) {
             speseMassime.value = this.condizioniEconomiche.esclusiva.spese_massime || '';
         }
+
+        // Popola autorizzazioni
+        const authCartello = document.getElementById('auth_cartello');
+        const authVetrine = document.getElementById('auth_vetrine');
+        const authInternet = document.getElementById('auth_internet');
+        const authStampa = document.getElementById('auth_stampa');
+
+        if (authCartello) authCartello.checked = this.condizioniEconomiche.autorizzazioni.cartello_vendita !== false;
+        if (authVetrine) authVetrine.checked = this.condizioniEconomiche.autorizzazioni.vetrine !== false;
+        if (authInternet) authInternet.checked = this.condizioniEconomiche.autorizzazioni.internet !== false;
+        if (authStampa) authStampa.checked = this.condizioniEconomiche.autorizzazioni.stampa !== false;
 
         // Popola condizioni di pagamento
         const giorniVersamento = document.getElementById('giorni_versamento');
@@ -1947,6 +1977,24 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
             });
         }
 
+        // Event listeners autorizzazioni
+        const authCartello = document.getElementById('auth_cartello');
+        const authVetrine = document.getElementById('auth_vetrine');
+        const authInternet = document.getElementById('auth_internet');
+        const authStampa = document.getElementById('auth_stampa');
+
+        [authCartello, authVetrine, authInternet, authStampa].forEach(checkbox => {
+            if (checkbox) {
+                checkbox.addEventListener('change', () => {
+                    this.updateCondizioniEconomiche();
+                });
+            }
+        });
+
+        if (authCartello && authVetrine && authInternet && authStampa) {
+            console.log('✅ Event listener autorizzazioni inizializzati');
+        }
+
         // Rendering iniziale sezione prezzo
         this.renderSezionePrezzo();
 
@@ -2334,6 +2382,17 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         if (speseMassime) {
             this.condizioniEconomiche.esclusiva.spese_massime = parseFloat(speseMassime.value) || 0;
         }
+
+        // Salva autorizzazioni
+        const authCartello = document.getElementById('auth_cartello');
+        const authVetrine = document.getElementById('auth_vetrine');
+        const authInternet = document.getElementById('auth_internet');
+        const authStampa = document.getElementById('auth_stampa');
+
+        if (authCartello) this.condizioniEconomiche.autorizzazioni.cartello_vendita = authCartello.checked;
+        if (authVetrine) this.condizioniEconomiche.autorizzazioni.vetrine = authVetrine.checked;
+        if (authInternet) this.condizioniEconomiche.autorizzazioni.internet = authInternet.checked;
+        if (authStampa) this.condizioniEconomiche.autorizzazioni.stampa = authStampa.checked;
 
         // Condizioni di pagamento
         const giorniVersamento = document.getElementById('giorni_versamento');
