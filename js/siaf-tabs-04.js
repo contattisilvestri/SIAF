@@ -5,7 +5,7 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 6,
-    patch: 8,
+    patch: 9,
     date: '03/11/2025',
     time: '18:00',
     description: 'Gestione multipla telefoni/email venditori + Sezione Comunicazioni',
@@ -4014,7 +4014,6 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
             <button type="button" class="pratica-recente-btn" onclick="window.siafApp.caricaPraticaRecente('${pratica.protocollo}')">
                 <div class="pratica-recente-protocollo">${pratica.protocollo}</div>
                 <div class="pratica-recente-venditore">${pratica.cognome}</div>
-                <div class="pratica-recente-data">${pratica.dataFormattata}</div>
             </button>
         `).join('');
 
