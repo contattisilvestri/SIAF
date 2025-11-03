@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.3.13-FINAL-2025-11-03-17:30
+// 🚀 VERSION: SIAF-v2.3.14-FINAL-2025-11-03-18:00
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
     minor: 6,
-    patch: 7,
+    patch: 8,
     date: '03/11/2025',
-    time: '17:30',
-    description: 'Sezione Obblighi Agenzia dinamica (Esclusiva/NON Esclusiva)',
-    color: '#2196F3'  // Blu - feature importante
+    time: '18:00',
+    description: 'Gestione multipla telefoni/email venditori + Sezione Comunicazioni',
+    color: '#4CAF50'  // Verde - feature completa
 };
 
 class SiafApp {
@@ -728,7 +728,7 @@ class SiafApp {
         const fields = [
             'nome', 'cognome', 'sesso', 'stato_civile', 'luogo_nascita', 'data_nascita',
             'codice_fiscale', 'tipo_documento', 'numero_documento', 'data_rilascio',
-            'data_scadenza', 'indirizzo', 'citta', 'provincia', 'telefono', 'email'
+            'data_scadenza', 'indirizzo', 'citta', 'provincia', 'telefono1', 'telefono2', 'email1', 'email2'
         ];
 
         fields.forEach(field => {
@@ -1175,8 +1175,10 @@ addVenditore() {
         citta: '',
         provincia: '',
         pensionato: '',
-        telefono: '',
-        email: ''
+        telefono1: '',
+        telefono2: '',
+        email1: '',
+        email2: ''
     };
     
     this.venditori.push(venditore);
@@ -1328,12 +1330,23 @@ renderVenditore(venditore) {
 
                     <div class="field-row">
                         <div class="field-group">
-                            <label for="venditore_${venditore.id}_telefono">Telefono</label>
-                            <input type="tel" id="venditore_${venditore.id}_telefono" value="${venditore.telefono}">
+                            <label for="venditore_${venditore.id}_telefono1">Telefono 1</label>
+                            <input type="tel" id="venditore_${venditore.id}_telefono1" value="${venditore.telefono1}">
                         </div>
                         <div class="field-group">
-                            <label for="venditore_${venditore.id}_email">Email</label>
-                            <input type="email" id="venditore_${venditore.id}_email" value="${venditore.email}">
+                            <label for="venditore_${venditore.id}_telefono2">Telefono 2 (opzionale)</label>
+                            <input type="tel" id="venditore_${venditore.id}_telefono2" value="${venditore.telefono2}">
+                        </div>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_email1">Email 1</label>
+                            <input type="email" id="venditore_${venditore.id}_email1" value="${venditore.email1}">
+                        </div>
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_email2">Email 2 (opzionale)</label>
+                            <input type="email" id="venditore_${venditore.id}_email2" value="${venditore.email2}">
                         </div>
                     </div>
                 </div>
@@ -1446,8 +1459,10 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                 indirizzo: document.getElementById(`venditore_${venditore.id}_indirizzo`)?.value || '',
                 citta: document.getElementById(`venditore_${venditore.id}_citta`)?.value || '',
                 provincia: document.getElementById(`venditore_${venditore.id}_provincia`)?.value || '',
-                telefono: document.getElementById(`venditore_${venditore.id}_telefono`)?.value || '',
-                email: document.getElementById(`venditore_${venditore.id}_email`)?.value || ''
+                telefono1: document.getElementById(`venditore_${venditore.id}_telefono1`)?.value || '',
+                telefono2: document.getElementById(`venditore_${venditore.id}_telefono2`)?.value || '',
+                email1: document.getElementById(`venditore_${venditore.id}_email1`)?.value || '',
+                email2: document.getElementById(`venditore_${venditore.id}_email2`)?.value || ''
             };
             
             console.log(`📋 Dati venditore ${venditore.id}:`, data);
