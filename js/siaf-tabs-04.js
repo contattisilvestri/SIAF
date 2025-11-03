@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.3.14-FINAL-2025-11-03-18:00
+// 🚀 VERSION: SIAF-v2.3.15-FINAL-2025-11-03-19:00
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
-    minor: 6,
-    patch: 9,
+    minor: 7,
+    patch: 0,
     date: '03/11/2025',
-    time: '18:00',
-    description: 'Gestione multipla telefoni/email venditori + Sezione Comunicazioni',
-    color: '#4CAF50'  // Verde - feature completa
+    time: '19:00',
+    description: 'Sezione finale template: Diritto Recesso, Osservazioni, Firme/Date',
+    color: '#FF9800'  // Arancione - completamento template
 };
 
 class SiafApp {
@@ -73,6 +73,14 @@ class SiafApp {
                 modalita_saldo: 'assegno_circolare', // 'assegno_circolare', 'bonifico_istantaneo', 'altro'
                 saldo_altro_testo: '',
                 giorni_stipula_atto: 150
+            },
+            diritto_recesso: {
+                luogo_conferimento: 'locale_agenzia' // 'locale_agenzia' o 'domicilio_venditore'
+            },
+            osservazioni: '',
+            firma: {
+                luogo: '',
+                data: '' // formato YYYY-MM-DD
             }
         };
     }
@@ -779,6 +787,14 @@ class SiafApp {
                     modalita_saldo: 'assegno_circolare',
                     saldo_altro_testo: '',
                     giorni_stipula_atto: 150
+                },
+                diritto_recesso: condizioniData.diritto_recesso || {
+                    luogo_conferimento: 'locale_agenzia'
+                },
+                osservazioni: condizioniData.osservazioni || '',
+                firma: condizioniData.firma || {
+                    luogo: '',
+                    data: ''
                 }
             };
         }
@@ -888,6 +904,36 @@ class SiafApp {
 
         const giorniStipula = document.getElementById('giorni_stipula_atto');
         if (giorniStipula) giorniStipula.value = this.condizioniEconomiche.condizioni_pagamento.giorni_stipula_atto || 150;
+
+        // Popola diritto di recesso (luogo conferimento)
+        if (condizioniData && condizioniData.diritto_recesso) {
+            const luogoConferimento = condizioniData.diritto_recesso.luogo_conferimento || 'locale_agenzia';
+            const luogoRadio = document.querySelector(`input[name="luogo_conferimento"][value="${luogoConferimento}"]`);
+            if (luogoRadio) {
+                luogoRadio.checked = true;
+            }
+        }
+
+        // Popola osservazioni
+        if (condizioniData && condizioniData.osservazioni) {
+            const osservazioni = document.getElementById('osservazioni_note');
+            if (osservazioni) {
+                osservazioni.value = condizioniData.osservazioni;
+            }
+        }
+
+        // Popola data e luogo firma
+        if (condizioniData && condizioniData.firma) {
+            const luogoFirma = document.getElementById('luogo_firma');
+            if (luogoFirma) {
+                luogoFirma.value = condizioniData.firma.luogo || '';
+            }
+
+            const dataFirma = document.getElementById('data_firma');
+            if (dataFirma) {
+                dataFirma.value = condizioniData.firma.data || '';
+            }
+        }
 
         // Renderizza sezione prezzo (include dati immobili già caricati)
         setTimeout(() => {
@@ -2022,6 +2068,50 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
             console.log('✅ Event listener autorizzazioni inizializzati');
         }
 
+        // Event listeners diritto di recesso (luogo conferimento)
+        const luogoRadios = document.querySelectorAll('input[name="luogo_conferimento"]');
+        luogoRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                this.updateCondizioniEconomiche();
+            });
+        });
+        if (luogoRadios.length > 0) {
+            console.log('✅ Event listener diritto recesso inizializzati');
+        }
+
+        // Event listeners osservazioni e firma
+        const osservazioniTextarea = document.getElementById('osservazioni_note');
+        const luogoFirma = document.getElementById('luogo_firma');
+        const dataFirma = document.getElementById('data_firma');
+
+        if (osservazioniTextarea) {
+            osservazioniTextarea.addEventListener('input', () => {
+                this.updateCondizioniEconomiche();
+            });
+        }
+
+        if (luogoFirma) {
+            luogoFirma.addEventListener('input', () => {
+                this.updateCondizioniEconomiche();
+            });
+        }
+
+        if (dataFirma) {
+            dataFirma.addEventListener('change', () => {
+                this.updateCondizioniEconomiche();
+            });
+        }
+
+        if (osservazioniTextarea && luogoFirma && dataFirma) {
+            console.log('✅ Event listener osservazioni e firma inizializzati');
+        }
+
+        // Auto-compila data firma con data odierna
+        if (dataFirma && !dataFirma.value) {
+            const today = new Date().toISOString().split('T')[0];
+            dataFirma.value = today;
+        }
+
         // Rendering iniziale sezione prezzo
         this.renderSezionePrezzo();
 
@@ -2490,6 +2580,30 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
 
         if (giorniStipula) {
             this.condizioniEconomiche.condizioni_pagamento.giorni_stipula_atto = parseInt(giorniStipula.value) || 150;
+        }
+
+        // Diritto di recesso (luogo conferimento)
+        const luogoConferimento = document.querySelector('input[name="luogo_conferimento"]:checked');
+        if (luogoConferimento) {
+            this.condizioniEconomiche.diritto_recesso.luogo_conferimento = luogoConferimento.value;
+        }
+
+        // Osservazioni e note
+        const osservazioni = document.getElementById('osservazioni_note');
+        if (osservazioni) {
+            this.condizioniEconomiche.osservazioni = osservazioni.value;
+        }
+
+        // Data e luogo firma
+        const luogoFirma = document.getElementById('luogo_firma');
+        const dataFirma = document.getElementById('data_firma');
+
+        if (luogoFirma) {
+            this.condizioniEconomiche.firma.luogo = luogoFirma.value;
+        }
+
+        if (dataFirma) {
+            this.condizioniEconomiche.firma.data = dataFirma.value;
         }
 
         this.isDirty = true;
