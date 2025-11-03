@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.3.10-FINAL-2025-11-03-15:30
+// 🚀 VERSION: SIAF-v2.3.11-FINAL-2025-11-03-16:00
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
     minor: 6,
-    patch: 3,
+    patch: 4,
     date: '03/11/2025',
-    time: '15:30',
-    description: 'UI esclusiva: pulsanti radio + campo spese NON esclusiva',
-    color: '#9C27B0'  // Viola - feature UI
+    time: '16:00',
+    description: 'Fix: esclusiva NON in esclusiva + path locale test',
+    color: '#4CAF50'  // Verde - bugfix
 };
 
 class SiafApp {
@@ -758,7 +758,8 @@ class SiafApp {
                 },
                 esclusiva: condizioniData.esclusiva || {
                     attiva: false,
-                    testo_custom: ''
+                    testo_custom: '',
+                    spese_massime: 0
                 }
             };
         }
@@ -1899,20 +1900,27 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
 
         // Event listener esclusiva (radio buttons)
         const esclusivaTipoRadios = document.querySelectorAll('input[name="esclusiva_tipo"]');
-        esclusivaTipoRadios.forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                const esclusivaFields = document.getElementById('esclusiva-fields');
-                const nonEsclusivaFields = document.getElementById('non-esclusiva-fields');
+        if (esclusivaTipoRadios.length > 0) {
+            esclusivaTipoRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    const esclusivaFields = document.getElementById('esclusiva-fields');
+                    const nonEsclusivaFields = document.getElementById('non-esclusiva-fields');
 
-                if (e.target.value === 'esclusiva') {
-                    esclusivaFields.style.display = 'block';
-                    nonEsclusivaFields.style.display = 'none';
-                } else {
-                    esclusivaFields.style.display = 'none';
-                    nonEsclusivaFields.style.display = 'block';
-                }
+                    console.log('🔒 Toggle esclusiva:', e.target.value);
+
+                    if (e.target.value === 'esclusiva') {
+                        if (esclusivaFields) esclusivaFields.style.display = 'block';
+                        if (nonEsclusivaFields) nonEsclusivaFields.style.display = 'none';
+                    } else {
+                        if (esclusivaFields) esclusivaFields.style.display = 'none';
+                        if (nonEsclusivaFields) nonEsclusivaFields.style.display = 'block';
+                    }
+                });
             });
-        });
+            console.log('✅ Event listener esclusiva tipo inizializzato');
+        } else {
+            console.warn('⚠️ Radio buttons esclusiva_tipo non trovati');
+        }
 
         // Event listeners modalità saldo (condizioni pagamento)
         const saldoRadios = document.querySelectorAll('input[name="modalita_saldo"]');
