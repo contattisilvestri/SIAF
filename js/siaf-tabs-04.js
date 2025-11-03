@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.3.12-FINAL-2025-11-03-17:00
+// 🚀 VERSION: SIAF-v2.3.13-FINAL-2025-11-03-17:30
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
     minor: 6,
-    patch: 6,
+    patch: 7,
     date: '03/11/2025',
-    time: '17:00',
-    description: 'Sezione Corrispondenti e Autorizzazioni pubblicitarie',
-    color: '#9C27B0'  // Viola - feature
+    time: '17:30',
+    description: 'Sezione Obblighi Agenzia dinamica (Esclusiva/NON Esclusiva)',
+    color: '#2196F3'  // Blu - feature importante
 };
 
 class SiafApp {
@@ -862,6 +862,9 @@ class SiafApp {
         if (authVetrine) authVetrine.checked = this.condizioniEconomiche.autorizzazioni.vetrine !== false;
         if (authInternet) authInternet.checked = this.condizioniEconomiche.autorizzazioni.internet !== false;
         if (authStampa) authStampa.checked = this.condizioniEconomiche.autorizzazioni.stampa !== false;
+
+        // Aggiorna preview obblighi in base al tipo esclusiva
+        this.updateObblighi(this.condizioniEconomiche.esclusiva.attiva);
 
         // Popola condizioni di pagamento
         const giorniVersamento = document.getElementById('giorni_versamento');
@@ -1945,11 +1948,20 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
                         if (esclusivaFields) esclusivaFields.style.display = 'none';
                         if (nonEsclusivaFields) nonEsclusivaFields.style.display = 'block';
                     }
+
+                    // Aggiorna anche la preview degli obblighi
+                    this.updateObblighi(e.target.value === 'esclusiva');
                 });
             });
             console.log('✅ Event listener esclusiva tipo inizializzato');
         } else {
             console.warn('⚠️ Radio buttons esclusiva_tipo non trovati');
+        }
+
+        // Inizializza preview obblighi al caricamento
+        const esclusivaChecked = document.querySelector('input[name="esclusiva_tipo"]:checked');
+        if (esclusivaChecked) {
+            this.updateObblighi(esclusivaChecked.value === 'esclusiva');
         }
 
         // Event listeners modalità saldo (condizioni pagamento)
@@ -1999,6 +2011,50 @@ stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?
         this.renderSezionePrezzo();
 
         console.log('✅ Tab Condizioni Economiche inizializzato');
+    }
+
+    updateObblighi(isEsclusiva) {
+        const header = document.getElementById('obblighi-header');
+        const preview = document.getElementById('obblighi-preview');
+
+        if (!preview) return;
+
+        if (isEsclusiva) {
+            if (header) header.textContent = '📋 Obblighi dell\'Agenzia - INCARICO IN ESCLUSIVA';
+            preview.innerHTML = `
+                <p style="margin-bottom: 12px; font-weight: 600;">Con l'accettazione del presente incarico l'Agenzia Immobiliare si obbliga a:</p>
+                <ul style="margin-left: 20px; list-style: disc;">
+                    <li>visionare e valutare accuratamente l'immobile redigendo scheda estimativa;</li>
+                    <li>produrre a propria cura la documentazione edilizia e catastale;</li>
+                    <li>impegnare la propria organizzazione per promuovere la vendita, utilizzando gli strumenti ritenuti adeguati dalla stessa;</li>
+                    <li>redigere il preventivo imposte, tasse e spese a carico del Venditore;</li>
+                    <li>redigere il preventivo imposte, tasse e spese a carico dell'acquirente;</li>
+                    <li>accompagnare i potenziali acquirenti a visitare l'immobile;</li>
+                    <li>predisporre a richiesta delle parti ogni atto negoziale ritenuto necessario per il perfezionamento dell'affare;</li>
+                    <li>effettuare le visure relative all'esistenza d'iscrizioni e/o trascrizioni successive alla data dell'atto di provenienza;</li>
+                    <li>non richiedere un prezzo di vendita diverso da quello su indicato, fatto salvo il margine di trattativa stabilito;</li>
+                    <li>fornire su semplice richiesta del Venditore informazioni sull'attività effettuata;</li>
+                    <li>fornire a entrambe le parti la propria assistenza fino all'atto notarile;</li>
+                    <li>comunicare l'avvenuta vendita agli enti per le variazioni di rito;</li>
+                    <li>registrare, entro 20 (venti) giorni, la proposta d'acquisto accettata o il preliminare di compravendita, previa consegna in proprie mani di almeno due copie con firme autografe originali e della relativa provvista economica, necessaria per procedere al versamento di quanto dovuto per la registrazione.</li>
+                </ul>
+            `;
+        } else {
+            if (header) header.textContent = '📋 Obblighi dell\'Agenzia - INCARICO NON IN ESCLUSIVA';
+            preview.innerHTML = `
+                <p style="margin-bottom: 12px; font-weight: 600;">Con l'accettazione del presente incarico l'Agenzia Immobiliare si obbliga a:</p>
+                <ul style="margin-left: 20px; list-style: disc;">
+                    <li>visionare e valutare sinteticamente l'immobile;</li>
+                    <li>promuovere la vendita, utilizzando gli strumenti ritenuti adeguati dallo stesso;</li>
+                    <li>accompagnare i potenziali acquirenti a visitare l'immobile;</li>
+                    <li>predisporre a richiesta ogni atto negoziale tra le parti ritenuto necessario per il perfezionamento dell'affare;</li>
+                    <li>effettuare le visure relative all'esistenza d'iscrizioni e/o trascrizioni pregiudizievoli successive alla data dell'atto di provenienza;</li>
+                    <li>fornire a entrambe le parti la propria assistenza fino all'atto notarile;</li>
+                    <li>non richiedere un prezzo di vendita diverso da quello su indicato, fatto salvo il margine di trattativa stabilito;</li>
+                    <li>registrare, entro 20 (venti) giorni, la proposta d'acquisto accettata o il preliminare di compravendita, previa consegna in proprie mani di almeno due copie con firme autografe originali e della relativa provvista economica, necessaria per procedere al versamento di quanto dovuto per la registrazione.</li>
+                </ul>
+            `;
+        }
     }
 
     handleToggleOffertaUnica() {
