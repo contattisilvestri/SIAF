@@ -4,8 +4,8 @@
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
-    minor: 3,
-    patch: 11,
+    minor: 6,
+    patch: 5,
     date: '03/11/2025',
     time: '16:00',
     description: 'Fix: esclusiva NON in esclusiva + path locale test',
