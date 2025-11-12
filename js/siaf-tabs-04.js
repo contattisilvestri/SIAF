@@ -5,11 +5,11 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 7,
-    patch: 2,
-    date: '03/11/2025',
-    time: '19:00',
-    description: 'Sezione finale template: Diritto Recesso, Osservazioni, Firme/Date',
-    color: '#FF9800'  // Arancione - completamento template
+    patch: 3,
+    date: '12/11/2025',
+    time: '21:30',
+    description: 'Sistema Regime Patrimoniale con auto-add coniuge + chip button toggle',
+    color: '#E91E63'  // Rosa - regime patrimoniale
 };
 
 class SiafApp {
@@ -1510,15 +1510,16 @@ renderVenditore(venditore) {
                         </div>
                     </div>
 
-                    <!-- Campo condizionale: Regime Patrimoniale (solo se coniugato) -->
+                    <!-- Campo condizionale: Regime Patrimoniale (coniugato o separato) -->
                     <div id="regime-patrimoniale-section-${venditore.id}" class="conditional-fields" style="display: none;">
                         <div class="field-group" style="margin-bottom: 15px;">
-                            <label class="checkbox-container">
-                                <input type="checkbox" id="venditore_${venditore.id}_specificare_regime"
-                                       ${venditore.specificare_regime ? 'checked' : ''}>
-                                <span>Specificare regime patrimoniale?</span>
-                            </label>
-                            <small class="field-hint">Seleziona solo se necessario specificare il regime</small>
+                            <button type="button"
+                                    id="venditore_${venditore.id}_specificare_regime"
+                                    class="regime-chip-toggle ${venditore.specificare_regime ? 'active' : ''}"
+                                    data-active="${venditore.specificare_regime ? 'true' : 'false'}">
+                                Regime Patrimoniale
+                            </button>
+                            <small class="field-hint" style="display: block; margin-top: 8px;">Clicca per specificare il regime patrimoniale</small>
                         </div>
 
                         <div id="regime-dropdown-${venditore.id}" class="conditional-fields" style="display: none;">
@@ -1647,14 +1648,18 @@ renderVenditore(venditore) {
             const comunioneAlert = document.getElementById(`comunione-alert-${venditore.id}`);
 
             if (statoCivileSelect && regimeSection) {
-                // 1. Show/hide regime section based on stato_civile
+                // 1. Show/hide regime section based on stato_civile (coniugato O separato)
                 const toggleRegimeSection = () => {
-                    const isConiugato = statoCivileSelect.value === 'coniugato';
-                    regimeSection.style.display = isConiugato ? 'block' : 'none';
+                    const statoCivile = statoCivileSelect.value;
+                    const showRegimeSection = (statoCivile === 'coniugato' || statoCivile === 'separato');
+                    regimeSection.style.display = showRegimeSection ? 'block' : 'none';
 
-                    // Reset fields if not married anymore
-                    if (!isConiugato) {
-                        if (checkboxRegime) checkboxRegime.checked = false;
+                    // Reset fields if not married/separated anymore
+                    if (!showRegimeSection) {
+                        if (checkboxRegime) {
+                            checkboxRegime.classList.remove('active');
+                            checkboxRegime.dataset.active = 'false';
+                        }
                         if (regimeSelect) regimeSelect.value = '';
                         if (regimeDropdown) regimeDropdown.style.display = 'none';
 
@@ -1669,14 +1674,14 @@ renderVenditore(venditore) {
                 statoCivileSelect.addEventListener('change', toggleRegimeSection);
                 toggleRegimeSection(); // Initial trigger
 
-                // 2. Show/hide regime dropdown based on checkbox
+                // 2. Show/hide regime dropdown based on chip button toggle
                 if (checkboxRegime && regimeDropdown) {
                     const toggleRegimeDropdown = () => {
-                        const isChecked = checkboxRegime.checked;
-                        regimeDropdown.style.display = isChecked ? 'block' : 'none';
+                        const isActive = checkboxRegime.classList.contains('active');
+                        regimeDropdown.style.display = isActive ? 'block' : 'none';
 
-                        // Reset regime if unchecked
-                        if (!isChecked) {
+                        // Reset regime if deactivated
+                        if (!isActive) {
                             if (regimeSelect) regimeSelect.value = '';
                             if (comunioneAlert) comunioneAlert.style.display = 'none';
 
@@ -1688,7 +1693,19 @@ renderVenditore(venditore) {
                         }
                     };
 
-                    checkboxRegime.addEventListener('change', toggleRegimeDropdown);
+                    // Click handler per toggle chip button
+                    checkboxRegime.addEventListener('click', () => {
+                        // Toggle active state
+                        checkboxRegime.classList.toggle('active');
+                        const isNowActive = checkboxRegime.classList.contains('active');
+                        checkboxRegime.dataset.active = isNowActive ? 'true' : 'false';
+
+                        console.log(`🔘 Chip button regime toggled: ${isNowActive}`);
+
+                        // Trigger dropdown visibility
+                        toggleRegimeDropdown();
+                    });
+
                     toggleRegimeDropdown(); // Initial trigger
                 }
 
@@ -1801,12 +1818,24 @@ renderVenditore(venditore) {
         
         // Raccolta dati venditori
         const venditoriData = this.venditori.map(venditore => {
+            // Leggi stato chip button regime
+            const chipRegime = document.getElementById(`venditore_${venditore.id}_specificare_regime`);
+            const specificareRegime = chipRegime ? chipRegime.classList.contains('active') : false;
+
             const data = {
                 id: venditore.id,
                 nome: document.getElementById(`venditore_${venditore.id}_nome`)?.value || '',
                 cognome: document.getElementById(`venditore_${venditore.id}_cognome`)?.value || '',
-sesso: document.getElementById(`venditore_${venditore.id}_sesso`)?.value || 'M',
-stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?.value || '',
+                sesso: document.getElementById(`venditore_${venditore.id}_sesso`)?.value || 'M',
+                stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?.value || '',
+                regime_patrimoniale: document.getElementById(`venditore_${venditore.id}_regime_patrimoniale`)?.value || '',
+                specificare_regime: specificareRegime,
+                // Flags coniuge (dal venditore object originale)
+                isConiuge: venditore.isConiuge || false,
+                linkedTo: venditore.linkedTo || null,
+                hasConiuge: venditore.hasConiuge || false,
+                coniugeId: venditore.coniugeId || null,
+                // Anagrafica
                 luogo_nascita: document.getElementById(`venditore_${venditore.id}_luogo_nascita`)?.value || '',
                 data_nascita: document.getElementById(`venditore_${venditore.id}_data_nascita`)?.value || '',
                 codice_fiscale: document.getElementById(`venditore_${venditore.id}_codice_fiscale`)?.value || '',
