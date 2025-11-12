@@ -53,9 +53,18 @@ class CodiceFiscaleCalculator {
         const startTime = performance.now();
 
         try {
-            // Carica database Belfiore
-            const response = await fetch('./GITHUB/DATA/belfiore-comuni.json');
+            // Carica database Belfiore da GitHub Pages
+            const response = await fetch('https://contattisilvestri.github.io/SIAF/DATA/belfiore-comuni.json');
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: Database non trovato su GitHub Pages. Verifica che il file belfiore-comuni.json sia stato caricato in /DATA/`);
+            }
+
             this.belfioreData = await response.json();
+
+            if (!this.belfioreData || this.belfioreData.length === 0) {
+                throw new Error('Database Belfiore vuoto o non valido');
+            }
 
             // Costruisci indici in-memory per lookup O(1)
             this.buildBelfioreIndex();
@@ -77,7 +86,8 @@ class CodiceFiscaleCalculator {
     buildBelfioreIndex() {
         this.belfioreData.forEach(comune => {
             const code = comune.codiceCatastale;
-            const name = comune.nome.toLowerCase().trim();
+            // Normalizza: lowercase + trim + rimuovi spazi multipli
+            const name = comune.nome.toLowerCase().trim().replace(/\s+/g, ' ');
             const province = comune.sigla;
 
             // Indice per codice
@@ -199,13 +209,30 @@ class CodiceFiscaleCalculator {
      * Cerca il codice Belfiore per un comune
      */
     findBelfioreCode(cityName, province = null) {
-        const normalizedCity = cityName.toLowerCase().trim();
+        // Normalizza: lowercase + trim + rimuovi spazi multipli
+        const normalizedCity = cityName.toLowerCase().trim().replace(/\s+/g, ' ');
 
         // Lookup per nome
         const matches = this.belfioreIndex.byName.get(normalizedCity) || [];
 
         if (matches.length === 0) {
-            return { error: `Comune "${cityName}" non trovato` };
+            // DEBUG: Mostra comuni simili per aiutare l'utente
+            console.warn(`❌ Comune "${cityName}" non trovato`);
+            console.warn(`   Normalizzato come: "${normalizedCity}"`);
+            console.warn(`   Tot comuni in indice: ${this.belfioreIndex.byName.size}`);
+
+            // Cerca comuni che iniziano con le stesse lettere
+            const similar = [];
+            for (const [name, comuni] of this.belfioreIndex.byName.entries()) {
+                if (name.startsWith(normalizedCity.substring(0, 10))) {
+                    similar.push(name);
+                }
+            }
+            if (similar.length > 0) {
+                console.warn(`   Comuni simili trovati: ${similar.slice(0, 5).join(', ')}`);
+            }
+
+            return { error: `Comune "${cityName}" non trovato nel database` };
         }
 
         if (matches.length === 1) {
