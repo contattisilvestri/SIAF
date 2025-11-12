@@ -5,11 +5,11 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 8,
-    patch: 3,
+    patch: 4,
     date: '12/11/2025',
-    time: '03:30',
-    description: 'Province con nome completo nei documenti (Verona invece di VR)',
-    color: '#5856D6'  // iOS purple - document formatting
+    time: '04:00',
+    description: 'Cittadinanza estera e permesso soggiorno nei documenti generati',
+    color: '#34C759'  // iOS green - complete feature
 };
 
 class SiafApp {
