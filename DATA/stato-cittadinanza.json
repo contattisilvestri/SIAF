@@ -1,0 +1,610 @@
+[
+  {
+    "stato": "AFGHANISTAN",
+    "cittadinanza": "afghana"
+  },
+  {
+    "stato": "ALBANIA",
+    "cittadinanza": "albanese"
+  },
+  {
+    "stato": "ALGERIA",
+    "cittadinanza": "algerina"
+  },
+  {
+    "stato": "ANDORRA",
+    "cittadinanza": "andorrana"
+  },
+  {
+    "stato": "ANGOLA",
+    "cittadinanza": "angolana"
+  },
+  {
+    "stato": "ARGENTINA",
+    "cittadinanza": "argentina"
+  },
+  {
+    "stato": "ARMENIA",
+    "cittadinanza": "armena"
+  },
+  {
+    "stato": "AUSTRALIA",
+    "cittadinanza": "australiana"
+  },
+  {
+    "stato": "AUSTRIA",
+    "cittadinanza": "austriaca"
+  },
+  {
+    "stato": "AZERBAIGIAN",
+    "cittadinanza": "azera"
+  },
+  {
+    "stato": "BAHAMAS",
+    "cittadinanza": "bahamense"
+  },
+  {
+    "stato": "BAHREIN",
+    "cittadinanza": "bahreinita"
+  },
+  {
+    "stato": "BANGLADESH",
+    "cittadinanza": "bengalese"
+  },
+  {
+    "stato": "BARBADOS",
+    "cittadinanza": "barbadiana"
+  },
+  {
+    "stato": "BELGIO",
+    "cittadinanza": "belga"
+  },
+  {
+    "stato": "BELIZE",
+    "cittadinanza": "beliziana"
+  },
+  {
+    "stato": "BENIN",
+    "cittadinanza": "beninese"
+  },
+  {
+    "stato": "BIELORUSSIA",
+    "cittadinanza": "bielorussa"
+  },
+  {
+    "stato": "BOLIVIA",
+    "cittadinanza": "boliviana"
+  },
+  {
+    "stato": "BOSNIA ED ERZEGOVINA",
+    "cittadinanza": "bosniaca"
+  },
+  {
+    "stato": "BOTSWANA",
+    "cittadinanza": "botswana"
+  },
+  {
+    "stato": "BRASILE",
+    "cittadinanza": "brasiliana"
+  },
+  {
+    "stato": "BRUNEI",
+    "cittadinanza": "bruneiana"
+  },
+  {
+    "stato": "BULGARIA",
+    "cittadinanza": "bulgara"
+  },
+  {
+    "stato": "BURKINA",
+    "cittadinanza": "burkinabè"
+  },
+  {
+    "stato": "BURUNDI",
+    "cittadinanza": "burundese"
+  },
+  {
+    "stato": "CAMBOGIA",
+    "cittadinanza": "cambogiana"
+  },
+  {
+    "stato": "CAMERUN",
+    "cittadinanza": "camerunese"
+  },
+  {
+    "stato": "CANADA",
+    "cittadinanza": "canadese"
+  },
+  {
+    "stato": "CECA REPUBBLICA",
+    "cittadinanza": "ceca"
+  },
+  {
+    "stato": "CIAD",
+    "cittadinanza": "ciadiana"
+  },
+  {
+    "stato": "CILE",
+    "cittadinanza": "cilena"
+  },
+  {
+    "stato": "CINA REPUBBLICA POPOLARE",
+    "cittadinanza": "cinese"
+  },
+  {
+    "stato": "CIPRO",
+    "cittadinanza": "cipriota"
+  },
+  {
+    "stato": "COLOMBIA",
+    "cittadinanza": "colombiana"
+  },
+  {
+    "stato": "CONGO REPUBBLICA POPOLARE",
+    "cittadinanza": "congolese"
+  },
+  {
+    "stato": "COREA DEL NORD",
+    "cittadinanza": "nordcoreana"
+  },
+  {
+    "stato": "COREA DEL SUD",
+    "cittadinanza": "sudcoreana"
+  },
+  {
+    "stato": "COSTA RICA",
+    "cittadinanza": "costaricana"
+  },
+  {
+    "stato": "COSTA D'AVORIO",
+    "cittadinanza": "ivoriana"
+  },
+  {
+    "stato": "CROAZIA",
+    "cittadinanza": "croata"
+  },
+  {
+    "stato": "CUBA",
+    "cittadinanza": "cubana"
+  },
+  {
+    "stato": "DANIMARCA",
+    "cittadinanza": "danese"
+  },
+  {
+    "stato": "DOMINICANA REPUBBLICA",
+    "cittadinanza": "dominicana"
+  },
+  {
+    "stato": "ECUADOR",
+    "cittadinanza": "ecuadoriana"
+  },
+  {
+    "stato": "EGITTO",
+    "cittadinanza": "egiziana"
+  },
+  {
+    "stato": "EL SALVADOR",
+    "cittadinanza": "salvadoregna"
+  },
+  {
+    "stato": "EMIRATI ARABI UNITI",
+    "cittadinanza": "emiratina"
+  },
+  {
+    "stato": "ERITREA",
+    "cittadinanza": "eritrea"
+  },
+  {
+    "stato": "ESTONIA",
+    "cittadinanza": "estone"
+  },
+  {
+    "stato": "ETIOPIA",
+    "cittadinanza": "etiope"
+  },
+  {
+    "stato": "FILIPPINE",
+    "cittadinanza": "filippina"
+  },
+  {
+    "stato": "FINLANDIA",
+    "cittadinanza": "finlandese"
+  },
+  {
+    "stato": "FRANCIA",
+    "cittadinanza": "francese"
+  },
+  {
+    "stato": "GABON",
+    "cittadinanza": "gabonese"
+  },
+  {
+    "stato": "GAMBIA",
+    "cittadinanza": "gambiana"
+  },
+  {
+    "stato": "GEORGIA",
+    "cittadinanza": "georgiana"
+  },
+  {
+    "stato": "GERMANIA",
+    "cittadinanza": "tedesca"
+  },
+  {
+    "stato": "GHANA",
+    "cittadinanza": "ghanese"
+  },
+  {
+    "stato": "GIAMAICA",
+    "cittadinanza": "giamaicana"
+  },
+  {
+    "stato": "GIAPPONE",
+    "cittadinanza": "giapponese"
+  },
+  {
+    "stato": "GIORDANIA",
+    "cittadinanza": "giordana"
+  },
+  {
+    "stato": "GRECIA",
+    "cittadinanza": "greca"
+  },
+  {
+    "stato": "GUATEMALA",
+    "cittadinanza": "guatemalteca"
+  },
+  {
+    "stato": "GUINEA",
+    "cittadinanza": "guineana"
+  },
+  {
+    "stato": "GUYANA",
+    "cittadinanza": "guyanese"
+  },
+  {
+    "stato": "HAITI",
+    "cittadinanza": "haitiana"
+  },
+  {
+    "stato": "HONDURAS",
+    "cittadinanza": "honduregna"
+  },
+  {
+    "stato": "INDIA",
+    "cittadinanza": "indiana"
+  },
+  {
+    "stato": "INDONESIA",
+    "cittadinanza": "indonesiana"
+  },
+  {
+    "stato": "IRAN",
+    "cittadinanza": "iraniana"
+  },
+  {
+    "stato": "IRAQ",
+    "cittadinanza": "irachena"
+  },
+  {
+    "stato": "IRLANDA",
+    "cittadinanza": "irlandese"
+  },
+  {
+    "stato": "ISLANDA",
+    "cittadinanza": "islandese"
+  },
+  {
+    "stato": "ISRAELE",
+    "cittadinanza": "israeliana"
+  },
+  {
+    "stato": "KAZAKISTAN",
+    "cittadinanza": "kazaka"
+  },
+  {
+    "stato": "KENYA",
+    "cittadinanza": "keniota"
+  },
+  {
+    "stato": "KUWAIT",
+    "cittadinanza": "kuwaitiana"
+  },
+  {
+    "stato": "LAOS",
+    "cittadinanza": "laotiana"
+  },
+  {
+    "stato": "LETTONIA",
+    "cittadinanza": "lettone"
+  },
+  {
+    "stato": "LIBANO",
+    "cittadinanza": "libanese"
+  },
+  {
+    "stato": "LIBERIA",
+    "cittadinanza": "liberiana"
+  },
+  {
+    "stato": "LIBIA",
+    "cittadinanza": "libica"
+  },
+  {
+    "stato": "LITUANIA",
+    "cittadinanza": "lituana"
+  },
+  {
+    "stato": "LUSSEMBURGO",
+    "cittadinanza": "lussemburghese"
+  },
+  {
+    "stato": "MACEDONIA",
+    "cittadinanza": "macedone"
+  },
+  {
+    "stato": "MADAGASCAR",
+    "cittadinanza": "malgascia"
+  },
+  {
+    "stato": "MALAWI",
+    "cittadinanza": "malawiana"
+  },
+  {
+    "stato": "MALAYSIA",
+    "cittadinanza": "malese"
+  },
+  {
+    "stato": "MALI",
+    "cittadinanza": "maliana"
+  },
+  {
+    "stato": "MALTA",
+    "cittadinanza": "maltese"
+  },
+  {
+    "stato": "MAROCCO",
+    "cittadinanza": "marocchina"
+  },
+  {
+    "stato": "MAURITANIA",
+    "cittadinanza": "mauritana"
+  },
+  {
+    "stato": "MESSICO",
+    "cittadinanza": "messicana"
+  },
+  {
+    "stato": "MOLDAVIA",
+    "cittadinanza": "moldava"
+  },
+  {
+    "stato": "MONACO",
+    "cittadinanza": "monegasca"
+  },
+  {
+    "stato": "MONGOLIA",
+    "cittadinanza": "mongola"
+  },
+  {
+    "stato": "MOZAMBICO",
+    "cittadinanza": "mozambicana"
+  },
+  {
+    "stato": "MYANMAR = BIRMANIA",
+    "cittadinanza": "birmana"
+  },
+  {
+    "stato": "NAMIBIA",
+    "cittadinanza": "namibiana"
+  },
+  {
+    "stato": "NEPAL",
+    "cittadinanza": "nepalese"
+  },
+  {
+    "stato": "NICARAGUA",
+    "cittadinanza": "nicaraguense"
+  },
+  {
+    "stato": "NIGER",
+    "cittadinanza": "nigerina"
+  },
+  {
+    "stato": "NIGERIA",
+    "cittadinanza": "nigeriana"
+  },
+  {
+    "stato": "NORVEGIA",
+    "cittadinanza": "norvegese"
+  },
+  {
+    "stato": "NUOVA ZELANDA",
+    "cittadinanza": "neozelandese"
+  },
+  {
+    "stato": "OMAN",
+    "cittadinanza": "omanita"
+  },
+  {
+    "stato": "PAESI BASSI",
+    "cittadinanza": "olandese"
+  },
+  {
+    "stato": "PAKISTAN",
+    "cittadinanza": "pakistana"
+  },
+  {
+    "stato": "PANAMA",
+    "cittadinanza": "panamense"
+  },
+  {
+    "stato": "PARAGUAY",
+    "cittadinanza": "paraguaiana"
+  },
+  {
+    "stato": "PERU",
+    "cittadinanza": "peruviana"
+  },
+  {
+    "stato": "POLONIA",
+    "cittadinanza": "polacca"
+  },
+  {
+    "stato": "PORTOGALLO",
+    "cittadinanza": "portoghese"
+  },
+  {
+    "stato": "QATAR",
+    "cittadinanza": "qatariota"
+  },
+  {
+    "stato": "GR. BRET. - IRLANDA DEL NORD (REGNO UNITO)",
+    "cittadinanza": "britannica"
+  },
+  {
+    "stato": "ROMANIA",
+    "cittadinanza": "rumena"
+  },
+  {
+    "stato": "RUSSIA=FEDERAZIONE RUSSA",
+    "cittadinanza": "russa"
+  },
+  {
+    "stato": "RUANDA",
+    "cittadinanza": "ruandese"
+  },
+  {
+    "stato": "SAN MARINO",
+    "cittadinanza": "sammarinese"
+  },
+  {
+    "stato": "SENEGAL",
+    "cittadinanza": "senegalese"
+  },
+  {
+    "stato": "SIERRA LEONE",
+    "cittadinanza": "sierraleonese"
+  },
+  {
+    "stato": "SINGAPORE",
+    "cittadinanza": "singaporiana"
+  },
+  {
+    "stato": "SIRIA",
+    "cittadinanza": "siriana"
+  },
+  {
+    "stato": "SLOVACCA REPUBBLICA",
+    "cittadinanza": "slovacca"
+  },
+  {
+    "stato": "SLOVENIA",
+    "cittadinanza": "slovena"
+  },
+  {
+    "stato": "SOMALIA",
+    "cittadinanza": "somala"
+  },
+  {
+    "stato": "SPAGNA",
+    "cittadinanza": "spagnola"
+  },
+  {
+    "stato": "SRI LANKA",
+    "cittadinanza": "singalese"
+  },
+  {
+    "stato": "STATI UNITI D'AMERICA",
+    "cittadinanza": "statunitense"
+  },
+  {
+    "stato": "SUDAFRICANA REPUBBLICA",
+    "cittadinanza": "sudafricana"
+  },
+  {
+    "stato": "SUDAN",
+    "cittadinanza": "sudanese"
+  },
+  {
+    "stato": "SURINAME",
+    "cittadinanza": "surinamese"
+  },
+  {
+    "stato": "SVEZIA",
+    "cittadinanza": "svedese"
+  },
+  {
+    "stato": "SVIZZERA",
+    "cittadinanza": "svizzera"
+  },
+  {
+    "stato": "TAGIKISTAN",
+    "cittadinanza": "tagika"
+  },
+  {
+    "stato": "TANZANIA",
+    "cittadinanza": "tanzaniana"
+  },
+  {
+    "stato": "THAILANDIA",
+    "cittadinanza": "thailandese"
+  },
+  {
+    "stato": "TOGO",
+    "cittadinanza": "togolese"
+  },
+  {
+    "stato": "TUNISIA",
+    "cittadinanza": "tunisina"
+  },
+  {
+    "stato": "TURCHIA",
+    "cittadinanza": "turca"
+  },
+  {
+    "stato": "TURKEMENISTAN",
+    "cittadinanza": "turkmena"
+  },
+  {
+    "stato": "UCRAINA",
+    "cittadinanza": "ucraina"
+  },
+  {
+    "stato": "UGANDA",
+    "cittadinanza": "ugandese"
+  },
+  {
+    "stato": "UNGHERIA",
+    "cittadinanza": "ungherese"
+  },
+  {
+    "stato": "URUGUAY",
+    "cittadinanza": "uruguaiana"
+  },
+  {
+    "stato": "UZBEKISTAN",
+    "cittadinanza": "uzbeka"
+  },
+  {
+    "stato": "VENEZUELA",
+    "cittadinanza": "venezuelana"
+  },
+  {
+    "stato": "VIETNAM",
+    "cittadinanza": "vietnamita"
+  },
+  {
+    "stato": "YEMEN",
+    "cittadinanza": "yemenita"
+  },
+  {
+    "stato": "ZAMBIA",
+    "cittadinanza": "zambiana"
+  },
+  {
+    "stato": "ZIMBABWE",
+    "cittadinanza": "zimbabwese"
+  }
+]
