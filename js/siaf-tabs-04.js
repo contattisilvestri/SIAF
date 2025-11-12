@@ -5,11 +5,11 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 8,
-    patch: 0,
+    patch: 1,
     date: '12/11/2025',
-    time: '02:00',
-    description: 'Segmented control iOS-style per sesso e cittadinanza (design premium)',
-    color: '#007AFF'  // iOS blue - Apple style
+    time: '02:30',
+    description: 'Permesso di soggiorno condizionale per cittadinanza estera',
+    color: '#34C759'  // iOS green - document feature
 };
 
 class SiafApp {
@@ -1239,7 +1239,13 @@ addVenditore() {
         telefono1: '',
         telefono2: '',
         email1: '',
-        email2: ''
+        email2: '',
+        // Permesso di soggiorno (per cittadinanza estera)
+        permesso_tipo: '',
+        permesso_numero: '',
+        permesso_rilascio: '',
+        permesso_scadenza: '',
+        permesso_questura: ''
     };
     
     this.venditori.push(venditore);
@@ -1920,8 +1926,61 @@ renderVenditore(venditore) {
                     </div>
                 </div>
 
-                <!-- COLONNA 2 (40%): Documento + Residenza + Contatti -->
+                <!-- COLONNA 2 (40%): Permesso Soggiorno + Documento + Residenza + Contatti -->
                 <div class="field-card">
+                    <!-- Permesso di Soggiorno (nascosto se cittadinanza italiana) -->
+                    <div id="permesso-soggiorno-section-${venditore.id}"
+                         class="permesso-soggiorno-section"
+                         style="display: ${(venditore.cittadinanza && venditore.cittadinanza !== 'italiana') ? 'block' : 'none'};">
+                        <h4>📋 Permesso di Soggiorno</h4>
+                        <div class="field-row">
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_permesso_tipo">Tipo Permesso</label>
+                                <select id="venditore_${venditore.id}_permesso_tipo">
+                                    <option value="">Seleziona...</option>
+                                    <option value="lavoro" ${venditore.permesso_tipo === 'lavoro' ? 'selected' : ''}>Lavoro</option>
+                                    <option value="studio" ${venditore.permesso_tipo === 'studio' ? 'selected' : ''}>Studio</option>
+                                    <option value="famiglia" ${venditore.permesso_tipo === 'famiglia' ? 'selected' : ''}>Motivi familiari</option>
+                                    <option value="residenza_elettiva" ${venditore.permesso_tipo === 'residenza_elettiva' ? 'selected' : ''}>Residenza elettiva</option>
+                                    <option value="protezione_internazionale" ${venditore.permesso_tipo === 'protezione_internazionale' ? 'selected' : ''}>Protezione internazionale</option>
+                                    <option value="lungo_soggiornante" ${venditore.permesso_tipo === 'lungo_soggiornante' ? 'selected' : ''}>Soggiornante UE lungo periodo</option>
+                                    <option value="altro" ${venditore.permesso_tipo === 'altro' ? 'selected' : ''}>Altro</option>
+                                </select>
+                            </div>
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_permesso_numero">Numero Permesso</label>
+                                <input type="text"
+                                       id="venditore_${venditore.id}_permesso_numero"
+                                       value="${venditore.permesso_numero || ''}"
+                                       placeholder="Es. 123456789">
+                            </div>
+                        </div>
+                        <div class="field-row">
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_permesso_rilascio">Data Rilascio</label>
+                                <input type="date"
+                                       id="venditore_${venditore.id}_permesso_rilascio"
+                                       value="${venditore.permesso_rilascio || ''}">
+                            </div>
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_permesso_scadenza">Data Scadenza</label>
+                                <input type="date"
+                                       id="venditore_${venditore.id}_permesso_scadenza"
+                                       value="${venditore.permesso_scadenza || ''}">
+                            </div>
+                        </div>
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_permesso_questura">Questura di Rilascio</label>
+                            <input type="text"
+                                   id="venditore_${venditore.id}_permesso_questura"
+                                   value="${venditore.permesso_questura || ''}"
+                                   placeholder="Es. Questura di Roma">
+                        </div>
+
+                        <!-- Separatore visivo -->
+                        <hr style="border: none; border-top: 2px solid #e9ecef; margin: 24px 0;">
+                    </div>
+
                     <!-- Documento di Riconoscimento -->
                     <h4>Documento di Riconoscimento</h4>
                     <div class="field-row">
@@ -2116,6 +2175,7 @@ renderVenditore(venditore) {
             const cittEsteroRadio = document.getElementById(`venditore_${venditore.id}_citt_estero`);
             const cittadinanzaField = document.getElementById(`cittadinanza-field-${venditore.id}`);
             const cittadinanzaInput = document.getElementById(`venditore_${venditore.id}_cittadinanza_custom`);
+            const permessoSoggiornoSection = document.getElementById(`permesso-soggiorno-section-${venditore.id}`);
 
             const handleCittadinanzaChange = () => {
                 const isItalia = cittItaliaRadio.checked;
@@ -2123,6 +2183,12 @@ renderVenditore(venditore) {
                 // Mostra/nascondi campo autocomplete
                 if (cittadinanzaField) {
                     cittadinanzaField.style.display = isItalia ? 'none' : 'block';
+                }
+
+                // Mostra/nascondi sezione Permesso di Soggiorno
+                if (permessoSoggiornoSection) {
+                    permessoSoggiornoSection.style.display = isItalia ? 'none' : 'block';
+                    console.log(`📋 Permesso soggiorno ${isItalia ? 'nascosto' : 'mostrato'} per venditore ${venditore.id}`);
                 }
 
                 // Reset campo se Italia
@@ -2290,7 +2356,13 @@ renderVenditore(venditore) {
                 telefono2: document.getElementById(`venditore_${venditore.id}_telefono2`)?.value || '',
                 email1: document.getElementById(`venditore_${venditore.id}_email1`)?.value || '',
                 email2: document.getElementById(`venditore_${venditore.id}_email2`)?.value || '',
-                cittadinanza: cittadinanza
+                cittadinanza: cittadinanza,
+                // Permesso di soggiorno (solo se cittadinanza estera)
+                permesso_tipo: document.getElementById(`venditore_${venditore.id}_permesso_tipo`)?.value || '',
+                permesso_numero: document.getElementById(`venditore_${venditore.id}_permesso_numero`)?.value || '',
+                permesso_rilascio: document.getElementById(`venditore_${venditore.id}_permesso_rilascio`)?.value || '',
+                permesso_scadenza: document.getElementById(`venditore_${venditore.id}_permesso_scadenza`)?.value || '',
+                permesso_questura: document.getElementById(`venditore_${venditore.id}_permesso_questura`)?.value || ''
             };
             
             console.log(`📋 Dati venditore ${venditore.id}:`, data);
