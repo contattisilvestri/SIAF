@@ -559,6 +559,101 @@ input:invalid, select:invalid {
     resize: vertical;
 }
 
+/* ========== CITTADINANZA: TOGGLE ITALIA + AUTOCOMPLETE ========== */
+
+/* Wrapper toggle */
+.cittadinanza-toggle-wrapper {
+    margin-bottom: 12px;
+}
+
+/* Toggle slide container */
+.cittadinanza-toggle {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    gap: 12px;
+}
+
+/* Nascondi checkbox nativo */
+.cittadinanza-toggle input[type="checkbox"] {
+    display: none;
+}
+
+/* Slider background */
+.cittadinanza-toggle-slider {
+    position: relative;
+    width: 52px;
+    height: 28px;
+    background: #cbd5e0;
+    border-radius: 28px;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+/* Slider thumb */
+.cittadinanza-toggle-slider::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 22px;
+    height: 22px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+/* Stato checked */
+.cittadinanza-toggle input:checked + .cittadinanza-toggle-slider {
+    background: linear-gradient(135deg, #4CAF50 0%, #66bb6a 100%);
+}
+
+.cittadinanza-toggle input:checked + .cittadinanza-toggle-slider::after {
+    left: 27px;
+}
+
+/* Label testo */
+.cittadinanza-toggle-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+/* Campo autocomplete */
+.cittadinanza-field {
+    margin-top: 12px;
+    animation: slideDown 0.3s ease;
+}
+
+.cittadinanza-field input[type="text"] {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.cittadinanza-field input[type="text"]:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.cittadinanza-field input[type="text"]::placeholder {
+    color: #a0aec0;
+}
+
+.cittadinanza-field .field-hint {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: #718096;
+}
+
 /* ========== CODICE FISCALE: CALCOLO AUTOMATICO ========== */
 
 /* CF Input Group - Wrapper per input + button */
