@@ -5,11 +5,11 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 7,
-    patch: 5,
+    patch: 7,
     date: '12/11/2025',
-    time: '23:00',
-    description: 'Calcolo automatico Codice Fiscale - Enterprise grade con encryption e omocodia',
-    color: '#00BCD4'  // Cyan - automazione CF
+    time: '23:45',
+    description: 'Cittadinanza: toggle slide Italia + autocomplete 152 paesi',
+    color: '#9C27B0'  // Purple - internazionalizzazione
 };
 
 class SiafApp {
@@ -41,6 +41,10 @@ class SiafApp {
         // CF Calculator (lazy loaded)
         this.cfCalculator = null;
         this.cfCalculatorReady = false;
+
+        // Cittadinanza list (lazy loaded)
+        this.cittadinanzaData = null;
+        this.cittadinanzaLoaded = false;
 
         // Condizioni Economiche (a livello pratica)
         this.condizioniEconomiche = {
@@ -1687,14 +1691,62 @@ hideCFWarning(venditoreId) {
     warningDiv.style.display = 'none';
 }
 
+/**
+ * Carica la lista delle cittadinanze e popola il datalist
+ * Lazy loading - carica solo una volta
+ */
+async loadCittadinanzaList() {
+    // Se già caricato, esci
+    if (this.cittadinanzaLoaded) return;
+
+    try {
+        console.log('🌍 Caricamento lista cittadinanze...');
+        const response = await fetch('https://contattisilvestri.github.io/SIAF/DATA/stato-cittadinanza.json');
+
+        if (!response.ok) {
+            console.warn('⚠️ File cittadinanze non trovato, funzionalità disabilitata');
+            return;
+        }
+
+        this.cittadinanzaData = await response.json();
+
+        // Popola il datalist
+        const datalist = document.getElementById('paesi-cittadinanza-list');
+        if (!datalist) {
+            console.warn('⚠️ Datalist cittadinanze non trovato nel DOM');
+            return;
+        }
+
+        // Svuota datalist esistente
+        datalist.innerHTML = '';
+
+        // Aggiungi tutte le cittadinanze
+        this.cittadinanzaData.forEach(paese => {
+            const option = document.createElement('option');
+            option.value = paese.cittadinanza;
+            option.setAttribute('data-stato', paese.stato);
+            datalist.appendChild(option);
+        });
+
+        this.cittadinanzaLoaded = true;
+        console.log(`✅ Caricate ${this.cittadinanzaData.length} cittadinanze`);
+
+    } catch (error) {
+        console.error('❌ Errore caricamento cittadinanze:', error);
+    }
+}
+
 renderVenditore(venditore) {
     const container = document.getElementById('venditori-container');
-    
+
     if (!container) {
         console.error('❌ Container venditori-container non trovato!');
         return;
     }
-    
+
+    // Carica lista cittadinanze (lazy load - solo la prima volta)
+    this.loadCittadinanzaList();
+
     const isFirst = this.venditori.length === 1;
     const isConiugeAuto = venditore.isConiuge || false;
     const cardClass = isConiugeAuto ? 'venditore-card venditore-coniuge-auto' : 'venditore-card';
@@ -1808,8 +1860,40 @@ renderVenditore(venditore) {
                         </div>
 
                         <small class="field-hint">
-                            Inserisci manualmente o clicca "Calcola CF" per generarlo dai dati anagrafici
+                            Inserisci manualmente o clicca "Calcola CF" per generarlo dai dati anagrafici. <strong>È responsabilità dell'operatore verificare la correttezza del codice.</strong>
                         </small>
+                    </div>
+
+                    <!-- Cittadinanza -->
+                    <div class="field-group">
+                        <label>Cittadinanza</label>
+
+                        <!-- Toggle slide Italia -->
+                        <div class="cittadinanza-toggle-wrapper">
+                            <label class="cittadinanza-toggle">
+                                <input type="checkbox"
+                                       id="venditore_${venditore.id}_cittadinanza_italia"
+                                       ${(!venditore.cittadinanza || venditore.cittadinanza === 'italiana') ? 'checked' : ''}
+                                       onchange="this.closest('.field-group').querySelector('.cittadinanza-field').style.display = this.checked ? 'none' : 'block'; if(this.checked) { document.getElementById('venditore_${venditore.id}_cittadinanza_custom').value = ''; }">
+                                <span class="cittadinanza-toggle-slider"></span>
+                                <span class="cittadinanza-toggle-label">Italia</span>
+                            </label>
+                        </div>
+
+                        <!-- Campo autocomplete (nascosto se Italia è attivo) -->
+                        <div class="cittadinanza-field"
+                             style="display: ${(!venditore.cittadinanza || venditore.cittadinanza === 'italiana') ? 'none' : 'block'}">
+                            <input type="text"
+                                   id="venditore_${venditore.id}_cittadinanza_custom"
+                                   list="paesi-cittadinanza-list"
+                                   value="${venditore.cittadinanza && venditore.cittadinanza !== 'italiana' ? venditore.cittadinanza : ''}"
+                                   placeholder="Digita il paese di cittadinanza..."
+                                   autocomplete="off">
+                            <datalist id="paesi-cittadinanza-list">
+                                <!-- Lista popolata dinamicamente al caricamento -->
+                            </datalist>
+                            <small class="field-hint">Inizia a digitare per vedere i suggerimenti</small>
+                        </div>
                     </div>
                 </div>
 
