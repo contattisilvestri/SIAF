@@ -38,6 +38,10 @@ class SiafApp {
         // Controllo prevenzione doppia generazione documenti
         this.isGeneratingDocuments = false;
 
+        // CF Calculator (lazy loaded)
+        this.cfCalculator = null;
+        this.cfCalculatorReady = false;
+
         // Condizioni Economiche (a livello pratica)
         this.condizioniEconomiche = {
             modalita_prezzo: 'singola', // 'singola' o 'offerta_unica'
@@ -1451,6 +1455,238 @@ showNotification(message, type = 'info', duration = 3000) {
     }, duration);
 }
 
+// ========== BLOCCO CODICE FISCALE: CALCOLO AUTOMATICO ==========
+
+/**
+ * Inizializza il CF Calculator (lazy loading)
+ */
+async initializeCFCalculator() {
+    if (this.cfCalculatorReady) return;
+
+    try {
+        console.log('🔄 Inizializzazione CF Calculator...');
+
+        // Crea istanza calculator
+        this.cfCalculator = new window.CodiceFiscaleCalculator();
+
+        // Inizializza (carica database Belfiore)
+        await this.cfCalculator.init();
+
+        this.cfCalculatorReady = true;
+        console.log('✅ CF Calculator ready');
+
+    } catch (error) {
+        console.error('❌ Errore inizializzazione CF Calculator:', error);
+        alert('Errore caricamento sistema calcolo CF. Ricarica la pagina.');
+    }
+}
+
+/**
+ * Calcola il codice fiscale per un venditore
+ */
+async calculateCF(venditoreId) {
+    try {
+        // Inizializza calculator se necessario (lazy loading)
+        if (!this.cfCalculatorReady) {
+            this.showCFWarning(venditoreId, '⏳ Caricamento database comuni...', 'info');
+            await this.initializeCFCalculator();
+            this.hideCFWarning(venditoreId);
+        }
+
+        const venditore = this.venditori.find(v => v.id === venditoreId);
+        if (!venditore) return;
+
+        // Raccogli dati necessari
+        const nome = document.getElementById(`venditore_${venditoreId}_nome`)?.value;
+        const cognome = document.getElementById(`venditore_${venditoreId}_cognome`)?.value;
+        const sesso = document.getElementById(`venditore_${venditoreId}_sesso`)?.value;
+        const dataNascita = document.getElementById(`venditore_${venditoreId}_data_nascita`)?.value;
+        const luogoNascita = document.getElementById(`venditore_${venditoreId}_luogo_nascita`)?.value;
+        const provincia = document.getElementById(`venditore_${venditoreId}_provincia`)?.value;
+
+        // Validazione campi obbligatori
+        const campiMancanti = [];
+        if (!nome) campiMancanti.push('Nome');
+        if (!cognome) campiMancanti.push('Cognome');
+        if (!sesso) campiMancanti.push('Sesso');
+        if (!dataNascita) campiMancanti.push('Data di nascita');
+        if (!luogoNascita) campiMancanti.push('Luogo di nascita');
+
+        if (campiMancanti.length > 0) {
+            this.showCFWarning(
+                venditoreId,
+                `⚠️ Campi mancanti: ${campiMancanti.join(', ')}`,
+                'error'
+            );
+            return;
+        }
+
+        // Validazione security
+        const nameValidation = window.CFSecurity.validateName(nome);
+        if (!nameValidation.valid) {
+            this.showCFWarning(venditoreId, `❌ Nome: ${nameValidation.error}`, 'error');
+            return;
+        }
+
+        const surnameValidation = window.CFSecurity.validateName(cognome);
+        if (!surnameValidation.valid) {
+            this.showCFWarning(venditoreId, `❌ Cognome: ${surnameValidation.error}`, 'error');
+            return;
+        }
+
+        const dateValidation = window.CFSecurity.validateBirthDate(dataNascita);
+        if (!dateValidation.valid) {
+            this.showCFWarning(venditoreId, `❌ Data: ${dateValidation.error}`, 'error');
+            return;
+        }
+
+        // Rate limiting (max 100 calcoli al minuto)
+        if (!window.CFSecurity.checkRateLimit('calculate_cf', 100, 60000)) {
+            this.showCFWarning(
+                venditoreId,
+                '⚠️ Troppi calcoli. Attendi un minuto.',
+                'warning'
+            );
+            return;
+        }
+
+        // Calcola CF
+        console.log(`🧮 Calcolo CF per venditore ${venditoreId}...`);
+
+        const result = this.cfCalculator.calculate({
+            nome: nome,
+            cognome: cognome,
+            sesso: sesso,
+            dataNascita: dataNascita,
+            luogoNascita: luogoNascita,
+            provincia: provincia
+        });
+
+        if (!result.success) {
+            // Errore calcolo
+            if (result.matches && result.matches.length > 0) {
+                // Ambiguità comune
+                const matchesList = result.matches
+                    .map(m => `${m.nome} (${m.provincia})`)
+                    .join(', ');
+                this.showCFWarning(
+                    venditoreId,
+                    `⚠️ ${result.error}. Comuni trovati: ${matchesList}. Specifica la provincia.`,
+                    'warning'
+                );
+            } else {
+                this.showCFWarning(venditoreId, `❌ ${result.error}`, 'error');
+            }
+            return;
+        }
+
+        // Successo!
+        const cfInput = document.getElementById(`venditore_${venditoreId}_codice_fiscale`);
+        cfInput.value = result.cf;
+
+        // Aggiorna venditore object
+        venditore.codice_fiscale = result.cf;
+        this.isDirty = true;
+
+        // Mostra successo
+        this.showCFWarning(
+            venditoreId,
+            `✅ Codice Fiscale calcolato: ${result.cf}`,
+            'success'
+        );
+
+        // Nascondi warning dopo 3 secondi
+        setTimeout(() => this.hideCFWarning(venditoreId), 3000);
+
+        // Audit log
+        const cfHash = await window.CFSecurity.hashCF(result.cf);
+        window.CFSecurity.logAudit('calculate', {
+            cfHash,
+            success: true,
+            venditoreId
+        });
+
+        console.log(`✅ CF calcolato: ${result.cf}`);
+
+    } catch (error) {
+        console.error('❌ Errore calcolo CF:', error);
+        this.showCFWarning(
+            venditoreId,
+            `❌ Errore imprevisto: ${error.message}`,
+            'error'
+        );
+    }
+}
+
+/**
+ * Valida CF inserito manualmente
+ */
+async validateCFManual(venditoreId) {
+    try {
+        const cfInput = document.getElementById(`venditore_${venditoreId}_codice_fiscale`);
+        const cf = cfInput?.value;
+
+        if (!cf || cf.trim().length === 0) {
+            this.hideCFWarning(venditoreId);
+            return;
+        }
+
+        // Inizializza calculator se necessario
+        if (!this.cfCalculatorReady) {
+            await this.initializeCFCalculator();
+        }
+
+        // Valida formato e check digit
+        const validation = this.cfCalculator.validate(cf);
+
+        if (!validation.valid) {
+            this.showCFWarning(
+                venditoreId,
+                `❌ ${validation.errors.join(', ')}`,
+                'error'
+            );
+        } else if (validation.warnings.length > 0) {
+            this.showCFWarning(
+                venditoreId,
+                `⚠️ ${validation.warnings.join(', ')}`,
+                'warning'
+            );
+        } else {
+            this.showCFWarning(
+                venditoreId,
+                '✅ Codice Fiscale valido',
+                'success'
+            );
+            setTimeout(() => this.hideCFWarning(venditoreId), 2000);
+        }
+
+    } catch (error) {
+        console.error('❌ Errore validazione CF:', error);
+    }
+}
+
+/**
+ * Mostra warning CF
+ */
+showCFWarning(venditoreId, message, type = 'info') {
+    const warningDiv = document.getElementById(`cf-warning-${venditoreId}`);
+    if (!warningDiv) return;
+
+    warningDiv.className = `cf-warning cf-warning-${type}`;
+    warningDiv.textContent = message;
+    warningDiv.style.display = 'block';
+}
+
+/**
+ * Nascondi warning CF
+ */
+hideCFWarning(venditoreId) {
+    const warningDiv = document.getElementById(`cf-warning-${venditoreId}`);
+    if (!warningDiv) return;
+
+    warningDiv.style.display = 'none';
+}
+
 renderVenditore(venditore) {
     const container = document.getElementById('venditori-container');
     
@@ -1551,8 +1787,29 @@ renderVenditore(venditore) {
 
                     <div class="field-group">
                         <label for="venditore_${venditore.id}_codice_fiscale">Codice Fiscale</label>
-                        <input type="text" id="venditore_${venditore.id}_codice_fiscale" value="${venditore.codice_fiscale}" 
-                               maxlength="16" style="text-transform: uppercase;">
+                        <div class="cf-input-group">
+                            <input type="text"
+                                   id="venditore_${venditore.id}_codice_fiscale"
+                                   value="${venditore.codice_fiscale}"
+                                   maxlength="16"
+                                   style="text-transform: uppercase;"
+                                   placeholder="Inserisci o calcola automaticamente">
+                            <button type="button"
+                                    class="btn-calculate-cf"
+                                    onclick="window.siafApp.calculateCF(${venditore.id})">
+                                🧮 Calcola CF
+                            </button>
+                        </div>
+
+                        <!-- Warning container (nascosto di default) -->
+                        <div id="cf-warning-${venditore.id}"
+                             class="cf-warning"
+                             style="display: none;">
+                        </div>
+
+                        <small class="field-hint">
+                            Inserisci manualmente o clicca "Calcola CF" per generarlo dai dati anagrafici
+                        </small>
                     </div>
                 </div>
 
