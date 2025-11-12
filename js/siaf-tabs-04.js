@@ -5,7 +5,7 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 7,
-    patch: 1,
+    patch: 2,
     date: '03/11/2025',
     time: '19:00',
     description: 'Sezione finale template: Diritto Recesso, Osservazioni, Firme/Date',
@@ -1218,6 +1218,12 @@ addVenditore() {
         cittadinanza: 'Italiana',
         stato_civile: '',
         regime_patrimoniale: '',
+        specificare_regime: false,
+        // Flags per gestione automatica coniuge
+        isConiuge: false,
+        linkedTo: null,
+        hasConiuge: false,
+        coniugeId: null,
         indirizzo: '',
         citta: '',
         provincia: '',
@@ -1243,13 +1249,206 @@ removeVenditore(id) {
         alert('Deve esserci almeno un venditore');
         return;
     }
-    
+
+    const venditore = this.venditori.find(v => v.id === id);
+    if (!venditore) return;
+
+    // 🛡️ PROTEZIONE: Blocca rimozione manuale di coniuge auto-aggiunto
+    if (venditore.isConiuge) {
+        alert('⚠️ Questo coniuge è stato aggiunto automaticamente.\n\nPer rimuoverlo, cambia il regime patrimoniale del venditore principale o deseleziona "Specificare regime".');
+        return;
+    }
+
+    // ⚠️ CASO SPECIALE: Venditore principale con coniuge collegato
+    if (venditore.hasConiuge) {
+        const coniuge = this.venditori.find(v => v.id === venditore.coniugeId);
+        const coniugeNome = coniuge ? `${coniuge.nome} ${coniuge.cognome}`.trim() : 'sconosciuto';
+
+        const conferma = confirm(
+            `⚠️ ATTENZIONE!\n\n` +
+            `Questo venditore ha un coniuge collegato automaticamente:\n"${coniugeNome}"\n\n` +
+            `Rimuovendo questo venditore, verrà rimosso anche il coniuge.\n\n` +
+            `Vuoi procedere?`
+        );
+
+        if (!conferma) {
+            console.log('❌ Rimozione annullata dall\'utente');
+            return;
+        }
+
+        // Rimuovi prima il coniuge
+        if (coniuge) {
+            this.venditori = this.venditori.filter(v => v.id !== coniuge.id);
+            const coniugeCard = document.getElementById(`venditore-${coniuge.id}`);
+            if (coniugeCard) coniugeCard.remove();
+            console.log(`✅ Coniuge ${coniuge.id} rimosso insieme al principale`);
+        }
+    }
+
+    // Rimuovi il venditore
     this.venditori = this.venditori.filter(v => v.id !== id);
     document.getElementById(`venditore-${id}`).remove();
     this.updateTabProgress();
     this.isDirty = true;
-    
+
     console.log(`❌ Rimosso venditore ${id}`);
+}
+
+// ========== BLOCCO REGIME PATRIMONIALE: GESTIONE CONIUGE AUTOMATICO ==========
+
+/**
+ * Gestisce il cambio di regime patrimoniale e l'aggiunta/rimozione automatica del coniuge
+ */
+handleRegimePatrimonialeChange(venditoreId) {
+    const venditore = this.venditori.find(v => v.id === venditoreId);
+    if (!venditore) return;
+
+    const regimeSelect = document.getElementById(`venditore_${venditoreId}_regime_patrimoniale`);
+    const regimeValue = regimeSelect ? regimeSelect.value : '';
+
+    console.log(`🔄 Cambio regime patrimoniale per venditore ${venditoreId}:`, regimeValue);
+
+    // Se seleziona "Comunione dei beni" E non ha già un coniuge collegato
+    if (regimeValue === 'comunione' && !venditore.hasConiuge) {
+        this.addConiugeAuto(venditoreId);
+    }
+    // Se cambia da "Comunione" ad altro E ha un coniuge collegato
+    else if (regimeValue !== 'comunione' && venditore.hasConiuge) {
+        this.removeConiugeAuto(venditoreId);
+    }
+}
+
+/**
+ * Aggiunge automaticamente un coniuge collegato al venditore principale
+ */
+addConiugeAuto(principaleId) {
+    const principale = this.venditori.find(v => v.id === principaleId);
+    if (!principale || principale.hasConiuge) {
+        console.log('⚠️ Coniuge già presente o venditore non trovato');
+        return;
+    }
+
+    // Crea il nuovo venditore coniuge con dati ereditati
+    const coniuge = {
+        id: ++this.venditoreCounter,
+        nome: '',
+        cognome: principale.cognome || '', // Eredita cognome
+        sesso: principale.sesso === 'M' ? 'F' : 'M', // Sesso opposto
+        luogo_nascita: '',
+        data_nascita: '',
+        codice_fiscale: '',
+        tipo_documento: '',
+        numero_documento: '',
+        data_rilascio: '',
+        data_scadenza: '',
+        cittadinanza: 'Italiana',
+        stato_civile: 'coniugato',
+        regime_patrimoniale: 'comunione',
+        specificare_regime: true,
+        // FLAGS CONIUGE
+        isConiuge: true,
+        linkedTo: principaleId,
+        hasConiuge: false,
+        coniugeId: null,
+        // Eredita indirizzo
+        indirizzo: principale.indirizzo || '',
+        citta: principale.citta || '',
+        provincia: principale.provincia || '',
+        pensionato: '',
+        telefono1: '',
+        telefono2: '',
+        email1: '',
+        email2: ''
+    };
+
+    // Trova la posizione del principale e inserisci il coniuge dopo
+    const principaleIndex = this.venditori.findIndex(v => v.id === principaleId);
+    this.venditori.splice(principaleIndex + 1, 0, coniuge);
+
+    // Aggiorna il principale con il collegamento
+    principale.hasConiuge = true;
+    principale.coniugeId = coniuge.id;
+
+    // Renderizza il coniuge nella posizione corretta
+    const principaleCard = document.getElementById(`venditore-${principaleId}`);
+    this.renderVenditore(coniuge);
+
+    // Sposta il card del coniuge dopo quello del principale
+    const coniugeCard = document.getElementById(`venditore-${coniuge.id}`);
+    if (principaleCard && coniugeCard) {
+        principaleCard.parentNode.insertBefore(coniugeCard, principaleCard.nextSibling);
+    }
+
+    this.updateTabProgress();
+    this.isDirty = true;
+
+    this.showNotification(
+        `💍 Coniuge aggiunto automaticamente per "${principale.nome} ${principale.cognome}"`,
+        'success',
+        4000
+    );
+
+    console.log(`✅ Coniuge ${coniuge.id} aggiunto automaticamente per venditore ${principaleId}`);
+}
+
+/**
+ * Rimuove automaticamente il coniuge collegato
+ */
+removeConiugeAuto(principaleId) {
+    const principale = this.venditori.find(v => v.id === principaleId);
+    if (!principale || !principale.hasConiuge) {
+        console.log('⚠️ Nessun coniuge da rimuovere');
+        return;
+    }
+
+    const coniugeId = principale.coniugeId;
+    const coniuge = this.venditori.find(v => v.id === coniugeId);
+
+    if (!coniuge) {
+        console.log('⚠️ Coniuge non trovato');
+        return;
+    }
+
+    // Rimuovi il coniuge
+    this.venditori = this.venditori.filter(v => v.id !== coniugeId);
+    const coniugeCard = document.getElementById(`venditore-${coniugeId}`);
+    if (coniugeCard) coniugeCard.remove();
+
+    // Aggiorna il principale
+    principale.hasConiuge = false;
+    principale.coniugeId = null;
+
+    this.updateTabProgress();
+    this.isDirty = true;
+
+    this.showNotification(
+        `❌ Coniuge rimosso automaticamente`,
+        'info',
+        3000
+    );
+
+    console.log(`✅ Coniuge ${coniugeId} rimosso automaticamente`);
+}
+
+/**
+ * Mostra una notifica toast
+ */
+showNotification(message, type = 'info', duration = 3000) {
+    // Crea elemento notifica
+    const notification = document.createElement('div');
+    notification.className = `notification-toast notification-${type}`;
+    notification.textContent = message;
+
+    document.body.appendChild(notification);
+
+    // Animazione entrata
+    setTimeout(() => notification.classList.add('show'), 10);
+
+    // Rimuovi dopo duration
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, duration);
 }
 
 renderVenditore(venditore) {
@@ -1261,12 +1460,18 @@ renderVenditore(venditore) {
     }
     
     const isFirst = this.venditori.length === 1;
-    
+    const isConiugeAuto = venditore.isConiuge || false;
+    const cardClass = isConiugeAuto ? 'venditore-card venditore-coniuge-auto' : 'venditore-card';
+
     const venditoreHtml = `
-        <div id="venditore-${venditore.id}" class="venditore-card">
+        <div id="venditore-${venditore.id}" class="${cardClass}">
             <div class="venditore-header">
-                <h3>👤 Venditore ${venditore.id}</h3>
-                ${!isFirst ? `<button type="button" class="btn-remove" onclick="window.siafApp.removeVenditore(${venditore.id})">❌ Rimuovi</button>` : ''}
+                <h3>
+                    👤 Venditore ${venditore.id}
+                    ${isConiugeAuto ? '<span class="badge-coniuge">💍 CONIUGE AUTO-AGGIUNTO</span>' : ''}
+                </h3>
+                ${!isFirst && !isConiugeAuto ? `<button type="button" class="btn-remove" onclick="window.siafApp.removeVenditore(${venditore.id})">❌ Rimuovi</button>` : ''}
+                ${isConiugeAuto ? `<button type="button" class="btn-remove" disabled title="Il coniuge verrà rimosso automaticamente">🔒 Protetto</button>` : ''}
             </div>
             
             <div class="form-grid">
@@ -1296,26 +1501,39 @@ renderVenditore(venditore) {
                             <label for="venditore_${venditore.id}_stato_civile">Stato Civile</label>
                             <select id="venditore_${venditore.id}_stato_civile">
                                 <option value="">Seleziona...</option>
-                                <option value="celibe" ${venditore.stato_civile === 'celibe' ? 'selected' : ''}>Celibe</option>
-                                <option value="nubile" ${venditore.stato_civile === 'nubile' ? 'selected' : ''}>Nubile</option>
+                                <option value="libero" ${venditore.stato_civile === 'libero' ? 'selected' : ''}>Libero/a</option>
                                 <option value="coniugato" ${venditore.stato_civile === 'coniugato' ? 'selected' : ''}>Coniugato/a</option>
-                                <option value="vedovo" ${venditore.stato_civile === 'vedovo' ? 'selected' : ''}>Vedovo</option>
-                                <option value="vedova" ${venditore.stato_civile === 'vedova' ? 'selected' : ''}>Vedova</option>
+                                <option value="separato" ${venditore.stato_civile === 'separato' ? 'selected' : ''}>Legalmente separato/a</option>
                                 <option value="divorziato" ${venditore.stato_civile === 'divorziato' ? 'selected' : ''}>Divorziato/a</option>
+                                <option value="vedovo" ${venditore.stato_civile === 'vedovo' ? 'selected' : ''}>Vedovo/a</option>
                             </select>
                         </div>
                     </div>
 
                     <!-- Campo condizionale: Regime Patrimoniale (solo se coniugato) -->
-                    <div id="regime-patrimoniale-${venditore.id}" class="conditional-fields" style="display: none;">
-                        <div class="field-group">
-                            <label for="venditore_${venditore.id}_regime_patrimoniale">Regime Patrimoniale</label>
-                            <select id="venditore_${venditore.id}_regime_patrimoniale">
-                                <option value="">Seleziona...</option>
-                                <option value="comunione" ${venditore.regime_patrimoniale === 'comunione' ? 'selected' : ''}>Comunione dei beni</option>
-                                <option value="separazione" ${venditore.regime_patrimoniale === 'separazione' ? 'selected' : ''}>Separazione dei beni</option>
-                            </select>
-                            <small class="field-hint">Specificare il regime patrimoniale del matrimonio</small>
+                    <div id="regime-patrimoniale-section-${venditore.id}" class="conditional-fields" style="display: none;">
+                        <div class="field-group" style="margin-bottom: 15px;">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="venditore_${venditore.id}_specificare_regime"
+                                       ${venditore.specificare_regime ? 'checked' : ''}>
+                                <span>Specificare regime patrimoniale?</span>
+                            </label>
+                            <small class="field-hint">Seleziona solo se necessario specificare il regime</small>
+                        </div>
+
+                        <div id="regime-dropdown-${venditore.id}" class="conditional-fields" style="display: none;">
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_regime_patrimoniale">Regime Patrimoniale</label>
+                                <select id="venditore_${venditore.id}_regime_patrimoniale">
+                                    <option value="">Seleziona...</option>
+                                    <option value="comunione" ${venditore.regime_patrimoniale === 'comunione' ? 'selected' : ''}>Comunione dei beni</option>
+                                    <option value="separazione" ${venditore.regime_patrimoniale === 'separazione' ? 'selected' : ''}>Separazione dei beni</option>
+                                </select>
+                            </div>
+
+                            <div id="comunione-alert-${venditore.id}" class="info-alert" style="display: none;">
+                                <strong>ℹ️ Comunione dei beni:</strong> Verrà automaticamente aggiunto il coniuge come co-venditore.
+                            </div>
                         </div>
                     </div>
 
@@ -1417,33 +1635,85 @@ renderVenditore(venditore) {
     container.insertAdjacentHTML('beforeend', venditoreHtml);
     console.log(`✅ Venditore ${venditore.id} renderizzato`);
 
-    // Logica condizionale: mostra/nascondi regime patrimoniale in base a stato civile
-    setTimeout(() => {
-        const statoCivileSelect = document.getElementById(`venditore_${venditore.id}_stato_civile`);
-        const regimeSection = document.getElementById(`regime-patrimoniale-${venditore.id}`);
+    // ========== EVENT LISTENERS: REGIME PATRIMONIALE ==========
+    // Non aggiungere listener se è un coniuge auto-aggiunto (readonly)
+    if (!venditore.isConiuge) {
+        setTimeout(() => {
+            const statoCivileSelect = document.getElementById(`venditore_${venditore.id}_stato_civile`);
+            const regimeSection = document.getElementById(`regime-patrimoniale-section-${venditore.id}`);
+            const checkboxRegime = document.getElementById(`venditore_${venditore.id}_specificare_regime`);
+            const regimeDropdown = document.getElementById(`regime-dropdown-${venditore.id}`);
+            const regimeSelect = document.getElementById(`venditore_${venditore.id}_regime_patrimoniale`);
+            const comunioneAlert = document.getElementById(`comunione-alert-${venditore.id}`);
 
-        if (statoCivileSelect && regimeSection) {
-            // Funzione per mostrare/nascondere regime patrimoniale
-            const toggleRegimePatrimoniale = () => {
-                const isConiugato = statoCivileSelect.value === 'coniugato';
-                regimeSection.style.display = isConiugato ? 'block' : 'none';
+            if (statoCivileSelect && regimeSection) {
+                // 1. Show/hide regime section based on stato_civile
+                const toggleRegimeSection = () => {
+                    const isConiugato = statoCivileSelect.value === 'coniugato';
+                    regimeSection.style.display = isConiugato ? 'block' : 'none';
 
-                // Reset del campo se non più coniugato
-                if (!isConiugato) {
-                    const regimeSelect = document.getElementById(`venditore_${venditore.id}_regime_patrimoniale`);
-                    if (regimeSelect) regimeSelect.value = '';
+                    // Reset fields if not married anymore
+                    if (!isConiugato) {
+                        if (checkboxRegime) checkboxRegime.checked = false;
+                        if (regimeSelect) regimeSelect.value = '';
+                        if (regimeDropdown) regimeDropdown.style.display = 'none';
+
+                        // Remove spouse if exists
+                        const v = this.venditori.find(ven => ven.id === venditore.id);
+                        if (v && v.hasConiuge) {
+                            this.removeConiugeAuto(venditore.id);
+                        }
+                    }
+                };
+
+                statoCivileSelect.addEventListener('change', toggleRegimeSection);
+                toggleRegimeSection(); // Initial trigger
+
+                // 2. Show/hide regime dropdown based on checkbox
+                if (checkboxRegime && regimeDropdown) {
+                    const toggleRegimeDropdown = () => {
+                        const isChecked = checkboxRegime.checked;
+                        regimeDropdown.style.display = isChecked ? 'block' : 'none';
+
+                        // Reset regime if unchecked
+                        if (!isChecked) {
+                            if (regimeSelect) regimeSelect.value = '';
+                            if (comunioneAlert) comunioneAlert.style.display = 'none';
+
+                            // Remove spouse if exists
+                            const v = this.venditori.find(ven => ven.id === venditore.id);
+                            if (v && v.hasConiuge) {
+                                this.removeConiugeAuto(venditore.id);
+                            }
+                        }
+                    };
+
+                    checkboxRegime.addEventListener('change', toggleRegimeDropdown);
+                    toggleRegimeDropdown(); // Initial trigger
                 }
-            };
 
-            // Listener per cambio stato civile
-            statoCivileSelect.addEventListener('change', toggleRegimePatrimoniale);
+                // 3. Handle regime change (add/remove spouse)
+                if (regimeSelect && comunioneAlert) {
+                    const handleRegimeChange = () => {
+                        const regimeValue = regimeSelect.value;
 
-            // Trigger iniziale per stato corrente
-            toggleRegimePatrimoniale();
+                        // Show/hide alert
+                        comunioneAlert.style.display = regimeValue === 'comunione' ? 'block' : 'none';
 
-            console.log(`✅ Logica regime patrimoniale attivata per venditore ${venditore.id}`);
-        }
-    }, 100);
+                        // Trigger spouse add/remove
+                        this.handleRegimePatrimonialeChange(venditore.id);
+                    };
+
+                    regimeSelect.addEventListener('change', handleRegimeChange);
+                    handleRegimeChange(); // Initial trigger
+                }
+
+                console.log(`✅ Event listeners regime patrimoniale attivati per venditore ${venditore.id}`);
+            }
+        }, 100);
+    } else {
+        console.log(`⏭️ Venditore ${venditore.id} è un coniuge auto-aggiunto - event listeners non necessari`);
+    }
 }
 
     // ========== BLOCCO 5: GESTIONE SALVATAGGIO ==========
