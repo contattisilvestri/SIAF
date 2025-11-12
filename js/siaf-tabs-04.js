@@ -4,12 +4,12 @@
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
-    minor: 8,
-    patch: 5,
+    minor: 9,
+    patch: 0,
     date: '12/11/2025',
-    time: '04:30',
-    description: 'Cittadinanza sempre visibile nei documenti (italiana + estera)',
-    color: '#FF2D55'  // iOS pink - document display
+    time: '06:00',
+    description: 'Supporto Persone Giuridiche: Ditte individuali e Società (con società-amministratore)',
+    color: '#5856D6'  // iOS indigo - major feature
 };
 
 class SiafApp {
