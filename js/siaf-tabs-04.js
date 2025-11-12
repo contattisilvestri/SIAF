@@ -5,11 +5,11 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 7,
-    patch: 8,
+    patch: 9,
     date: '12/11/2025',
-    time: '01:15',
-    description: 'UX redesign: layout 2 colonne (60-40) + toggle sesso M/F con gradienti',
-    color: '#FF6B6B'  // Red-pink - design refresh
+    time: '02:00',
+    description: 'Segmented control iOS-style per sesso e cittadinanza (design premium)',
+    color: '#007AFF'  // iOS blue - Apple style
 };
 
 class SiafApp {
@@ -1779,19 +1779,27 @@ renderVenditore(venditore) {
                         </div>
                     </div>
 
-                    <!-- Sesso: Toggle Maschio/Femmina -->
+                    <!-- Sesso: Segmented Control iOS-style -->
                     <div class="field-group">
                         <label>Sesso</label>
-                        <div class="sesso-toggle-wrapper">
-                            <label class="sesso-toggle">
-                                <span class="sesso-toggle-label-left">Maschio</span>
-                                <input type="checkbox"
-                                       id="venditore_${venditore.id}_sesso"
-                                       ${venditore.sesso === 'F' ? 'checked' : ''}
-                                       data-venditore-id="${venditore.id}">
-                                <span class="sesso-toggle-slider"></span>
-                                <span class="sesso-toggle-label-right">Femmina</span>
-                            </label>
+                        <div class="segmented-control sesso-control">
+                            <input type="radio"
+                                   name="venditore_${venditore.id}_sesso"
+                                   id="venditore_${venditore.id}_sesso_m"
+                                   value="M"
+                                   ${venditore.sesso === 'M' || !venditore.sesso ? 'checked' : ''}
+                                   data-venditore-id="${venditore.id}">
+                            <label for="venditore_${venditore.id}_sesso_m">Maschio</label>
+
+                            <input type="radio"
+                                   name="venditore_${venditore.id}_sesso"
+                                   id="venditore_${venditore.id}_sesso_f"
+                                   value="F"
+                                   ${venditore.sesso === 'F' ? 'checked' : ''}
+                                   data-venditore-id="${venditore.id}">
+                            <label for="venditore_${venditore.id}_sesso_f">Femmina</label>
+
+                            <div class="segmented-control-slider"></div>
                         </div>
                     </div>
 
@@ -1807,20 +1815,32 @@ renderVenditore(venditore) {
                         </div>
                     </div>
 
-                    <!-- Cittadinanza -->
+                    <!-- Cittadinanza: Segmented Control iOS-style -->
                     <div class="field-group">
                         <label>Cittadinanza</label>
-                        <div class="cittadinanza-toggle-wrapper">
-                            <label class="cittadinanza-toggle">
-                                <input type="checkbox"
-                                       id="venditore_${venditore.id}_cittadinanza_italia"
-                                       ${(!venditore.cittadinanza || venditore.cittadinanza === 'italiana') ? 'checked' : ''}
-                                       onchange="this.closest('.field-group').querySelector('.cittadinanza-field').style.display = this.checked ? 'none' : 'block'; if(this.checked) { document.getElementById('venditore_${venditore.id}_cittadinanza_custom').value = ''; }">
-                                <span class="cittadinanza-toggle-slider"></span>
-                                <span class="cittadinanza-toggle-label">Italia</span>
-                            </label>
+                        <div class="segmented-control cittadinanza-control">
+                            <input type="radio"
+                                   name="venditore_${venditore.id}_cittadinanza_tipo"
+                                   id="venditore_${venditore.id}_citt_italia"
+                                   value="italia"
+                                   ${(!venditore.cittadinanza || venditore.cittadinanza === 'italiana') ? 'checked' : ''}
+                                   data-venditore-id="${venditore.id}">
+                            <label for="venditore_${venditore.id}_citt_italia">Italia</label>
+
+                            <input type="radio"
+                                   name="venditore_${venditore.id}_cittadinanza_tipo"
+                                   id="venditore_${venditore.id}_citt_estero"
+                                   value="estero"
+                                   ${(venditore.cittadinanza && venditore.cittadinanza !== 'italiana') ? 'checked' : ''}
+                                   data-venditore-id="${venditore.id}">
+                            <label for="venditore_${venditore.id}_citt_estero">Estero</label>
+
+                            <div class="segmented-control-slider"></div>
                         </div>
+
+                        <!-- Campo autocomplete (nascosto se Italia è selezionato) -->
                         <div class="cittadinanza-field"
+                             id="cittadinanza-field-${venditore.id}"
                              style="display: ${(!venditore.cittadinanza || venditore.cittadinanza === 'italiana') ? 'none' : 'block'}">
                             <input type="text"
                                    id="venditore_${venditore.id}_cittadinanza_custom"
@@ -2065,21 +2085,70 @@ renderVenditore(venditore) {
                 console.log(`✅ Event listeners regime patrimoniale attivati per venditore ${venditore.id}`);
             }
 
-            // ========== EVENT LISTENERS: TOGGLE SESSO ==========
-            const sessoToggle = document.getElementById(`venditore_${venditore.id}_sesso`);
-            if (sessoToggle) {
-                sessoToggle.addEventListener('change', () => {
-                    const isFemmina = sessoToggle.checked;
-                    const sessoValue = isFemmina ? 'F' : 'M';
+            // ========== EVENT LISTENERS: SEGMENTED CONTROL SESSO ==========
+            const sessoRadioM = document.getElementById(`venditore_${venditore.id}_sesso_m`);
+            const sessoRadioF = document.getElementById(`venditore_${venditore.id}_sesso_f`);
 
-                    // Aggiorna l'oggetto venditore in memoria
-                    const v = this.venditori.find(ven => ven.id === venditore.id);
-                    if (v) {
-                        v.sesso = sessoValue;
-                        console.log(`🚹🚺 Sesso venditore ${venditore.id} aggiornato: ${sessoValue}`);
-                    }
-                });
-                console.log(`✅ Event listener toggle sesso attivato per venditore ${venditore.id}`);
+            const handleSessoChange = () => {
+                const sessoValue = sessoRadioM.checked ? 'M' : 'F';
+
+                // Aggiorna l'oggetto venditore in memoria
+                const v = this.venditori.find(ven => ven.id === venditore.id);
+                if (v) {
+                    v.sesso = sessoValue;
+                    console.log(`🚹🚺 Sesso venditore ${venditore.id} aggiornato: ${sessoValue}`);
+                }
+            };
+
+            if (sessoRadioM && sessoRadioF) {
+                sessoRadioM.addEventListener('change', handleSessoChange);
+                sessoRadioF.addEventListener('change', handleSessoChange);
+                console.log(`✅ Event listeners segmented control sesso attivati per venditore ${venditore.id}`);
+            }
+
+            // ========== EVENT LISTENERS: SEGMENTED CONTROL CITTADINANZA ==========
+            const cittItaliaRadio = document.getElementById(`venditore_${venditore.id}_citt_italia`);
+            const cittEsteroRadio = document.getElementById(`venditore_${venditore.id}_citt_estero`);
+            const cittadinanzaField = document.getElementById(`cittadinanza-field-${venditore.id}`);
+            const cittadinanzaInput = document.getElementById(`venditore_${venditore.id}_cittadinanza_custom`);
+
+            const handleCittadinanzaChange = () => {
+                const isItalia = cittItaliaRadio.checked;
+
+                // Mostra/nascondi campo autocomplete
+                if (cittadinanzaField) {
+                    cittadinanzaField.style.display = isItalia ? 'none' : 'block';
+                }
+
+                // Reset campo se Italia
+                if (isItalia && cittadinanzaInput) {
+                    cittadinanzaInput.value = '';
+                }
+
+                // Aggiorna l'oggetto venditore in memoria
+                const v = this.venditori.find(ven => ven.id === venditore.id);
+                if (v) {
+                    v.cittadinanza = isItalia ? 'italiana' : (cittadinanzaInput?.value || '');
+                    console.log(`🌍 Cittadinanza venditore ${venditore.id} aggiornata: ${v.cittadinanza}`);
+                }
+            };
+
+            if (cittItaliaRadio && cittEsteroRadio) {
+                cittItaliaRadio.addEventListener('change', handleCittadinanzaChange);
+                cittEsteroRadio.addEventListener('change', handleCittadinanzaChange);
+
+                // Listener per quando digita nel campo estero
+                if (cittadinanzaInput) {
+                    cittadinanzaInput.addEventListener('change', () => {
+                        const v = this.venditori.find(ven => ven.id === venditore.id);
+                        if (v && cittEsteroRadio.checked) {
+                            v.cittadinanza = cittadinanzaInput.value;
+                            console.log(`🌍 Cittadinanza estera venditore ${venditore.id} aggiornata: ${v.cittadinanza}`);
+                        }
+                    });
+                }
+
+                console.log(`✅ Event listeners segmented control cittadinanza attivati per venditore ${venditore.id}`);
             }
         }, 100);
     } else {
