@@ -561,6 +561,42 @@ input:invalid, select:invalid {
 
 /* ========== REGIME PATRIMONIALE: CONIUGE AUTO-AGGIUNTO ========== */
 
+/* Chip button toggle per regime patrimoniale */
+.regime-chip-toggle {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #e9ecef;
+    border: 2px solid #ced4da;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    outline: none;
+    user-select: none;
+}
+
+.regime-chip-toggle:hover {
+    background: #dee2e6;
+    border-color: #adb5bd;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.regime-chip-toggle.active {
+    background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+    border-color: #0066cc;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+}
+
+.regime-chip-toggle.active:hover {
+    background: linear-gradient(135deg, #0052a3 0%, #004085 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0, 102, 204, 0.4);
+}
+
 /* Badge per coniuge auto-aggiunto */
 .badge-coniuge {
     display: inline-block;
