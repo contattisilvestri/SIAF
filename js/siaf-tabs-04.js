@@ -4,8 +4,8 @@
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
-    minor: 7,
-    patch: 9,
+    minor: 8,
+    patch: 0,
     date: '12/11/2025',
     time: '02:00',
     description: 'Segmented control iOS-style per sesso e cittadinanza (design premium)',
@@ -1503,7 +1503,12 @@ async calculateCF(venditoreId) {
         // Raccogli dati necessari
         const nome = document.getElementById(`venditore_${venditoreId}_nome`)?.value;
         const cognome = document.getElementById(`venditore_${venditoreId}_cognome`)?.value;
-        const sesso = document.getElementById(`venditore_${venditoreId}_sesso`)?.value;
+
+        // Leggi sesso dai radio button
+        const sessoRadioM = document.getElementById(`venditore_${venditoreId}_sesso_m`);
+        const sessoRadioF = document.getElementById(`venditore_${venditoreId}_sesso_f`);
+        const sesso = sessoRadioM?.checked ? 'M' : (sessoRadioF?.checked ? 'F' : null);
+
         const dataNascita = document.getElementById(`venditore_${venditoreId}_data_nascita`)?.value;
         const luogoNascita = document.getElementById(`venditore_${venditoreId}_luogo_nascita`)?.value;
         const provincia = document.getElementById(`venditore_${venditoreId}_provincia`)?.value;
@@ -2245,11 +2250,23 @@ renderVenditore(venditore) {
             const chipRegime = document.getElementById(`venditore_${venditore.id}_specificare_regime`);
             const specificareRegime = chipRegime ? chipRegime.classList.contains('active') : false;
 
+            // Leggi sesso dai radio button
+            const sessoRadioM = document.getElementById(`venditore_${venditore.id}_sesso_m`);
+            const sessoRadioF = document.getElementById(`venditore_${venditore.id}_sesso_f`);
+            const sesso = sessoRadioM?.checked ? 'M' : (sessoRadioF?.checked ? 'F' : 'M');
+
+            // Leggi cittadinanza dai radio button
+            const cittItaliaRadio = document.getElementById(`venditore_${venditore.id}_citt_italia`);
+            const cittEsteroRadio = document.getElementById(`venditore_${venditore.id}_citt_estero`);
+            const isItalia = cittItaliaRadio?.checked || false;
+            const cittadinanzaCustom = document.getElementById(`venditore_${venditore.id}_cittadinanza_custom`)?.value || '';
+            const cittadinanza = isItalia ? 'italiana' : (cittadinanzaCustom || '');
+
             const data = {
                 id: venditore.id,
                 nome: document.getElementById(`venditore_${venditore.id}_nome`)?.value || '',
                 cognome: document.getElementById(`venditore_${venditore.id}_cognome`)?.value || '',
-                sesso: document.getElementById(`venditore_${venditore.id}_sesso`)?.value || 'M',
+                sesso: sesso,
                 stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?.value || '',
                 regime_patrimoniale: document.getElementById(`venditore_${venditore.id}_regime_patrimoniale`)?.value || '',
                 specificare_regime: specificareRegime,
@@ -2272,7 +2289,8 @@ renderVenditore(venditore) {
                 telefono1: document.getElementById(`venditore_${venditore.id}_telefono1`)?.value || '',
                 telefono2: document.getElementById(`venditore_${venditore.id}_telefono2`)?.value || '',
                 email1: document.getElementById(`venditore_${venditore.id}_email1`)?.value || '',
-                email2: document.getElementById(`venditore_${venditore.id}_email2`)?.value || ''
+                email2: document.getElementById(`venditore_${venditore.id}_email2`)?.value || '',
+                cittadinanza: cittadinanza
             };
             
             console.log(`📋 Dati venditore ${venditore.id}:`, data);
