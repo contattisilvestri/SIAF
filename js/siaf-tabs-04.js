@@ -5,11 +5,11 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 7,
-    patch: 4,
+    patch: 5,
     date: '12/11/2025',
-    time: '22:00',
-    description: 'Generi corretti nel templating + regime patrimoniale nei documenti',
-    color: '#9C27B0'  // Viola - templating avanzato
+    time: '23:00',
+    description: 'Calcolo automatico Codice Fiscale - Enterprise grade con encryption e omocodia',
+    color: '#00BCD4'  // Cyan - automazione CF
 };
 
 class SiafApp {
