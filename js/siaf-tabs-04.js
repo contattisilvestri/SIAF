@@ -5,11 +5,11 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 8,
-    patch: 4,
+    patch: 5,
     date: '12/11/2025',
-    time: '04:00',
-    description: 'Cittadinanza estera e permesso soggiorno nei documenti generati',
-    color: '#34C759'  // iOS green - complete feature
+    time: '04:30',
+    description: 'Cittadinanza sempre visibile nei documenti (italiana + estera)',
+    color: '#FF2D55'  // iOS pink - document display
 };
 
 class SiafApp {
@@ -1213,6 +1213,9 @@ addVenditore() {
     
     const venditore = {
         id: ++this.venditoreCounter,
+        tipo: 'privato', // 'privato' | 'ditta' | 'societa'
+
+        // ========== CAMPI PRIVATO (esistenti) ==========
         nome: '',
         cognome: '',
         sesso: 'M',
@@ -1246,7 +1249,109 @@ addVenditore() {
         permesso_numero: '',
         permesso_rilascio: '',
         permesso_scadenza: '',
-        permesso_questura: ''
+        permesso_questura: '',
+
+        // ========== CAMPI DITTA ==========
+        // Titolare (persona fisica)
+        titolare_nome: '',
+        titolare_cognome: '',
+        titolare_sesso: 'M',
+        titolare_luogo_nascita: '',
+        titolare_data_nascita: '',
+        cf_titolare: '',
+        titolare_tipo_documento: 'carta_identita',
+        titolare_numero_documento: '',
+        titolare_data_rilascio: '',
+        titolare_data_scadenza: '',
+        titolare_domicilio_presso_sede: true,
+        titolare_domicilio_via: '',
+        titolare_domicilio_numero: '',
+        titolare_domicilio_cap: '',
+        titolare_domicilio_comune: '',
+        titolare_domicilio_provincia: '',
+        // Dati ditta
+        denominazione_ditta: '',
+        sede_ditta_via: '',
+        sede_ditta_numero: '',
+        sede_ditta_cap: '',
+        sede_ditta_comune: '',
+        sede_ditta_provincia: '',
+        sede_ditta_stato: 'Italia',
+        piva_ditta: '',
+        cf_ditta: '',
+        rea_numero_ditta: '',
+        rea_cciaa_ditta: '',
+        pec_ditta: '',
+        codice_destinatario_ditta: '',
+        email_ditta: '',
+        telefono_ditta: '',
+
+        // ========== CAMPI SOCIETÀ ==========
+        // Dati società
+        ragione_sociale: '',
+        sede_societa_via: '',
+        sede_societa_numero: '',
+        sede_societa_cap: '',
+        sede_societa_comune: '',
+        sede_societa_provincia: '',
+        sede_societa_stato: 'Italia',
+        piva_societa: '',
+        cf_societa: '',
+        ri_numero: '',
+        ri_cciaa: '',
+        rea_numero_societa: '',
+        rea_cciaa_societa: '',
+        pec_societa: '',
+        codice_destinatario_societa: '',
+        email_societa: '',
+        telefono_societa: '',
+        // Tipo rappresentanza
+        tipo_rappresentanza: 'persona_fisica', // 'persona_fisica' | 'persona_giuridica_con_designato'
+        // Rappresentante persona fisica
+        rappresentante_nome: '',
+        rappresentante_cognome: '',
+        rappresentante_sesso: 'M',
+        rappresentante_luogo_nascita: '',
+        rappresentante_data_nascita: '',
+        rappresentante_cf: '',
+        rappresentante_tipo_documento: 'carta_identita',
+        rappresentante_numero_documento: '',
+        rappresentante_data_rilascio: '',
+        rappresentante_data_scadenza: '',
+        rappresentante_domicilio_presso_sede: true,
+        rappresentante_domicilio_via: '',
+        rappresentante_domicilio_numero: '',
+        rappresentante_domicilio_cap: '',
+        rappresentante_domicilio_comune: '',
+        rappresentante_domicilio_provincia: '',
+        // Società-amministratore
+        soc_amm_ragione_sociale: '',
+        soc_amm_sede_via: '',
+        soc_amm_sede_numero: '',
+        soc_amm_sede_comune: '',
+        soc_amm_sede_provincia: '',
+        soc_amm_piva: '',
+        soc_amm_cf: '',
+        soc_amm_ri_numero: '',
+        soc_amm_rea_numero: '',
+        soc_amm_pec: '',
+        // Designato (persona fisica obbligatoria)
+        designato_nome: '',
+        designato_cognome: '',
+        designato_sesso: 'M',
+        designato_luogo_nascita: '',
+        designato_data_nascita: '',
+        designato_cf: '',
+        designato_tipo_documento: 'carta_identita',
+        designato_numero_documento: '',
+        designato_data_rilascio: '',
+        designato_data_scadenza: '',
+        designato_domicilio_presso_sede: true,
+        designato_domicilio_via: '',
+        designato_domicilio_numero: '',
+        designato_domicilio_cap: '',
+        designato_domicilio_comune: '',
+        designato_domicilio_provincia: ''
     };
     
     this.venditori.push(venditore);
@@ -1766,14 +1871,32 @@ renderVenditore(venditore) {
     const venditoreHtml = `
         <div id="venditore-${venditore.id}" class="${cardClass}">
             <div class="venditore-header">
-                <h3>
-                    👤 Venditore ${venditore.id}
-                    ${isConiugeAuto ? '<span class="badge-coniuge">💍 CONIUGE AUTO-AGGIUNTO</span>' : ''}
-                </h3>
-                ${!isFirst && !isConiugeAuto ? `<button type="button" class="btn-remove" onclick="window.siafApp.removeVenditore(${venditore.id})">❌ Rimuovi</button>` : ''}
-                ${isConiugeAuto ? `<button type="button" class="btn-remove" disabled title="Il coniuge verrà rimosso automaticamente">🔒 Protetto</button>` : ''}
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <h3>
+                        👤 Venditore ${venditore.id}
+                        ${isConiugeAuto ? '<span class="badge-coniuge">💍 CONIUGE AUTO-AGGIUNTO</span>' : ''}
+                    </h3>
+                    <div class="segmented-control tipo-soggetto-control">
+                        <input type="radio" name="venditore_${venditore.id}_tipo" id="venditore_${venditore.id}_tipo_privato" value="privato" ${!venditore.tipo || venditore.tipo === 'privato' ? 'checked' : ''}>
+                        <label for="venditore_${venditore.id}_tipo_privato">Privato</label>
+
+                        <input type="radio" name="venditore_${venditore.id}_tipo" id="venditore_${venditore.id}_tipo_ditta" value="ditta" ${venditore.tipo === 'ditta' ? 'checked' : ''}>
+                        <label for="venditore_${venditore.id}_tipo_ditta">Ditta</label>
+
+                        <input type="radio" name="venditore_${venditore.id}_tipo" id="venditore_${venditore.id}_tipo_societa" value="societa" ${venditore.tipo === 'societa' ? 'checked' : ''}>
+                        <label for="venditore_${venditore.id}_tipo_societa">Società</label>
+
+                        <div class="segmented-control-slider"></div>
+                    </div>
+                </div>
+                <div>
+                    ${!isFirst && !isConiugeAuto ? `<button type="button" class="btn-remove" onclick="window.siafApp.removeVenditore(${venditore.id})">❌ Rimuovi</button>` : ''}
+                    ${isConiugeAuto ? `<button type="button" class="btn-remove" disabled title="Il coniuge verrà rimosso automaticamente">🔒 Protetto</button>` : ''}
+                </div>
             </div>
-            
+
+            <!-- FORM PRIVATO -->
+            <div class="form-tipo-privato ${!venditore.tipo || venditore.tipo === 'privato' ? 'active' : ''}">
             <div class="form-grid">
                 <!-- COLONNA 1 (60%): Dati Anagrafici -->
                 <div class="field-card">
@@ -2062,6 +2185,623 @@ renderVenditore(venditore) {
                     </div>
                 </div>
             </div>
+            </div>
+            <!-- FINE FORM PRIVATO -->
+
+            <!-- FORM DITTA -->
+            <div class="form-tipo-ditta ${venditore.tipo === 'ditta' ? 'active' : ''}">
+            <div class="form-grid">
+                <!-- COLONNA 1 (60%): Titolare -->
+                <div class="field-card">
+                    <h4>👤 Titolare</h4>
+
+                    <!-- Nome | Cognome -->
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_titolare_nome">Nome</label>
+                            <input type="text" id="venditore_${venditore.id}_titolare_nome" value="${venditore.titolare_nome || ''}">
+                        </div>
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_titolare_cognome">Cognome</label>
+                            <input type="text" id="venditore_${venditore.id}_titolare_cognome" value="${venditore.titolare_cognome || ''}">
+                        </div>
+                    </div>
+
+                    <!-- Sesso -->
+                    <div class="field-group">
+                        <label>Sesso</label>
+                        <div class="segmented-control sesso-control">
+                            <input type="radio" name="venditore_${venditore.id}_titolare_sesso" id="venditore_${venditore.id}_titolare_sesso_m" value="M" ${!venditore.titolare_sesso || venditore.titolare_sesso === 'M' ? 'checked' : ''}>
+                            <label for="venditore_${venditore.id}_titolare_sesso_m">Maschio</label>
+
+                            <input type="radio" name="venditore_${venditore.id}_titolare_sesso" id="venditore_${venditore.id}_titolare_sesso_f" value="F" ${venditore.titolare_sesso === 'F' ? 'checked' : ''}>
+                            <label for="venditore_${venditore.id}_titolare_sesso_f">Femmina</label>
+
+                            <div class="segmented-control-slider"></div>
+                        </div>
+                    </div>
+
+                    <!-- Luogo nascita | Data nascita -->
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_titolare_luogo_nascita">Luogo di Nascita</label>
+                            <input type="text" id="venditore_${venditore.id}_titolare_luogo_nascita" value="${venditore.titolare_luogo_nascita || ''}">
+                        </div>
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_titolare_data_nascita">Data di Nascita</label>
+                            <input type="date" id="venditore_${venditore.id}_titolare_data_nascita" value="${venditore.titolare_data_nascita || ''}">
+                        </div>
+                    </div>
+
+                    <!-- Codice Fiscale titolare -->
+                    <div class="field-group">
+                        <label for="venditore_${venditore.id}_cf_titolare">Codice Fiscale Titolare</label>
+                        <div class="cf-input-group">
+                            <input type="text" id="venditore_${venditore.id}_cf_titolare" value="${venditore.cf_titolare || ''}" maxlength="16" style="text-transform: uppercase;">
+                            <button type="button" class="btn-calculate-cf" data-venditore-id="${venditore.id}" data-tipo="titolare">🧮 Calcola</button>
+                        </div>
+                    </div>
+
+                    <!-- Documento -->
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_titolare_tipo_documento">Tipo Documento</label>
+                            <select id="venditore_${venditore.id}_titolare_tipo_documento">
+                                <option value="carta_identita" ${!venditore.titolare_tipo_documento || venditore.titolare_tipo_documento === 'carta_identita' ? 'selected' : ''}>Carta d'Identità</option>
+                                <option value="patente" ${venditore.titolare_tipo_documento === 'patente' ? 'selected' : ''}>Patente</option>
+                                <option value="passaporto" ${venditore.titolare_tipo_documento === 'passaporto' ? 'selected' : ''}>Passaporto</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_titolare_numero_documento">Numero Documento</label>
+                            <input type="text" id="venditore_${venditore.id}_titolare_numero_documento" value="${venditore.titolare_numero_documento || ''}">
+                        </div>
+                    </div>
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_titolare_data_rilascio">Data Rilascio</label>
+                            <input type="date" id="venditore_${venditore.id}_titolare_data_rilascio" value="${venditore.titolare_data_rilascio || ''}">
+                        </div>
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_titolare_data_scadenza">Data Scadenza</label>
+                            <input type="date" id="venditore_${venditore.id}_titolare_data_scadenza" value="${venditore.titolare_data_scadenza || ''}">
+                        </div>
+                    </div>
+
+                    <!-- Domicilio per la carica -->
+                    <div class="field-group">
+                        <div class="domicilio-carica-toggle">
+                            <input type="checkbox" id="venditore_${venditore.id}_titolare_domicilio_presso_sede" ${!venditore.titolare_domicilio_presso_sede || venditore.titolare_domicilio_presso_sede === true ? 'checked' : ''}>
+                            <label for="venditore_${venditore.id}_titolare_domicilio_presso_sede">Domiciliato per la carica presso la sede</label>
+                        </div>
+                        <div id="domicilio-titolare-${venditore.id}" class="domicilio-carica-fields ${venditore.titolare_domicilio_presso_sede === false ? 'active' : ''}">
+                            <div class="field-row">
+                                <div class="field-group">
+                                    <label for="venditore_${venditore.id}_titolare_domicilio_via">Via</label>
+                                    <input type="text" id="venditore_${venditore.id}_titolare_domicilio_via" value="${venditore.titolare_domicilio_via || ''}">
+                                </div>
+                                <div class="field-group">
+                                    <label for="venditore_${venditore.id}_titolare_domicilio_numero">Numero</label>
+                                    <input type="text" id="venditore_${venditore.id}_titolare_domicilio_numero" value="${venditore.titolare_domicilio_numero || ''}">
+                                </div>
+                            </div>
+                            <div class="field-row">
+                                <div class="field-group">
+                                    <label for="venditore_${venditore.id}_titolare_domicilio_cap">CAP</label>
+                                    <input type="text" id="venditore_${venditore.id}_titolare_domicilio_cap" value="${venditore.titolare_domicilio_cap || ''}" maxlength="5">
+                                </div>
+                                <div class="field-group">
+                                    <label for="venditore_${venditore.id}_titolare_domicilio_comune">Comune</label>
+                                    <input type="text" id="venditore_${venditore.id}_titolare_domicilio_comune" value="${venditore.titolare_domicilio_comune || ''}">
+                                </div>
+                            </div>
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_titolare_domicilio_provincia">Provincia</label>
+                                <input type="text" id="venditore_${venditore.id}_titolare_domicilio_provincia" value="${venditore.titolare_domicilio_provincia || ''}" maxlength="2" style="text-transform: uppercase;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COLONNA 2 (40%): Ditta -->
+                <div class="field-card">
+                    <h4>🏢 Ditta</h4>
+
+                    <!-- Denominazione -->
+                    <div class="field-group">
+                        <label for="venditore_${venditore.id}_denominazione_ditta">Denominazione</label>
+                        <input type="text" id="venditore_${venditore.id}_denominazione_ditta" value="${venditore.denominazione_ditta || ''}" placeholder="Es. Ditta Individuale Mario Rossi">
+                    </div>
+
+                    <!-- Sede -->
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_sede_ditta_via">Via</label>
+                            <input type="text" id="venditore_${venditore.id}_sede_ditta_via" value="${venditore.sede_ditta_via || ''}">
+                        </div>
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_sede_ditta_numero">Numero</label>
+                            <input type="text" id="venditore_${venditore.id}_sede_ditta_numero" value="${venditore.sede_ditta_numero || ''}">
+                        </div>
+                    </div>
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_sede_ditta_cap">CAP</label>
+                            <input type="text" id="venditore_${venditore.id}_sede_ditta_cap" value="${venditore.sede_ditta_cap || ''}" maxlength="5">
+                        </div>
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_sede_ditta_comune">Comune</label>
+                            <input type="text" id="venditore_${venditore.id}_sede_ditta_comune" value="${venditore.sede_ditta_comune || ''}">
+                        </div>
+                    </div>
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_sede_ditta_provincia">Provincia</label>
+                            <input type="text" id="venditore_${venditore.id}_sede_ditta_provincia" value="${venditore.sede_ditta_provincia || ''}" maxlength="2" style="text-transform: uppercase;">
+                        </div>
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_sede_ditta_stato">Stato</label>
+                            <input type="text" id="venditore_${venditore.id}_sede_ditta_stato" value="${venditore.sede_ditta_stato || 'Italia'}">
+                        </div>
+                    </div>
+
+                    <!-- P.IVA e CF Ditta -->
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_piva_ditta">Partita IVA</label>
+                            <input type="text" id="venditore_${venditore.id}_piva_ditta" value="${venditore.piva_ditta || ''}" maxlength="11">
+                        </div>
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_cf_ditta">CF Ditta</label>
+                            <input type="text" id="venditore_${venditore.id}_cf_ditta" value="${venditore.cf_ditta || ''}" maxlength="16" style="text-transform: uppercase;">
+                        </div>
+                    </div>
+
+                    <!-- REA -->
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_rea_numero_ditta">REA Numero</label>
+                            <input type="text" id="venditore_${venditore.id}_rea_numero_ditta" value="${venditore.rea_numero_ditta || ''}">
+                        </div>
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_rea_cciaa_ditta">CCIAA</label>
+                            <input type="text" id="venditore_${venditore.id}_rea_cciaa_ditta" value="${venditore.rea_cciaa_ditta || ''}" placeholder="Es. Verona">
+                        </div>
+                    </div>
+
+                    <!-- Contatti -->
+                    <div class="field-group">
+                        <label for="venditore_${venditore.id}_pec_ditta">PEC</label>
+                        <input type="email" id="venditore_${venditore.id}_pec_ditta" value="${venditore.pec_ditta || ''}">
+                    </div>
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_codice_destinatario_ditta">Codice Destinatario</label>
+                            <input type="text" id="venditore_${venditore.id}_codice_destinatario_ditta" value="${venditore.codice_destinatario_ditta || ''}" maxlength="7" style="text-transform: uppercase;">
+                        </div>
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_email_ditta">Email</label>
+                            <input type="email" id="venditore_${venditore.id}_email_ditta" value="${venditore.email_ditta || ''}">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label for="venditore_${venditore.id}_telefono_ditta">Telefono</label>
+                        <input type="tel" id="venditore_${venditore.id}_telefono_ditta" value="${venditore.telefono_ditta || ''}">
+                    </div>
+                </div>
+            </div>
+            </div>
+            <!-- FINE FORM DITTA -->
+
+            <!-- FORM SOCIETÀ -->
+            <div class="form-tipo-societa ${venditore.tipo === 'societa' ? 'active' : ''}">
+            <div class="form-grid">
+                <!-- COLONNA 1 (60%): Società -->
+                <div class="field-card">
+                    <h4>🏛️ Società</h4>
+
+                    <!-- Ragione Sociale -->
+                    <div class="field-group">
+                        <label for="venditore_${venditore.id}_ragione_sociale">Ragione Sociale</label>
+                        <input type="text" id="venditore_${venditore.id}_ragione_sociale" value="${venditore.ragione_sociale || ''}" placeholder="Es. Rossi S.r.l.">
+                    </div>
+
+                    <!-- Sede -->
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_sede_societa_via">Via</label>
+                            <input type="text" id="venditore_${venditore.id}_sede_societa_via" value="${venditore.sede_societa_via || ''}">
+                        </div>
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_sede_societa_numero">Numero</label>
+                            <input type="text" id="venditore_${venditore.id}_sede_societa_numero" value="${venditore.sede_societa_numero || ''}">
+                        </div>
+                    </div>
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_sede_societa_cap">CAP</label>
+                            <input type="text" id="venditore_${venditore.id}_sede_societa_cap" value="${venditore.sede_societa_cap || ''}" maxlength="5">
+                        </div>
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_sede_societa_comune">Comune</label>
+                            <input type="text" id="venditore_${venditore.id}_sede_societa_comune" value="${venditore.sede_societa_comune || ''}">
+                        </div>
+                    </div>
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_sede_societa_provincia">Provincia</label>
+                            <input type="text" id="venditore_${venditore.id}_sede_societa_provincia" value="${venditore.sede_societa_provincia || ''}" maxlength="2" style="text-transform: uppercase;">
+                        </div>
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_sede_societa_stato">Stato</label>
+                            <input type="text" id="venditore_${venditore.id}_sede_societa_stato" value="${venditore.sede_societa_stato || 'Italia'}">
+                        </div>
+                    </div>
+
+                    <!-- P.IVA e CF -->
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_piva_societa">Partita IVA</label>
+                            <input type="text" id="venditore_${venditore.id}_piva_societa" value="${venditore.piva_societa || ''}" maxlength="11">
+                        </div>
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_cf_societa">Codice Fiscale</label>
+                            <input type="text" id="venditore_${venditore.id}_cf_societa" value="${venditore.cf_societa || ''}" maxlength="16" style="text-transform: uppercase;">
+                        </div>
+                    </div>
+
+                    <!-- Registro Imprese -->
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_ri_numero">Registro Imprese Numero</label>
+                            <input type="text" id="venditore_${venditore.id}_ri_numero" value="${venditore.ri_numero || ''}">
+                        </div>
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_ri_cciaa">CCIAA</label>
+                            <input type="text" id="venditore_${venditore.id}_ri_cciaa" value="${venditore.ri_cciaa || ''}" placeholder="Es. Verona">
+                        </div>
+                    </div>
+
+                    <!-- REA -->
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_rea_numero_societa">REA Numero</label>
+                            <input type="text" id="venditore_${venditore.id}_rea_numero_societa" value="${venditore.rea_numero_societa || ''}">
+                        </div>
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_rea_cciaa_societa">CCIAA</label>
+                            <input type="text" id="venditore_${venditore.id}_rea_cciaa_societa" value="${venditore.rea_cciaa_societa || ''}" placeholder="Es. Verona">
+                        </div>
+                    </div>
+
+                    <!-- Contatti -->
+                    <div class="field-group">
+                        <label for="venditore_${venditore.id}_pec_societa">PEC</label>
+                        <input type="email" id="venditore_${venditore.id}_pec_societa" value="${venditore.pec_societa || ''}">
+                    </div>
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_codice_destinatario_societa">Codice Destinatario</label>
+                            <input type="text" id="venditore_${venditore.id}_codice_destinatario_societa" value="${venditore.codice_destinatario_societa || ''}" maxlength="7" style="text-transform: uppercase;">
+                        </div>
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_email_societa">Email</label>
+                            <input type="email" id="venditore_${venditore.id}_email_societa" value="${venditore.email_societa || ''}">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label for="venditore_${venditore.id}_telefono_societa">Telefono</label>
+                        <input type="tel" id="venditore_${venditore.id}_telefono_societa" value="${venditore.telefono_societa || ''}">
+                    </div>
+                </div>
+
+                <!-- COLONNA 2 (40%): Rappresentanza -->
+                <div class="field-card">
+                    <h4>👔 Rappresentanza</h4>
+
+                    <!-- Tipo rappresentanza -->
+                    <div class="field-group">
+                        <label>Tipo Rappresentanza</label>
+                        <div class="segmented-control cittadinanza-control">
+                            <input type="radio" name="venditore_${venditore.id}_tipo_rappresentanza" id="venditore_${venditore.id}_rapp_persona_fisica" value="persona_fisica" ${!venditore.tipo_rappresentanza || venditore.tipo_rappresentanza === 'persona_fisica' ? 'checked' : ''}>
+                            <label for="venditore_${venditore.id}_rapp_persona_fisica">Persona fisica</label>
+
+                            <input type="radio" name="venditore_${venditore.id}_tipo_rappresentanza" id="venditore_${venditore.id}_rapp_societa_amm" value="persona_giuridica_con_designato" ${venditore.tipo_rappresentanza === 'persona_giuridica_con_designato' ? 'checked' : ''}>
+                            <label for="venditore_${venditore.id}_rapp_societa_amm">Società-amm</label>
+
+                            <div class="segmented-control-slider"></div>
+                        </div>
+                    </div>
+
+                    <!-- Sezione Persona Fisica -->
+                    <div id="rappresentante-persona-fisica-${venditore.id}" class="${!venditore.tipo_rappresentanza || venditore.tipo_rappresentanza === 'persona_fisica' ? '' : 'hidden'}">
+                        <h5>Legale Rappresentante</h5>
+
+                        <!-- Nome | Cognome -->
+                        <div class="field-row">
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_rappresentante_nome">Nome</label>
+                                <input type="text" id="venditore_${venditore.id}_rappresentante_nome" value="${venditore.rappresentante_nome || ''}">
+                            </div>
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_rappresentante_cognome">Cognome</label>
+                                <input type="text" id="venditore_${venditore.id}_rappresentante_cognome" value="${venditore.rappresentante_cognome || ''}">
+                            </div>
+                        </div>
+
+                        <!-- Sesso -->
+                        <div class="field-group">
+                            <label>Sesso</label>
+                            <div class="segmented-control sesso-control">
+                                <input type="radio" name="venditore_${venditore.id}_rappresentante_sesso" id="venditore_${venditore.id}_rappresentante_sesso_m" value="M" ${!venditore.rappresentante_sesso || venditore.rappresentante_sesso === 'M' ? 'checked' : ''}>
+                                <label for="venditore_${venditore.id}_rappresentante_sesso_m">Maschio</label>
+
+                                <input type="radio" name="venditore_${venditore.id}_rappresentante_sesso" id="venditore_${venditore.id}_rappresentante_sesso_f" value="F" ${venditore.rappresentante_sesso === 'F' ? 'checked' : ''}>
+                                <label for="venditore_${venditore.id}_rappresentante_sesso_f">Femmina</label>
+
+                                <div class="segmented-control-slider"></div>
+                            </div>
+                        </div>
+
+                        <!-- Luogo nascita | Data nascita -->
+                        <div class="field-row">
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_rappresentante_luogo_nascita">Luogo di Nascita</label>
+                                <input type="text" id="venditore_${venditore.id}_rappresentante_luogo_nascita" value="${venditore.rappresentante_luogo_nascita || ''}">
+                            </div>
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_rappresentante_data_nascita">Data di Nascita</label>
+                                <input type="date" id="venditore_${venditore.id}_rappresentante_data_nascita" value="${venditore.rappresentante_data_nascita || ''}">
+                            </div>
+                        </div>
+
+                        <!-- CF -->
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_rappresentante_cf">Codice Fiscale</label>
+                            <div class="cf-input-group">
+                                <input type="text" id="venditore_${venditore.id}_rappresentante_cf" value="${venditore.rappresentante_cf || ''}" maxlength="16" style="text-transform: uppercase;">
+                                <button type="button" class="btn-calculate-cf" data-venditore-id="${venditore.id}" data-tipo="rappresentante">🧮 Calcola</button>
+                            </div>
+                        </div>
+
+                        <!-- Documento -->
+                        <div class="field-row">
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_rappresentante_tipo_documento">Tipo Documento</label>
+                                <select id="venditore_${venditore.id}_rappresentante_tipo_documento">
+                                    <option value="carta_identita" ${!venditore.rappresentante_tipo_documento || venditore.rappresentante_tipo_documento === 'carta_identita' ? 'selected' : ''}>Carta d'Identità</option>
+                                    <option value="patente" ${venditore.rappresentante_tipo_documento === 'patente' ? 'selected' : ''}>Patente</option>
+                                    <option value="passaporto" ${venditore.rappresentante_tipo_documento === 'passaporto' ? 'selected' : ''}>Passaporto</option>
+                                </select>
+                            </div>
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_rappresentante_numero_documento">Numero</label>
+                                <input type="text" id="venditore_${venditore.id}_rappresentante_numero_documento" value="${venditore.rappresentante_numero_documento || ''}">
+                            </div>
+                        </div>
+                        <div class="field-row">
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_rappresentante_data_rilascio">Data Rilascio</label>
+                                <input type="date" id="venditore_${venditore.id}_rappresentante_data_rilascio" value="${venditore.rappresentante_data_rilascio || ''}">
+                            </div>
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_rappresentante_data_scadenza">Data Scadenza</label>
+                                <input type="date" id="venditore_${venditore.id}_rappresentante_data_scadenza" value="${venditore.rappresentante_data_scadenza || ''}">
+                            </div>
+                        </div>
+
+                        <!-- Domicilio per la carica -->
+                        <div class="field-group">
+                            <div class="domicilio-carica-toggle">
+                                <input type="checkbox" id="venditore_${venditore.id}_rappresentante_domicilio_presso_sede" ${!venditore.rappresentante_domicilio_presso_sede || venditore.rappresentante_domicilio_presso_sede === true ? 'checked' : ''}>
+                                <label for="venditore_${venditore.id}_rappresentante_domicilio_presso_sede">Domiciliato per la carica presso la sede</label>
+                            </div>
+                            <div id="domicilio-rappresentante-${venditore.id}" class="domicilio-carica-fields ${venditore.rappresentante_domicilio_presso_sede === false ? 'active' : ''}">
+                                <div class="field-row">
+                                    <div class="field-group">
+                                        <label for="venditore_${venditore.id}_rappresentante_domicilio_via">Via</label>
+                                        <input type="text" id="venditore_${venditore.id}_rappresentante_domicilio_via" value="${venditore.rappresentante_domicilio_via || ''}">
+                                    </div>
+                                    <div class="field-group">
+                                        <label for="venditore_${venditore.id}_rappresentante_domicilio_numero">Numero</label>
+                                        <input type="text" id="venditore_${venditore.id}_rappresentante_domicilio_numero" value="${venditore.rappresentante_domicilio_numero || ''}">
+                                    </div>
+                                </div>
+                                <div class="field-row">
+                                    <div class="field-group">
+                                        <label for="venditore_${venditore.id}_rappresentante_domicilio_cap">CAP</label>
+                                        <input type="text" id="venditore_${venditore.id}_rappresentante_domicilio_cap" value="${venditore.rappresentante_domicilio_cap || ''}" maxlength="5">
+                                    </div>
+                                    <div class="field-group">
+                                        <label for="venditore_${venditore.id}_rappresentante_domicilio_comune">Comune</label>
+                                        <input type="text" id="venditore_${venditore.id}_rappresentante_domicilio_comune" value="${venditore.rappresentante_domicilio_comune || ''}">
+                                    </div>
+                                </div>
+                                <div class="field-group">
+                                    <label for="venditore_${venditore.id}_rappresentante_domicilio_provincia">Provincia</label>
+                                    <input type="text" id="venditore_${venditore.id}_rappresentante_domicilio_provincia" value="${venditore.rappresentante_domicilio_provincia || ''}" maxlength="2" style="text-transform: uppercase;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sezione Società-amministratore + Designato -->
+                    <div id="rappresentante-societa-amm-${venditore.id}" class="${venditore.tipo_rappresentanza === 'persona_giuridica_con_designato' ? '' : 'hidden'}">
+                        <!-- Società-amministratore -->
+                        <div class="societa-amministratore-section">
+                            <h5>🏢 Società-amministratore</h5>
+
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_soc_amm_ragione_sociale">Ragione Sociale</label>
+                                <input type="text" id="venditore_${venditore.id}_soc_amm_ragione_sociale" value="${venditore.soc_amm_ragione_sociale || ''}">
+                            </div>
+
+                            <!-- Sede -->
+                            <div class="field-row">
+                                <div class="field-group">
+                                    <label for="venditore_${venditore.id}_soc_amm_sede_via">Via</label>
+                                    <input type="text" id="venditore_${venditore.id}_soc_amm_sede_via" value="${venditore.soc_amm_sede_via || ''}">
+                                </div>
+                                <div class="field-group">
+                                    <label for="venditore_${venditore.id}_soc_amm_sede_numero">Numero</label>
+                                    <input type="text" id="venditore_${venditore.id}_soc_amm_sede_numero" value="${venditore.soc_amm_sede_numero || ''}">
+                                </div>
+                            </div>
+                            <div class="field-row">
+                                <div class="field-group">
+                                    <label for="venditore_${venditore.id}_soc_amm_sede_comune">Comune</label>
+                                    <input type="text" id="venditore_${venditore.id}_soc_amm_sede_comune" value="${venditore.soc_amm_sede_comune || ''}">
+                                </div>
+                                <div class="field-group">
+                                    <label for="venditore_${venditore.id}_soc_amm_sede_provincia">Provincia</label>
+                                    <input type="text" id="venditore_${venditore.id}_soc_amm_sede_provincia" value="${venditore.soc_amm_sede_provincia || ''}" maxlength="2" style="text-transform: uppercase;">
+                                </div>
+                            </div>
+
+                            <!-- P.IVA e CF -->
+                            <div class="field-row">
+                                <div class="field-group">
+                                    <label for="venditore_${venditore.id}_soc_amm_piva">Partita IVA</label>
+                                    <input type="text" id="venditore_${venditore.id}_soc_amm_piva" value="${venditore.soc_amm_piva || ''}" maxlength="11">
+                                </div>
+                                <div class="field-group">
+                                    <label for="venditore_${venditore.id}_soc_amm_cf">Codice Fiscale</label>
+                                    <input type="text" id="venditore_${venditore.id}_soc_amm_cf" value="${venditore.soc_amm_cf || ''}" maxlength="16" style="text-transform: uppercase;">
+                                </div>
+                            </div>
+
+                            <!-- RI e REA -->
+                            <div class="field-row">
+                                <div class="field-group">
+                                    <label for="venditore_${venditore.id}_soc_amm_ri_numero">RI Numero</label>
+                                    <input type="text" id="venditore_${venditore.id}_soc_amm_ri_numero" value="${venditore.soc_amm_ri_numero || ''}">
+                                </div>
+                                <div class="field-group">
+                                    <label for="venditore_${venditore.id}_soc_amm_rea_numero">REA Numero</label>
+                                    <input type="text" id="venditore_${venditore.id}_soc_amm_rea_numero" value="${venditore.soc_amm_rea_numero || ''}">
+                                </div>
+                            </div>
+
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_soc_amm_pec">PEC</label>
+                                <input type="email" id="venditore_${venditore.id}_soc_amm_pec" value="${venditore.soc_amm_pec || ''}">
+                            </div>
+                        </div>
+
+                        <!-- Designato -->
+                        <div class="designato-section">
+                            <h5>👤 Designato (Persona Fisica)</h5>
+
+                            <div class="field-row">
+                                <div class="field-group">
+                                    <label for="venditore_${venditore.id}_designato_nome">Nome</label>
+                                    <input type="text" id="venditore_${venditore.id}_designato_nome" value="${venditore.designato_nome || ''}">
+                                </div>
+                                <div class="field-group">
+                                    <label for="venditore_${venditore.id}_designato_cognome">Cognome</label>
+                                    <input type="text" id="venditore_${venditore.id}_designato_cognome" value="${venditore.designato_cognome || ''}">
+                                </div>
+                            </div>
+
+                            <!-- Sesso -->
+                            <div class="field-group">
+                                <label>Sesso</label>
+                                <div class="segmented-control sesso-control">
+                                    <input type="radio" name="venditore_${venditore.id}_designato_sesso" id="venditore_${venditore.id}_designato_sesso_m" value="M" ${!venditore.designato_sesso || venditore.designato_sesso === 'M' ? 'checked' : ''}>
+                                    <label for="venditore_${venditore.id}_designato_sesso_m">Maschio</label>
+
+                                    <input type="radio" name="venditore_${venditore.id}_designato_sesso" id="venditore_${venditore.id}_designato_sesso_f" value="F" ${venditore.designato_sesso === 'F' ? 'checked' : ''}>
+                                    <label for="venditore_${venditore.id}_designato_sesso_f">Femmina</label>
+
+                                    <div class="segmented-control-slider"></div>
+                                </div>
+                            </div>
+
+                            <div class="field-row">
+                                <div class="field-group">
+                                    <label for="venditore_${venditore.id}_designato_luogo_nascita">Luogo di Nascita</label>
+                                    <input type="text" id="venditore_${venditore.id}_designato_luogo_nascita" value="${venditore.designato_luogo_nascita || ''}">
+                                </div>
+                                <div class="field-group">
+                                    <label for="venditore_${venditore.id}_designato_data_nascita">Data di Nascita</label>
+                                    <input type="date" id="venditore_${venditore.id}_designato_data_nascita" value="${venditore.designato_data_nascita || ''}">
+                                </div>
+                            </div>
+
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_designato_cf">Codice Fiscale</label>
+                                <div class="cf-input-group">
+                                    <input type="text" id="venditore_${venditore.id}_designato_cf" value="${venditore.designato_cf || ''}" maxlength="16" style="text-transform: uppercase;">
+                                    <button type="button" class="btn-calculate-cf" data-venditore-id="${venditore.id}" data-tipo="designato">🧮 Calcola</button>
+                                </div>
+                            </div>
+
+                            <!-- Documento -->
+                            <div class="field-row">
+                                <div class="field-group">
+                                    <label for="venditore_${venditore.id}_designato_tipo_documento">Tipo Documento</label>
+                                    <select id="venditore_${venditore.id}_designato_tipo_documento">
+                                        <option value="carta_identita" ${!venditore.designato_tipo_documento || venditore.designato_tipo_documento === 'carta_identita' ? 'selected' : ''}>Carta d'Identità</option>
+                                        <option value="patente" ${venditore.designato_tipo_documento === 'patente' ? 'selected' : ''}>Patente</option>
+                                        <option value="passaporto" ${venditore.designato_tipo_documento === 'passaporto' ? 'selected' : ''}>Passaporto</option>
+                                    </select>
+                                </div>
+                                <div class="field-group">
+                                    <label for="venditore_${venditore.id}_designato_numero_documento">Numero</label>
+                                    <input type="text" id="venditore_${venditore.id}_designato_numero_documento" value="${venditore.designato_numero_documento || ''}">
+                                </div>
+                            </div>
+                            <div class="field-row">
+                                <div class="field-group">
+                                    <label for="venditore_${venditore.id}_designato_data_rilascio">Data Rilascio</label>
+                                    <input type="date" id="venditore_${venditore.id}_designato_data_rilascio" value="${venditore.designato_data_rilascio || ''}">
+                                </div>
+                                <div class="field-group">
+                                    <label for="venditore_${venditore.id}_designato_data_scadenza">Data Scadenza</label>
+                                    <input type="date" id="venditore_${venditore.id}_designato_data_scadenza" value="${venditore.designato_data_scadenza || ''}">
+                                </div>
+                            </div>
+
+                            <!-- Domicilio per la carica -->
+                            <div class="field-group">
+                                <div class="domicilio-carica-toggle">
+                                    <input type="checkbox" id="venditore_${venditore.id}_designato_domicilio_presso_sede" ${!venditore.designato_domicilio_presso_sede || venditore.designato_domicilio_presso_sede === true ? 'checked' : ''}>
+                                    <label for="venditore_${venditore.id}_designato_domicilio_presso_sede">Domiciliato per la carica presso la sede</label>
+                                </div>
+                                <div id="domicilio-designato-${venditore.id}" class="domicilio-carica-fields ${venditore.designato_domicilio_presso_sede === false ? 'active' : ''}">
+                                    <div class="field-row">
+                                        <div class="field-group">
+                                            <label for="venditore_${venditore.id}_designato_domicilio_via">Via</label>
+                                            <input type="text" id="venditore_${venditore.id}_designato_domicilio_via" value="${venditore.designato_domicilio_via || ''}">
+                                        </div>
+                                        <div class="field-group">
+                                            <label for="venditore_${venditore.id}_designato_domicilio_numero">Numero</label>
+                                            <input type="text" id="venditore_${venditore.id}_designato_domicilio_numero" value="${venditore.designato_domicilio_numero || ''}">
+                                        </div>
+                                    </div>
+                                    <div class="field-row">
+                                        <div class="field-group">
+                                            <label for="venditore_${venditore.id}_designato_domicilio_cap">CAP</label>
+                                            <input type="text" id="venditore_${venditore.id}_designato_domicilio_cap" value="${venditore.designato_domicilio_cap || ''}" maxlength="5">
+                                        </div>
+                                        <div class="field-group">
+                                            <label for="venditore_${venditore.id}_designato_domicilio_comune">Comune</label>
+                                            <input type="text" id="venditore_${venditore.id}_designato_domicilio_comune" value="${venditore.designato_domicilio_comune || ''}">
+                                        </div>
+                                    </div>
+                                    <div class="field-group">
+                                        <label for="venditore_${venditore.id}_designato_domicilio_provincia">Provincia</label>
+                                        <input type="text" id="venditore_${venditore.id}_designato_domicilio_provincia" value="${venditore.designato_domicilio_provincia || ''}" maxlength="2" style="text-transform: uppercase;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+            <!-- FINE FORM SOCIETÀ -->
+
         </div>
     `;
     
@@ -2232,6 +2972,122 @@ renderVenditore(venditore) {
 
                 console.log(`✅ Event listeners segmented control cittadinanza attivati per venditore ${venditore.id}`);
             }
+
+            // ========== EVENT LISTENERS: TIPO SOGGETTO (Privato/Ditta/Società) ==========
+            const tipoPrivatoRadio = document.getElementById(`venditore_${venditore.id}_tipo_privato`);
+            const tipoDittaRadio = document.getElementById(`venditore_${venditore.id}_tipo_ditta`);
+            const tipoSocietaRadio = document.getElementById(`venditore_${venditore.id}_tipo_societa`);
+
+            const formPrivato = document.querySelector(`#venditore-${venditore.id} .form-tipo-privato`);
+            const formDitta = document.querySelector(`#venditore-${venditore.id} .form-tipo-ditta`);
+            const formSocieta = document.querySelector(`#venditore-${venditore.id} .form-tipo-societa`);
+
+            const handleTipoSoggettoChange = () => {
+                const tipo = tipoPrivatoRadio.checked ? 'privato' :
+                            tipoDittaRadio.checked ? 'ditta' : 'societa';
+
+                // Mostra/nascondi form
+                if (formPrivato) formPrivato.classList.toggle('active', tipo === 'privato');
+                if (formDitta) formDitta.classList.toggle('active', tipo === 'ditta');
+                if (formSocieta) formSocieta.classList.toggle('active', tipo === 'societa');
+
+                // Aggiorna oggetto venditore
+                const v = this.venditori.find(ven => ven.id === venditore.id);
+                if (v) {
+                    v.tipo = tipo;
+                    console.log(`👤 Tipo soggetto venditore ${venditore.id} aggiornato: ${tipo}`);
+                }
+            };
+
+            if (tipoPrivatoRadio && tipoDittaRadio && tipoSocietaRadio) {
+                tipoPrivatoRadio.addEventListener('change', handleTipoSoggettoChange);
+                tipoDittaRadio.addEventListener('change', handleTipoSoggettoChange);
+                tipoSocietaRadio.addEventListener('change', handleTipoSoggettoChange);
+                console.log(`✅ Event listeners tipo soggetto attivati per venditore ${venditore.id}`);
+            }
+
+            // ========== EVENT LISTENERS: TIPO RAPPRESENTANZA (solo per Società) ==========
+            const rappPersonaFisicaRadio = document.getElementById(`venditore_${venditore.id}_rapp_persona_fisica`);
+            const rappSocietaAmmRadio = document.getElementById(`venditore_${venditore.id}_rapp_societa_amm`);
+
+            const rappPersonaFisicaSection = document.getElementById(`rappresentante-persona-fisica-${venditore.id}`);
+            const rappSocietaAmmSection = document.getElementById(`rappresentante-societa-amm-${venditore.id}`);
+
+            const handleTipoRappresentanzaChange = () => {
+                const tipoRapp = rappPersonaFisicaRadio?.checked ? 'persona_fisica' : 'persona_giuridica_con_designato';
+
+                // Mostra/nascondi sezioni
+                if (rappPersonaFisicaSection) {
+                    rappPersonaFisicaSection.classList.toggle('hidden', tipoRapp !== 'persona_fisica');
+                }
+                if (rappSocietaAmmSection) {
+                    rappSocietaAmmSection.classList.toggle('hidden', tipoRapp !== 'persona_giuridica_con_designato');
+                }
+
+                // Aggiorna oggetto venditore
+                const v = this.venditori.find(ven => ven.id === venditore.id);
+                if (v) {
+                    v.tipo_rappresentanza = tipoRapp;
+                    console.log(`👔 Tipo rappresentanza venditore ${venditore.id} aggiornato: ${tipoRapp}`);
+                }
+            };
+
+            if (rappPersonaFisicaRadio && rappSocietaAmmRadio) {
+                rappPersonaFisicaRadio.addEventListener('change', handleTipoRappresentanzaChange);
+                rappSocietaAmmRadio.addEventListener('change', handleTipoRappresentanzaChange);
+                console.log(`✅ Event listeners tipo rappresentanza attivati per venditore ${venditore.id}`);
+            }
+
+            // ========== EVENT LISTENERS: DOMICILIO PER LA CARICA (Titolare - DITTA) ==========
+            const domicilioTitolareCheckbox = document.getElementById(`venditore_${venditore.id}_titolare_domicilio_presso_sede`);
+            const domicilioTitolareFields = document.getElementById(`domicilio-titolare-${venditore.id}`);
+
+            if (domicilioTitolareCheckbox && domicilioTitolareFields) {
+                domicilioTitolareCheckbox.addEventListener('change', () => {
+                    const pressoSede = domicilioTitolareCheckbox.checked;
+                    domicilioTitolareFields.classList.toggle('active', !pressoSede);
+
+                    const v = this.venditori.find(ven => ven.id === venditore.id);
+                    if (v) {
+                        v.titolare_domicilio_presso_sede = pressoSede;
+                        console.log(`🏠 Domicilio titolare presso sede: ${pressoSede}`);
+                    }
+                });
+            }
+
+            // ========== EVENT LISTENERS: DOMICILIO PER LA CARICA (Rappresentante - SOCIETÀ) ==========
+            const domicilioRappresentanteCheckbox = document.getElementById(`venditore_${venditore.id}_rappresentante_domicilio_presso_sede`);
+            const domicilioRappresentanteFields = document.getElementById(`domicilio-rappresentante-${venditore.id}`);
+
+            if (domicilioRappresentanteCheckbox && domicilioRappresentanteFields) {
+                domicilioRappresentanteCheckbox.addEventListener('change', () => {
+                    const pressoSede = domicilioRappresentanteCheckbox.checked;
+                    domicilioRappresentanteFields.classList.toggle('active', !pressoSede);
+
+                    const v = this.venditori.find(ven => ven.id === venditore.id);
+                    if (v) {
+                        v.rappresentante_domicilio_presso_sede = pressoSede;
+                        console.log(`🏠 Domicilio rappresentante presso sede: ${pressoSede}`);
+                    }
+                });
+            }
+
+            // ========== EVENT LISTENERS: DOMICILIO PER LA CARICA (Designato - SOCIETÀ) ==========
+            const domicilioDesignatoCheckbox = document.getElementById(`venditore_${venditore.id}_designato_domicilio_presso_sede`);
+            const domicilioDesignatoFields = document.getElementById(`domicilio-designato-${venditore.id}`);
+
+            if (domicilioDesignatoCheckbox && domicilioDesignatoFields) {
+                domicilioDesignatoCheckbox.addEventListener('change', () => {
+                    const pressoSede = domicilioDesignatoCheckbox.checked;
+                    domicilioDesignatoFields.classList.toggle('active', !pressoSede);
+
+                    const v = this.venditori.find(ven => ven.id === venditore.id);
+                    if (v) {
+                        v.designato_domicilio_presso_sede = pressoSede;
+                        console.log(`🏠 Domicilio designato presso sede: ${pressoSede}`);
+                    }
+                });
+            }
         }, 100);
     } else {
         console.log(`⏭️ Venditore ${venditore.id} è un coniuge auto-aggiunto - event listeners non necessari`);
@@ -2321,63 +3177,206 @@ renderVenditore(venditore) {
         console.log('this.venditori:', this.venditori);
         console.log('Numero venditori:', this.venditori.length);
         
-        // Raccolta dati venditori
+        // Raccolta dati venditori - LOGICA DIVERSA IN BASE AL TIPO
         const venditoriData = this.venditori.map(venditore => {
-            // Leggi stato chip button regime
-            const chipRegime = document.getElementById(`venditore_${venditore.id}_specificare_regime`);
-            const specificareRegime = chipRegime ? chipRegime.classList.contains('active') : false;
+            // Leggi tipo soggetto
+            const tipoPrivatoRadio = document.getElementById(`venditore_${venditore.id}_tipo_privato`);
+            const tipoDittaRadio = document.getElementById(`venditore_${venditore.id}_tipo_ditta`);
+            const tipoSocietaRadio = document.getElementById(`venditore_${venditore.id}_tipo_societa`);
+            const tipo = tipoPrivatoRadio?.checked ? 'privato' :
+                        tipoDittaRadio?.checked ? 'ditta' :
+                        tipoSocietaRadio?.checked ? 'societa' : 'privato';
 
-            // Leggi sesso dai radio button
-            const sessoRadioM = document.getElementById(`venditore_${venditore.id}_sesso_m`);
-            const sessoRadioF = document.getElementById(`venditore_${venditore.id}_sesso_f`);
-            const sesso = sessoRadioM?.checked ? 'M' : (sessoRadioF?.checked ? 'F' : 'M');
+            let data = { id: venditore.id, tipo: tipo };
 
-            // Leggi cittadinanza dai radio button
-            const cittItaliaRadio = document.getElementById(`venditore_${venditore.id}_citt_italia`);
-            const cittEsteroRadio = document.getElementById(`venditore_${venditore.id}_citt_estero`);
-            const isItalia = cittItaliaRadio?.checked || false;
-            const cittadinanzaCustom = document.getElementById(`venditore_${venditore.id}_cittadinanza_custom`)?.value || '';
-            const cittadinanza = isItalia ? 'italiana' : (cittadinanzaCustom || '');
+            // ========== PRIVATO ==========
+            if (tipo === 'privato') {
+                // Leggi stato chip button regime
+                const chipRegime = document.getElementById(`venditore_${venditore.id}_specificare_regime`);
+                const specificareRegime = chipRegime ? chipRegime.classList.contains('active') : false;
 
-            const data = {
-                id: venditore.id,
-                nome: document.getElementById(`venditore_${venditore.id}_nome`)?.value || '',
-                cognome: document.getElementById(`venditore_${venditore.id}_cognome`)?.value || '',
-                sesso: sesso,
-                stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?.value || '',
-                regime_patrimoniale: document.getElementById(`venditore_${venditore.id}_regime_patrimoniale`)?.value || '',
-                specificare_regime: specificareRegime,
-                // Flags coniuge (dal venditore object originale)
-                isConiuge: venditore.isConiuge || false,
-                linkedTo: venditore.linkedTo || null,
-                hasConiuge: venditore.hasConiuge || false,
-                coniugeId: venditore.coniugeId || null,
-                // Anagrafica
-                luogo_nascita: document.getElementById(`venditore_${venditore.id}_luogo_nascita`)?.value || '',
-                data_nascita: document.getElementById(`venditore_${venditore.id}_data_nascita`)?.value || '',
-                codice_fiscale: document.getElementById(`venditore_${venditore.id}_codice_fiscale`)?.value || '',
-                tipo_documento: document.getElementById(`venditore_${venditore.id}_tipo_documento`)?.value || '',
-                numero_documento: document.getElementById(`venditore_${venditore.id}_numero_documento`)?.value || '',
-                data_rilascio: document.getElementById(`venditore_${venditore.id}_data_rilascio`)?.value || '',
-                data_scadenza: document.getElementById(`venditore_${venditore.id}_data_scadenza`)?.value || '',
-                indirizzo: document.getElementById(`venditore_${venditore.id}_indirizzo`)?.value || '',
-                citta: document.getElementById(`venditore_${venditore.id}_citta`)?.value || '',
-                provincia: document.getElementById(`venditore_${venditore.id}_provincia`)?.value || '',
-                telefono1: document.getElementById(`venditore_${venditore.id}_telefono1`)?.value || '',
-                telefono2: document.getElementById(`venditore_${venditore.id}_telefono2`)?.value || '',
-                email1: document.getElementById(`venditore_${venditore.id}_email1`)?.value || '',
-                email2: document.getElementById(`venditore_${venditore.id}_email2`)?.value || '',
-                cittadinanza: cittadinanza,
-                professione: document.getElementById(`venditore_${venditore.id}_professione`)?.value || '',
-                // Permesso di soggiorno (solo se cittadinanza estera)
-                permesso_tipo: document.getElementById(`venditore_${venditore.id}_permesso_tipo`)?.value || '',
-                permesso_numero: document.getElementById(`venditore_${venditore.id}_permesso_numero`)?.value || '',
-                permesso_rilascio: document.getElementById(`venditore_${venditore.id}_permesso_rilascio`)?.value || '',
-                permesso_scadenza: document.getElementById(`venditore_${venditore.id}_permesso_scadenza`)?.value || '',
-                permesso_questura: document.getElementById(`venditore_${venditore.id}_permesso_questura`)?.value || ''
-            };
-            
-            console.log(`📋 Dati venditore ${venditore.id}:`, data);
+                // Leggi sesso dai radio button
+                const sessoRadioM = document.getElementById(`venditore_${venditore.id}_sesso_m`);
+                const sessoRadioF = document.getElementById(`venditore_${venditore.id}_sesso_f`);
+                const sesso = sessoRadioM?.checked ? 'M' : (sessoRadioF?.checked ? 'F' : 'M');
+
+                // Leggi cittadinanza dai radio button
+                const cittItaliaRadio = document.getElementById(`venditore_${venditore.id}_citt_italia`);
+                const isItalia = cittItaliaRadio?.checked || false;
+                const cittadinanzaCustom = document.getElementById(`venditore_${venditore.id}_cittadinanza_custom`)?.value || '';
+                const cittadinanza = isItalia ? 'italiana' : (cittadinanzaCustom || '');
+
+                data = {
+                    ...data,
+                    nome: document.getElementById(`venditore_${venditore.id}_nome`)?.value || '',
+                    cognome: document.getElementById(`venditore_${venditore.id}_cognome`)?.value || '',
+                    sesso: sesso,
+                    stato_civile: document.getElementById(`venditore_${venditore.id}_stato_civile`)?.value || '',
+                    regime_patrimoniale: document.getElementById(`venditore_${venditore.id}_regime_patrimoniale`)?.value || '',
+                    specificare_regime: specificareRegime,
+                    isConiuge: venditore.isConiuge || false,
+                    linkedTo: venditore.linkedTo || null,
+                    hasConiuge: venditore.hasConiuge || false,
+                    coniugeId: venditore.coniugeId || null,
+                    luogo_nascita: document.getElementById(`venditore_${venditore.id}_luogo_nascita`)?.value || '',
+                    data_nascita: document.getElementById(`venditore_${venditore.id}_data_nascita`)?.value || '',
+                    codice_fiscale: document.getElementById(`venditore_${venditore.id}_codice_fiscale`)?.value || '',
+                    tipo_documento: document.getElementById(`venditore_${venditore.id}_tipo_documento`)?.value || '',
+                    numero_documento: document.getElementById(`venditore_${venditore.id}_numero_documento`)?.value || '',
+                    data_rilascio: document.getElementById(`venditore_${venditore.id}_data_rilascio`)?.value || '',
+                    data_scadenza: document.getElementById(`venditore_${venditore.id}_data_scadenza`)?.value || '',
+                    indirizzo: document.getElementById(`venditore_${venditore.id}_indirizzo`)?.value || '',
+                    citta: document.getElementById(`venditore_${venditore.id}_citta`)?.value || '',
+                    provincia: document.getElementById(`venditore_${venditore.id}_provincia`)?.value || '',
+                    telefono1: document.getElementById(`venditore_${venditore.id}_telefono1`)?.value || '',
+                    telefono2: document.getElementById(`venditore_${venditore.id}_telefono2`)?.value || '',
+                    email1: document.getElementById(`venditore_${venditore.id}_email1`)?.value || '',
+                    email2: document.getElementById(`venditore_${venditore.id}_email2`)?.value || '',
+                    cittadinanza: cittadinanza,
+                    professione: document.getElementById(`venditore_${venditore.id}_professione`)?.value || '',
+                    permesso_tipo: document.getElementById(`venditore_${venditore.id}_permesso_tipo`)?.value || '',
+                    permesso_numero: document.getElementById(`venditore_${venditore.id}_permesso_numero`)?.value || '',
+                    permesso_rilascio: document.getElementById(`venditore_${venditore.id}_permesso_rilascio`)?.value || '',
+                    permesso_scadenza: document.getElementById(`venditore_${venditore.id}_permesso_scadenza`)?.value || '',
+                    permesso_questura: document.getElementById(`venditore_${venditore.id}_permesso_questura`)?.value || ''
+                };
+            }
+
+            // ========== DITTA ==========
+            else if (tipo === 'ditta') {
+                // Leggi sesso titolare
+                const titolareSessoM = document.getElementById(`venditore_${venditore.id}_titolare_sesso_m`);
+                const titolareSessoF = document.getElementById(`venditore_${venditore.id}_titolare_sesso_f`);
+                const titolareSesso = titolareSessoM?.checked ? 'M' : 'F';
+
+                data = {
+                    ...data,
+                    titolare_nome: document.getElementById(`venditore_${venditore.id}_titolare_nome`)?.value || '',
+                    titolare_cognome: document.getElementById(`venditore_${venditore.id}_titolare_cognome`)?.value || '',
+                    titolare_sesso: titolareSesso,
+                    titolare_luogo_nascita: document.getElementById(`venditore_${venditore.id}_titolare_luogo_nascita`)?.value || '',
+                    titolare_data_nascita: document.getElementById(`venditore_${venditore.id}_titolare_data_nascita`)?.value || '',
+                    cf_titolare: document.getElementById(`venditore_${venditore.id}_cf_titolare`)?.value || '',
+                    titolare_tipo_documento: document.getElementById(`venditore_${venditore.id}_titolare_tipo_documento`)?.value || '',
+                    titolare_numero_documento: document.getElementById(`venditore_${venditore.id}_titolare_numero_documento`)?.value || '',
+                    titolare_data_rilascio: document.getElementById(`venditore_${venditore.id}_titolare_data_rilascio`)?.value || '',
+                    titolare_data_scadenza: document.getElementById(`venditore_${venditore.id}_titolare_data_scadenza`)?.value || '',
+                    titolare_domicilio_presso_sede: document.getElementById(`venditore_${venditore.id}_titolare_domicilio_presso_sede`)?.checked || false,
+                    titolare_domicilio_via: document.getElementById(`venditore_${venditore.id}_titolare_domicilio_via`)?.value || '',
+                    titolare_domicilio_numero: document.getElementById(`venditore_${venditore.id}_titolare_domicilio_numero`)?.value || '',
+                    titolare_domicilio_cap: document.getElementById(`venditore_${venditore.id}_titolare_domicilio_cap`)?.value || '',
+                    titolare_domicilio_comune: document.getElementById(`venditore_${venditore.id}_titolare_domicilio_comune`)?.value || '',
+                    titolare_domicilio_provincia: document.getElementById(`venditore_${venditore.id}_titolare_domicilio_provincia`)?.value || '',
+                    denominazione_ditta: document.getElementById(`venditore_${venditore.id}_denominazione_ditta`)?.value || '',
+                    sede_ditta_via: document.getElementById(`venditore_${venditore.id}_sede_ditta_via`)?.value || '',
+                    sede_ditta_numero: document.getElementById(`venditore_${venditore.id}_sede_ditta_numero`)?.value || '',
+                    sede_ditta_cap: document.getElementById(`venditore_${venditore.id}_sede_ditta_cap`)?.value || '',
+                    sede_ditta_comune: document.getElementById(`venditore_${venditore.id}_sede_ditta_comune`)?.value || '',
+                    sede_ditta_provincia: document.getElementById(`venditore_${venditore.id}_sede_ditta_provincia`)?.value || '',
+                    sede_ditta_stato: document.getElementById(`venditore_${venditore.id}_sede_ditta_stato`)?.value || '',
+                    piva_ditta: document.getElementById(`venditore_${venditore.id}_piva_ditta`)?.value || '',
+                    cf_ditta: document.getElementById(`venditore_${venditore.id}_cf_ditta`)?.value || '',
+                    rea_numero_ditta: document.getElementById(`venditore_${venditore.id}_rea_numero_ditta`)?.value || '',
+                    rea_cciaa_ditta: document.getElementById(`venditore_${venditore.id}_rea_cciaa_ditta`)?.value || '',
+                    pec_ditta: document.getElementById(`venditore_${venditore.id}_pec_ditta`)?.value || '',
+                    codice_destinatario_ditta: document.getElementById(`venditore_${venditore.id}_codice_destinatario_ditta`)?.value || '',
+                    email_ditta: document.getElementById(`venditore_${venditore.id}_email_ditta`)?.value || '',
+                    telefono_ditta: document.getElementById(`venditore_${venditore.id}_telefono_ditta`)?.value || ''
+                };
+            }
+
+            // ========== SOCIETÀ ==========
+            else if (tipo === 'societa') {
+                // Leggi tipo rappresentanza
+                const rappPersonaFisicaRadio = document.getElementById(`venditore_${venditore.id}_rapp_persona_fisica`);
+                const tipoRapp = rappPersonaFisicaRadio?.checked ? 'persona_fisica' : 'persona_giuridica_con_designato';
+
+                data = {
+                    ...data,
+                    ragione_sociale: document.getElementById(`venditore_${venditore.id}_ragione_sociale`)?.value || '',
+                    sede_societa_via: document.getElementById(`venditore_${venditore.id}_sede_societa_via`)?.value || '',
+                    sede_societa_numero: document.getElementById(`venditore_${venditore.id}_sede_societa_numero`)?.value || '',
+                    sede_societa_cap: document.getElementById(`venditore_${venditore.id}_sede_societa_cap`)?.value || '',
+                    sede_societa_comune: document.getElementById(`venditore_${venditore.id}_sede_societa_comune`)?.value || '',
+                    sede_societa_provincia: document.getElementById(`venditore_${venditore.id}_sede_societa_provincia`)?.value || '',
+                    sede_societa_stato: document.getElementById(`venditore_${venditore.id}_sede_societa_stato`)?.value || '',
+                    piva_societa: document.getElementById(`venditore_${venditore.id}_piva_societa`)?.value || '',
+                    cf_societa: document.getElementById(`venditore_${venditore.id}_cf_societa`)?.value || '',
+                    ri_numero: document.getElementById(`venditore_${venditore.id}_ri_numero`)?.value || '',
+                    ri_cciaa: document.getElementById(`venditore_${venditore.id}_ri_cciaa`)?.value || '',
+                    rea_numero_societa: document.getElementById(`venditore_${venditore.id}_rea_numero_societa`)?.value || '',
+                    rea_cciaa_societa: document.getElementById(`venditore_${venditore.id}_rea_cciaa_societa`)?.value || '',
+                    pec_societa: document.getElementById(`venditore_${venditore.id}_pec_societa`)?.value || '',
+                    codice_destinatario_societa: document.getElementById(`venditore_${venditore.id}_codice_destinatario_societa`)?.value || '',
+                    email_societa: document.getElementById(`venditore_${venditore.id}_email_societa`)?.value || '',
+                    telefono_societa: document.getElementById(`venditore_${venditore.id}_telefono_societa`)?.value || '',
+                    tipo_rappresentanza: tipoRapp
+                };
+
+                if (tipoRapp === 'persona_fisica') {
+                    // Leggi sesso rappresentante
+                    const rappSessoM = document.getElementById(`venditore_${venditore.id}_rappresentante_sesso_m`);
+                    const rappSessoF = document.getElementById(`venditore_${venditore.id}_rappresentante_sesso_f`);
+                    const rappSesso = rappSessoM?.checked ? 'M' : 'F';
+
+                    data = {
+                        ...data,
+                        rappresentante_nome: document.getElementById(`venditore_${venditore.id}_rappresentante_nome`)?.value || '',
+                        rappresentante_cognome: document.getElementById(`venditore_${venditore.id}_rappresentante_cognome`)?.value || '',
+                        rappresentante_sesso: rappSesso,
+                        rappresentante_luogo_nascita: document.getElementById(`venditore_${venditore.id}_rappresentante_luogo_nascita`)?.value || '',
+                        rappresentante_data_nascita: document.getElementById(`venditore_${venditore.id}_rappresentante_data_nascita`)?.value || '',
+                        rappresentante_cf: document.getElementById(`venditore_${venditore.id}_rappresentante_cf`)?.value || '',
+                        rappresentante_tipo_documento: document.getElementById(`venditore_${venditore.id}_rappresentante_tipo_documento`)?.value || '',
+                        rappresentante_numero_documento: document.getElementById(`venditore_${venditore.id}_rappresentante_numero_documento`)?.value || '',
+                        rappresentante_data_rilascio: document.getElementById(`venditore_${venditore.id}_rappresentante_data_rilascio`)?.value || '',
+                        rappresentante_data_scadenza: document.getElementById(`venditore_${venditore.id}_rappresentante_data_scadenza`)?.value || '',
+                        rappresentante_domicilio_presso_sede: document.getElementById(`venditore_${venditore.id}_rappresentante_domicilio_presso_sede`)?.checked || false,
+                        rappresentante_domicilio_via: document.getElementById(`venditore_${venditore.id}_rappresentante_domicilio_via`)?.value || '',
+                        rappresentante_domicilio_numero: document.getElementById(`venditore_${venditore.id}_rappresentante_domicilio_numero`)?.value || '',
+                        rappresentante_domicilio_cap: document.getElementById(`venditore_${venditore.id}_rappresentante_domicilio_cap`)?.value || '',
+                        rappresentante_domicilio_comune: document.getElementById(`venditore_${venditore.id}_rappresentante_domicilio_comune`)?.value || '',
+                        rappresentante_domicilio_provincia: document.getElementById(`venditore_${venditore.id}_rappresentante_domicilio_provincia`)?.value || ''
+                    };
+                } else {
+                    // Società-amministratore + Designato
+                    const designatoSessoM = document.getElementById(`venditore_${venditore.id}_designato_sesso_m`);
+                    const designatoSessoF = document.getElementById(`venditore_${venditore.id}_designato_sesso_f`);
+                    const designatoSesso = designatoSessoM?.checked ? 'M' : 'F';
+
+                    data = {
+                        ...data,
+                        soc_amm_ragione_sociale: document.getElementById(`venditore_${venditore.id}_soc_amm_ragione_sociale`)?.value || '',
+                        soc_amm_sede_via: document.getElementById(`venditore_${venditore.id}_soc_amm_sede_via`)?.value || '',
+                        soc_amm_sede_numero: document.getElementById(`venditore_${venditore.id}_soc_amm_sede_numero`)?.value || '',
+                        soc_amm_sede_comune: document.getElementById(`venditore_${venditore.id}_soc_amm_sede_comune`)?.value || '',
+                        soc_amm_sede_provincia: document.getElementById(`venditore_${venditore.id}_soc_amm_sede_provincia`)?.value || '',
+                        soc_amm_piva: document.getElementById(`venditore_${venditore.id}_soc_amm_piva`)?.value || '',
+                        soc_amm_cf: document.getElementById(`venditore_${venditore.id}_soc_amm_cf`)?.value || '',
+                        soc_amm_ri_numero: document.getElementById(`venditore_${venditore.id}_soc_amm_ri_numero`)?.value || '',
+                        soc_amm_rea_numero: document.getElementById(`venditore_${venditore.id}_soc_amm_rea_numero`)?.value || '',
+                        soc_amm_pec: document.getElementById(`venditore_${venditore.id}_soc_amm_pec`)?.value || '',
+                        designato_nome: document.getElementById(`venditore_${venditore.id}_designato_nome`)?.value || '',
+                        designato_cognome: document.getElementById(`venditore_${venditore.id}_designato_cognome`)?.value || '',
+                        designato_sesso: designatoSesso,
+                        designato_luogo_nascita: document.getElementById(`venditore_${venditore.id}_designato_luogo_nascita`)?.value || '',
+                        designato_data_nascita: document.getElementById(`venditore_${venditore.id}_designato_data_nascita`)?.value || '',
+                        designato_cf: document.getElementById(`venditore_${venditore.id}_designato_cf`)?.value || '',
+                        designato_tipo_documento: document.getElementById(`venditore_${venditore.id}_designato_tipo_documento`)?.value || '',
+                        designato_numero_documento: document.getElementById(`venditore_${venditore.id}_designato_numero_documento`)?.value || '',
+                        designato_data_rilascio: document.getElementById(`venditore_${venditore.id}_designato_data_rilascio`)?.value || '',
+                        designato_data_scadenza: document.getElementById(`venditore_${venditore.id}_designato_data_scadenza`)?.value || '',
+                        designato_domicilio_presso_sede: document.getElementById(`venditore_${venditore.id}_designato_domicilio_presso_sede`)?.checked || false,
+                        designato_domicilio_via: document.getElementById(`venditore_${venditore.id}_designato_domicilio_via`)?.value || '',
+                        designato_domicilio_numero: document.getElementById(`venditore_${venditore.id}_designato_domicilio_numero`)?.value || '',
+                        designato_domicilio_cap: document.getElementById(`venditore_${venditore.id}_designato_domicilio_cap`)?.value || '',
+                        designato_domicilio_comune: document.getElementById(`venditore_${venditore.id}_designato_domicilio_comune`)?.value || '',
+                        designato_domicilio_provincia: document.getElementById(`venditore_${venditore.id}_designato_domicilio_provincia`)?.value || ''
+                    };
+                }
+            }
+
+            console.log(`📋 Dati venditore ${venditore.id} (${tipo}):`, data);
             return data;
         });
         
