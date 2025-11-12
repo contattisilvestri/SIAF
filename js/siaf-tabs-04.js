@@ -5,11 +5,11 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 7,
-    patch: 7,
+    patch: 8,
     date: '12/11/2025',
-    time: '23:45',
-    description: 'Cittadinanza: toggle slide Italia + autocomplete 152 paesi',
-    color: '#9C27B0'  // Purple - internazionalizzazione
+    time: '01:15',
+    description: 'UX redesign: layout 2 colonne (60-40) + toggle sesso M/F con gradienti',
+    color: '#FF6B6B'  // Red-pink - design refresh
 };
 
 class SiafApp {
@@ -1763,9 +1763,11 @@ renderVenditore(venditore) {
             </div>
             
             <div class="form-grid">
-                <!-- Dati anagrafici -->
+                <!-- COLONNA 1 (60%): Dati Anagrafici -->
                 <div class="field-card">
                     <h4>Dati Anagrafici</h4>
+
+                    <!-- Nome | Cognome -->
                     <div class="field-row">
                         <div class="field-group">
                             <label for="venditore_${venditore.id}_nome">Nome</label>
@@ -1777,55 +1779,23 @@ renderVenditore(venditore) {
                         </div>
                     </div>
 
-                    <div class="field-row">
-                        <div class="field-group">
-                            <label for="venditore_${venditore.id}_sesso">Sesso</label>
-                            <select id="venditore_${venditore.id}_sesso" required>
-                                <option value="M" ${venditore.sesso === 'M' ? 'selected' : ''}>Maschio</option>
-                                <option value="F" ${venditore.sesso === 'F' ? 'selected' : ''}>Femmina</option>
-                            </select>
-                        </div>
-                        <div class="field-group">
-                            <label for="venditore_${venditore.id}_stato_civile">Stato Civile</label>
-                            <select id="venditore_${venditore.id}_stato_civile">
-                                <option value="">Seleziona...</option>
-                                <option value="libero" ${venditore.stato_civile === 'libero' ? 'selected' : ''}>Libero/a</option>
-                                <option value="coniugato" ${venditore.stato_civile === 'coniugato' ? 'selected' : ''}>Coniugato/a</option>
-                                <option value="separato" ${venditore.stato_civile === 'separato' ? 'selected' : ''}>Legalmente separato/a</option>
-                                <option value="divorziato" ${venditore.stato_civile === 'divorziato' ? 'selected' : ''}>Divorziato/a</option>
-                                <option value="vedovo" ${venditore.stato_civile === 'vedovo' ? 'selected' : ''}>Vedovo/a</option>
-                            </select>
+                    <!-- Sesso: Toggle Maschio/Femmina -->
+                    <div class="field-group">
+                        <label>Sesso</label>
+                        <div class="sesso-toggle-wrapper">
+                            <label class="sesso-toggle">
+                                <span class="sesso-toggle-label-left">Maschio</span>
+                                <input type="checkbox"
+                                       id="venditore_${venditore.id}_sesso"
+                                       ${venditore.sesso === 'F' ? 'checked' : ''}
+                                       data-venditore-id="${venditore.id}">
+                                <span class="sesso-toggle-slider"></span>
+                                <span class="sesso-toggle-label-right">Femmina</span>
+                            </label>
                         </div>
                     </div>
 
-                    <!-- Campo condizionale: Regime Patrimoniale (coniugato o separato) -->
-                    <div id="regime-patrimoniale-section-${venditore.id}" class="conditional-fields" style="display: none;">
-                        <div class="field-group" style="margin-bottom: 15px;">
-                            <button type="button"
-                                    id="venditore_${venditore.id}_specificare_regime"
-                                    class="regime-chip-toggle ${venditore.specificare_regime ? 'active' : ''}"
-                                    data-active="${venditore.specificare_regime ? 'true' : 'false'}">
-                                Regime Patrimoniale
-                            </button>
-                            <small class="field-hint" style="display: block; margin-top: 8px;">Clicca per specificare il regime patrimoniale</small>
-                        </div>
-
-                        <div id="regime-dropdown-${venditore.id}" class="conditional-fields" style="display: none;">
-                            <div class="field-group">
-                                <label for="venditore_${venditore.id}_regime_patrimoniale">Regime Patrimoniale</label>
-                                <select id="venditore_${venditore.id}_regime_patrimoniale">
-                                    <option value="">Seleziona...</option>
-                                    <option value="comunione" ${venditore.regime_patrimoniale === 'comunione' ? 'selected' : ''}>Comunione dei beni</option>
-                                    <option value="separazione" ${venditore.regime_patrimoniale === 'separazione' ? 'selected' : ''}>Separazione dei beni</option>
-                                </select>
-                            </div>
-
-                            <div id="comunione-alert-${venditore.id}" class="info-alert" style="display: none;">
-                                <strong>ℹ️ Comunione dei beni:</strong> Verrà automaticamente aggiunto il coniuge come co-venditore.
-                            </div>
-                        </div>
-                    </div>
-
+                    <!-- Luogo Nascita | Data Nascita -->
                     <div class="field-row">
                         <div class="field-group">
                             <label for="venditore_${venditore.id}_luogo_nascita">Luogo di Nascita</label>
@@ -1837,6 +1807,72 @@ renderVenditore(venditore) {
                         </div>
                     </div>
 
+                    <!-- Cittadinanza -->
+                    <div class="field-group">
+                        <label>Cittadinanza</label>
+                        <div class="cittadinanza-toggle-wrapper">
+                            <label class="cittadinanza-toggle">
+                                <input type="checkbox"
+                                       id="venditore_${venditore.id}_cittadinanza_italia"
+                                       ${(!venditore.cittadinanza || venditore.cittadinanza === 'italiana') ? 'checked' : ''}
+                                       onchange="this.closest('.field-group').querySelector('.cittadinanza-field').style.display = this.checked ? 'none' : 'block'; if(this.checked) { document.getElementById('venditore_${venditore.id}_cittadinanza_custom').value = ''; }">
+                                <span class="cittadinanza-toggle-slider"></span>
+                                <span class="cittadinanza-toggle-label">Italia</span>
+                            </label>
+                        </div>
+                        <div class="cittadinanza-field"
+                             style="display: ${(!venditore.cittadinanza || venditore.cittadinanza === 'italiana') ? 'none' : 'block'}">
+                            <input type="text"
+                                   id="venditore_${venditore.id}_cittadinanza_custom"
+                                   list="paesi-cittadinanza-list"
+                                   value="${venditore.cittadinanza && venditore.cittadinanza !== 'italiana' ? venditore.cittadinanza : ''}"
+                                   placeholder="Digita il paese di cittadinanza..."
+                                   autocomplete="off">
+                            <datalist id="paesi-cittadinanza-list"></datalist>
+                            <small class="field-hint">Inizia a digitare per vedere i suggerimenti</small>
+                        </div>
+                    </div>
+
+                    <!-- Stato Civile -->
+                    <div class="field-group">
+                        <label for="venditore_${venditore.id}_stato_civile">Stato Civile</label>
+                        <select id="venditore_${venditore.id}_stato_civile">
+                            <option value="">Seleziona...</option>
+                            <option value="libero" ${venditore.stato_civile === 'libero' ? 'selected' : ''}>Libero/a</option>
+                            <option value="coniugato" ${venditore.stato_civile === 'coniugato' ? 'selected' : ''}>Coniugato/a</option>
+                            <option value="separato" ${venditore.stato_civile === 'separato' ? 'selected' : ''}>Legalmente separato/a</option>
+                            <option value="divorziato" ${venditore.stato_civile === 'divorziato' ? 'selected' : ''}>Divorziato/a</option>
+                            <option value="vedovo" ${venditore.stato_civile === 'vedovo' ? 'selected' : ''}>Vedovo/a</option>
+                        </select>
+                    </div>
+
+                    <!-- Regime Patrimoniale (conditional) -->
+                    <div id="regime-patrimoniale-section-${venditore.id}" class="conditional-fields" style="display: none;">
+                        <div class="field-group" style="margin-bottom: 15px;">
+                            <button type="button"
+                                    id="venditore_${venditore.id}_specificare_regime"
+                                    class="regime-chip-toggle ${venditore.specificare_regime ? 'active' : ''}"
+                                    data-active="${venditore.specificare_regime ? 'true' : 'false'}">
+                                Regime Patrimoniale
+                            </button>
+                            <small class="field-hint" style="display: block; margin-top: 8px;">Clicca per specificare il regime patrimoniale</small>
+                        </div>
+                        <div id="regime-dropdown-${venditore.id}" class="conditional-fields" style="display: none;">
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_regime_patrimoniale">Regime Patrimoniale</label>
+                                <select id="venditore_${venditore.id}_regime_patrimoniale">
+                                    <option value="">Seleziona...</option>
+                                    <option value="comunione" ${venditore.regime_patrimoniale === 'comunione' ? 'selected' : ''}>Comunione dei beni</option>
+                                    <option value="separazione" ${venditore.regime_patrimoniale === 'separazione' ? 'selected' : ''}>Separazione dei beni</option>
+                                </select>
+                            </div>
+                            <div id="comunione-alert-${venditore.id}" class="info-alert" style="display: none;">
+                                <strong>ℹ️ Comunione dei beni:</strong> Verrà automaticamente aggiunto il coniuge come co-venditore.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Codice Fiscale -->
                     <div class="field-group">
                         <label for="venditore_${venditore.id}_codice_fiscale">Codice Fiscale</label>
                         <div class="cf-input-group">
@@ -1852,53 +1888,16 @@ renderVenditore(venditore) {
                                 🧮 Calcola CF
                             </button>
                         </div>
-
-                        <!-- Warning container (nascosto di default) -->
-                        <div id="cf-warning-${venditore.id}"
-                             class="cf-warning"
-                             style="display: none;">
-                        </div>
-
+                        <div id="cf-warning-${venditore.id}" class="cf-warning" style="display: none;"></div>
                         <small class="field-hint">
                             Inserisci manualmente o clicca "Calcola CF" per generarlo dai dati anagrafici. <strong>È responsabilità dell'operatore verificare la correttezza del codice.</strong>
                         </small>
                     </div>
-
-                    <!-- Cittadinanza -->
-                    <div class="field-group">
-                        <label>Cittadinanza</label>
-
-                        <!-- Toggle slide Italia -->
-                        <div class="cittadinanza-toggle-wrapper">
-                            <label class="cittadinanza-toggle">
-                                <input type="checkbox"
-                                       id="venditore_${venditore.id}_cittadinanza_italia"
-                                       ${(!venditore.cittadinanza || venditore.cittadinanza === 'italiana') ? 'checked' : ''}
-                                       onchange="this.closest('.field-group').querySelector('.cittadinanza-field').style.display = this.checked ? 'none' : 'block'; if(this.checked) { document.getElementById('venditore_${venditore.id}_cittadinanza_custom').value = ''; }">
-                                <span class="cittadinanza-toggle-slider"></span>
-                                <span class="cittadinanza-toggle-label">Italia</span>
-                            </label>
-                        </div>
-
-                        <!-- Campo autocomplete (nascosto se Italia è attivo) -->
-                        <div class="cittadinanza-field"
-                             style="display: ${(!venditore.cittadinanza || venditore.cittadinanza === 'italiana') ? 'none' : 'block'}">
-                            <input type="text"
-                                   id="venditore_${venditore.id}_cittadinanza_custom"
-                                   list="paesi-cittadinanza-list"
-                                   value="${venditore.cittadinanza && venditore.cittadinanza !== 'italiana' ? venditore.cittadinanza : ''}"
-                                   placeholder="Digita il paese di cittadinanza..."
-                                   autocomplete="off">
-                            <datalist id="paesi-cittadinanza-list">
-                                <!-- Lista popolata dinamicamente al caricamento -->
-                            </datalist>
-                            <small class="field-hint">Inizia a digitare per vedere i suggerimenti</small>
-                        </div>
-                    </div>
                 </div>
 
-                <!-- Documento -->
+                <!-- COLONNA 2 (40%): Documento + Residenza + Contatti -->
                 <div class="field-card">
+                    <!-- Documento di Riconoscimento -->
                     <h4>Documento di Riconoscimento</h4>
                     <div class="field-row">
                         <div class="field-group">
@@ -1915,7 +1914,6 @@ renderVenditore(venditore) {
                             <input type="text" id="venditore_${venditore.id}_numero_documento" value="${venditore.numero_documento}">
                         </div>
                     </div>
-
                     <div class="field-row">
                         <div class="field-group">
                             <label for="venditore_${venditore.id}_data_rilascio">Data Rilascio</label>
@@ -1926,16 +1924,16 @@ renderVenditore(venditore) {
                             <input type="date" id="venditore_${venditore.id}_data_scadenza" value="${venditore.data_scadenza}">
                         </div>
                     </div>
-                </div>
 
-                <!-- Residenza e Contatti -->
-                <div class="field-card">
+                    <!-- Separatore visivo -->
+                    <hr style="border: none; border-top: 2px solid #e9ecef; margin: 24px 0;">
+
+                    <!-- Residenza e Contatti -->
                     <h4>Residenza e Contatti</h4>
                     <div class="field-group">
                         <label for="venditore_${venditore.id}_indirizzo">Indirizzo</label>
                         <input type="text" id="venditore_${venditore.id}_indirizzo" value="${venditore.indirizzo}">
                     </div>
-
                     <div class="field-row">
                         <div class="field-group">
                             <label for="venditore_${venditore.id}_citta">Città</label>
@@ -1943,11 +1941,10 @@ renderVenditore(venditore) {
                         </div>
                         <div class="field-group">
                             <label for="venditore_${venditore.id}_provincia">Provincia</label>
-                            <input type="text" id="venditore_${venditore.id}_provincia" value="${venditore.provincia}" 
+                            <input type="text" id="venditore_${venditore.id}_provincia" value="${venditore.provincia}"
                                    maxlength="2" style="text-transform: uppercase;">
                         </div>
                     </div>
-
                     <div class="field-row">
                         <div class="field-group">
                             <label for="venditore_${venditore.id}_telefono1">Telefono 1</label>
@@ -1958,7 +1955,6 @@ renderVenditore(venditore) {
                             <input type="tel" id="venditore_${venditore.id}_telefono2" value="${venditore.telefono2}">
                         </div>
                     </div>
-
                     <div class="field-row">
                         <div class="field-group">
                             <label for="venditore_${venditore.id}_email1">Email 1</label>
@@ -2067,6 +2063,23 @@ renderVenditore(venditore) {
                 }
 
                 console.log(`✅ Event listeners regime patrimoniale attivati per venditore ${venditore.id}`);
+            }
+
+            // ========== EVENT LISTENERS: TOGGLE SESSO ==========
+            const sessoToggle = document.getElementById(`venditore_${venditore.id}_sesso`);
+            if (sessoToggle) {
+                sessoToggle.addEventListener('change', () => {
+                    const isFemmina = sessoToggle.checked;
+                    const sessoValue = isFemmina ? 'F' : 'M';
+
+                    // Aggiorna l'oggetto venditore in memoria
+                    const v = this.venditori.find(ven => ven.id === venditore.id);
+                    if (v) {
+                        v.sesso = sessoValue;
+                        console.log(`🚹🚺 Sesso venditore ${venditore.id} aggiornato: ${sessoValue}`);
+                    }
+                });
+                console.log(`✅ Event listener toggle sesso attivato per venditore ${venditore.id}`);
             }
         }, 100);
     } else {
