@@ -6,6 +6,7 @@
 class CodiceFiscaleCalculator {
     constructor() {
         this.belfioreData = null;
+        this.paesiEsteriData = null;
         this.belfioreIndex = {
             byCode: new Map(),     // O(1) lookup per codice
             byName: new Map(),      // O(1) lookup per nome
@@ -53,11 +54,11 @@ class CodiceFiscaleCalculator {
         const startTime = performance.now();
 
         try {
-            // Carica database Belfiore da GitHub Pages
+            // Carica database comuni italiani da GitHub Pages
             const response = await fetch('https://contattisilvestri.github.io/SIAF/DATA/belfiore-comuni.json');
 
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: Database non trovato su GitHub Pages. Verifica che il file belfiore-comuni.json sia stato caricato in /DATA/`);
+                throw new Error(`HTTP ${response.status}: Database comuni non trovato su GitHub Pages. Verifica che il file belfiore-comuni.json sia stato caricato in /DATA/`);
             }
 
             this.belfioreData = await response.json();
@@ -66,13 +67,30 @@ class CodiceFiscaleCalculator {
                 throw new Error('Database Belfiore vuoto o non valido');
             }
 
+            // Carica database paesi esteri (225 paesi + 20 alias città principali)
+            try {
+                const responsePaesi = await fetch('https://contattisilvestri.github.io/SIAF/DATA/belfiore-stati-esteri.json');
+                if (responsePaesi.ok) {
+                    this.paesiEsteriData = await responsePaesi.json();
+                    console.log(`🌍 Caricati ${this.paesiEsteriData.length} paesi esteri (con alias città)`);
+                } else {
+                    console.warn('⚠️ Database paesi esteri non trovato (opzionale)');
+                    this.paesiEsteriData = [];
+                }
+            } catch (e) {
+                console.warn('⚠️ Errore caricamento paesi esteri:', e.message);
+                this.paesiEsteriData = [];
+            }
+
             // Costruisci indici in-memory per lookup O(1)
             this.buildBelfioreIndex();
 
             this.isReady = true;
             const loadTime = (performance.now() - startTime).toFixed(2);
             console.log(`✅ CF Calculator ready in ${loadTime}ms`);
-            console.log(`   - Comuni indicizzati: ${this.belfioreIndex.byCode.size}`);
+            console.log(`   - Comuni italiani: ${this.belfioreData.length}`);
+            console.log(`   - Paesi esteri: ${this.paesiEsteriData.length}`);
+            console.log(`   - Totale indicizzati: ${this.belfioreIndex.byCode.size}`);
 
         } catch (error) {
             console.error('❌ Errore inizializzazione CF Calculator:', error);
@@ -84,6 +102,7 @@ class CodiceFiscaleCalculator {
      * Costruisce indici in-memory per lookup O(1)
      */
     buildBelfioreIndex() {
+        // Indicizza comuni italiani
         this.belfioreData.forEach(comune => {
             const code = comune.codiceCatastale;
             // Normalizza: lowercase + trim + rimuovi spazi multipli
@@ -100,11 +119,40 @@ class CodiceFiscaleCalculator {
             this.belfioreIndex.byName.get(name).push(comune);
 
             // Indice per provincia
-            if (!this.belfioreIndex.byProvince.has(province)) {
-                this.belfioreIndex.byProvince.set(province, []);
+            if (province) {
+                if (!this.belfioreIndex.byProvince.has(province)) {
+                    this.belfioreIndex.byProvince.set(province, []);
+                }
+                this.belfioreIndex.byProvince.get(province).push(comune);
             }
-            this.belfioreIndex.byProvince.get(province).push(comune);
         });
+
+        // Indicizza paesi esteri
+        if (this.paesiEsteriData && this.paesiEsteriData.length > 0) {
+            this.paesiEsteriData.forEach(paese => {
+                const code = paese.codiceCatastale;
+                const name = paese.nome.toLowerCase().trim().replace(/\s+/g, ' ');
+
+                // Indice per codice
+                this.belfioreIndex.byCode.set(code, {
+                    nome: paese.nome,
+                    codiceCatastale: code,
+                    sigla: 'EE',  // Estero
+                    tipo: 'estero'
+                });
+
+                // Indice per nome
+                if (!this.belfioreIndex.byName.has(name)) {
+                    this.belfioreIndex.byName.set(name, []);
+                }
+                this.belfioreIndex.byName.get(name).push({
+                    nome: paese.nome,
+                    codiceCatastale: code,
+                    sigla: 'EE',
+                    tipo: 'estero'
+                });
+            });
+        }
     }
 
     /**
@@ -217,22 +265,24 @@ class CodiceFiscaleCalculator {
 
         if (matches.length === 0) {
             // DEBUG: Mostra comuni simili per aiutare l'utente
-            console.warn(`❌ Comune "${cityName}" non trovato`);
+            console.warn(`❌ Comune/Paese "${cityName}" non trovato`);
             console.warn(`   Normalizzato come: "${normalizedCity}"`);
-            console.warn(`   Tot comuni in indice: ${this.belfioreIndex.byName.size}`);
+            console.warn(`   Tot luoghi in indice: ${this.belfioreIndex.byName.size}`);
 
-            // Cerca comuni che iniziano con le stesse lettere
+            // Cerca luoghi simili
             const similar = [];
-            for (const [name, comuni] of this.belfioreIndex.byName.entries()) {
-                if (name.startsWith(normalizedCity.substring(0, 10))) {
+            for (const [name, luoghi] of this.belfioreIndex.byName.entries()) {
+                if (name.startsWith(normalizedCity.substring(0, Math.min(10, normalizedCity.length)))) {
                     similar.push(name);
                 }
             }
             if (similar.length > 0) {
-                console.warn(`   Comuni simili trovati: ${similar.slice(0, 5).join(', ')}`);
+                console.warn(`   Luoghi simili trovati: ${similar.slice(0, 5).join(', ')}`);
             }
 
-            return { error: `Comune "${cityName}" non trovato nel database` };
+            return {
+                error: `Comune/Paese "${cityName}" non trovato. Per i nati all'estero, inserire il nome del PAESE (es. "Polonia", "Francia", "Germania") invece della città.`
+            };
         }
 
         if (matches.length === 1) {
