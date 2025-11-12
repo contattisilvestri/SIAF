@@ -5,11 +5,11 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 8,
-    patch: 2,
+    patch: 3,
     date: '12/11/2025',
-    time: '03:00',
-    description: 'Fix default cittadinanza Italia + campo Professione',
-    color: '#FF9500'  // iOS orange - data fields
+    time: '03:30',
+    description: 'Province con nome completo nei documenti (Verona invece di VR)',
+    color: '#5856D6'  // iOS purple - document formatting
 };
 
 class SiafApp {
