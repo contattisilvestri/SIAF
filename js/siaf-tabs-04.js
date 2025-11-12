@@ -5,7 +5,7 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 7,
-    patch: 0,
+    patch: 1,
     date: '03/11/2025',
     time: '19:00',
     description: 'Sezione finale template: Diritto Recesso, Osservazioni, Firme/Date',
@@ -734,7 +734,7 @@ class SiafApp {
 
     populateSingleVenditore(venditore) {
         const fields = [
-            'nome', 'cognome', 'sesso', 'stato_civile', 'luogo_nascita', 'data_nascita',
+            'nome', 'cognome', 'sesso', 'stato_civile', 'regime_patrimoniale', 'luogo_nascita', 'data_nascita',
             'codice_fiscale', 'tipo_documento', 'numero_documento', 'data_rilascio',
             'data_scadenza', 'indirizzo', 'citta', 'provincia', 'telefono1', 'telefono2', 'email1', 'email2'
         ];
@@ -1217,6 +1217,7 @@ addVenditore() {
         data_scadenza: '',
         cittadinanza: 'Italiana',
         stato_civile: '',
+        regime_patrimoniale: '',
         indirizzo: '',
         citta: '',
         provincia: '',
@@ -1302,6 +1303,19 @@ renderVenditore(venditore) {
                                 <option value="vedova" ${venditore.stato_civile === 'vedova' ? 'selected' : ''}>Vedova</option>
                                 <option value="divorziato" ${venditore.stato_civile === 'divorziato' ? 'selected' : ''}>Divorziato/a</option>
                             </select>
+                        </div>
+                    </div>
+
+                    <!-- Campo condizionale: Regime Patrimoniale (solo se coniugato) -->
+                    <div id="regime-patrimoniale-${venditore.id}" class="conditional-fields" style="display: none;">
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_regime_patrimoniale">Regime Patrimoniale</label>
+                            <select id="venditore_${venditore.id}_regime_patrimoniale">
+                                <option value="">Seleziona...</option>
+                                <option value="comunione" ${venditore.regime_patrimoniale === 'comunione' ? 'selected' : ''}>Comunione dei beni</option>
+                                <option value="separazione" ${venditore.regime_patrimoniale === 'separazione' ? 'selected' : ''}>Separazione dei beni</option>
+                            </select>
+                            <small class="field-hint">Specificare il regime patrimoniale del matrimonio</small>
                         </div>
                     </div>
 
@@ -1402,6 +1416,34 @@ renderVenditore(venditore) {
     
     container.insertAdjacentHTML('beforeend', venditoreHtml);
     console.log(`✅ Venditore ${venditore.id} renderizzato`);
+
+    // Logica condizionale: mostra/nascondi regime patrimoniale in base a stato civile
+    setTimeout(() => {
+        const statoCivileSelect = document.getElementById(`venditore_${venditore.id}_stato_civile`);
+        const regimeSection = document.getElementById(`regime-patrimoniale-${venditore.id}`);
+
+        if (statoCivileSelect && regimeSection) {
+            // Funzione per mostrare/nascondere regime patrimoniale
+            const toggleRegimePatrimoniale = () => {
+                const isConiugato = statoCivileSelect.value === 'coniugato';
+                regimeSection.style.display = isConiugato ? 'block' : 'none';
+
+                // Reset del campo se non più coniugato
+                if (!isConiugato) {
+                    const regimeSelect = document.getElementById(`venditore_${venditore.id}_regime_patrimoniale`);
+                    if (regimeSelect) regimeSelect.value = '';
+                }
+            };
+
+            // Listener per cambio stato civile
+            statoCivileSelect.addEventListener('change', toggleRegimePatrimoniale);
+
+            // Trigger iniziale per stato corrente
+            toggleRegimePatrimoniale();
+
+            console.log(`✅ Logica regime patrimoniale attivata per venditore ${venditore.id}`);
+        }
+    }, 100);
 }
 
     // ========== BLOCCO 5: GESTIONE SALVATAGGIO ==========
