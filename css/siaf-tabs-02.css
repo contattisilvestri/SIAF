@@ -665,6 +665,36 @@ input:invalid, select:invalid {
     left: calc(50% + 0px);
 }
 
+/* VARIANTE: Tipo Soggetto (3 opzioni: Privato | Ditta | Società) */
+.segmented-control.tipo-soggetto-control {
+    width: 300px;
+    margin-left: 16px;
+}
+
+.segmented-control.tipo-soggetto-control label {
+    flex: 1;
+    min-width: 95px;
+}
+
+.segmented-control.tipo-soggetto-control .segmented-control-slider {
+    width: calc(33.333% - 1.33px);
+}
+
+/* Prima opzione (Privato) checked */
+.segmented-control.tipo-soggetto-control input:nth-of-type(1):checked ~ .segmented-control-slider {
+    left: 2px;
+}
+
+/* Seconda opzione (Ditta) checked */
+.segmented-control.tipo-soggetto-control input:nth-of-type(2):checked ~ .segmented-control-slider {
+    left: calc(33.333% + 0.67px);
+}
+
+/* Terza opzione (Società) checked */
+.segmented-control.tipo-soggetto-control input:nth-of-type(3):checked ~ .segmented-control-slider {
+    left: calc(66.666% + 1.33px);
+}
+
 /* Campo autocomplete cittadinanza */
 .cittadinanza-field {
     margin-top: 12px;
@@ -708,6 +738,126 @@ input:invalid, select:invalid {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* ========== PERMESSO DI SOGGIORNO ========== */
+
+.permesso-soggiorno-section {
+    animation: slideDown 0.3s ease;
+}
+
+.permesso-soggiorno-section h4 {
+    color: #34C759;
+    margin-bottom: 16px;
+}
+
+/* ========== FORM SWITCHING: PRIVATO / DITTA / SOCIETÀ ========== */
+
+/* Header con titolo + tipo soggetto */
+.venditore-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.venditore-header h3 {
+    margin: 0;
+}
+
+/* Form containers */
+.form-tipo-privato,
+.form-tipo-ditta,
+.form-tipo-societa {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.form-tipo-privato.active,
+.form-tipo-ditta.active,
+.form-tipo-societa.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========== SOTTOSEZIONI SOCIETÀ ========== */
+
+/* Sottosezione Società-amministratore */
+.societa-amministratore-section {
+    background: #f8f9fa;
+    border-left: 4px solid #FF9500;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.societa-amministratore-section h5 {
+    color: #FF9500;
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 16px 0;
+}
+
+/* Sottosezione Designato */
+.designato-section {
+    background: #fff3e0;
+    border-left: 4px solid #FF6B35;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.designato-section h5 {
+    color: #FF6B35;
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 16px 0;
+}
+
+/* Checkbox domicilio per la carica */
+.domicilio-carica-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.domicilio-carica-toggle input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.domicilio-carica-toggle label {
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0066cc;
+    margin: 0;
+}
+
+.domicilio-carica-fields {
+    display: none;
+    animation: slideDown 0.3s ease;
+}
+
+.domicilio-carica-fields.active {
+    display: block;
+}
+
+/* Utility class */
+.hidden {
+    display: none !important;
 }
 
 /* ========== CODICE FISCALE: CALCOLO AUTOMATICO ========== */
