@@ -5,11 +5,11 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 7,
-    patch: 3,
+    patch: 4,
     date: '12/11/2025',
-    time: '21:30',
-    description: 'Sistema Regime Patrimoniale con auto-add coniuge + chip button toggle',
-    color: '#E91E63'  // Rosa - regime patrimoniale
+    time: '22:00',
+    description: 'Generi corretti nel templating + regime patrimoniale nei documenti',
+    color: '#9C27B0'  // Viola - templating avanzato
 };
 
 class SiafApp {
