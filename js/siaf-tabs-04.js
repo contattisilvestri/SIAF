@@ -5,11 +5,11 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 8,
-    patch: 1,
+    patch: 2,
     date: '12/11/2025',
-    time: '02:30',
-    description: 'Permesso di soggiorno condizionale per cittadinanza estera',
-    color: '#34C759'  // iOS green - document feature
+    time: '03:00',
+    description: 'Fix default cittadinanza Italia + campo Professione',
+    color: '#FF9500'  // iOS orange - data fields
 };
 
 class SiafApp {
@@ -1223,7 +1223,8 @@ addVenditore() {
         numero_documento: '',
         data_rilascio: '',
         data_scadenza: '',
-        cittadinanza: 'Italiana',
+        cittadinanza: 'italiana',
+        professione: '',
         stato_civile: '',
         regime_patrimoniale: '',
         specificare_regime: false,
@@ -1826,41 +1827,51 @@ renderVenditore(venditore) {
                         </div>
                     </div>
 
-                    <!-- Cittadinanza: Segmented Control iOS-style -->
-                    <div class="field-group">
-                        <label>Cittadinanza</label>
-                        <div class="segmented-control cittadinanza-control">
-                            <input type="radio"
-                                   name="venditore_${venditore.id}_cittadinanza_tipo"
-                                   id="venditore_${venditore.id}_citt_italia"
-                                   value="italia"
-                                   ${(!venditore.cittadinanza || venditore.cittadinanza === 'italiana') ? 'checked' : ''}
-                                   data-venditore-id="${venditore.id}">
-                            <label for="venditore_${venditore.id}_citt_italia">Italia</label>
+                    <!-- Cittadinanza | Professione -->
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label>Cittadinanza</label>
+                            <div class="segmented-control cittadinanza-control">
+                                <input type="radio"
+                                       name="venditore_${venditore.id}_cittadinanza_tipo"
+                                       id="venditore_${venditore.id}_citt_italia"
+                                       value="italia"
+                                       ${(!venditore.cittadinanza || venditore.cittadinanza === 'italiana') ? 'checked' : ''}
+                                       data-venditore-id="${venditore.id}">
+                                <label for="venditore_${venditore.id}_citt_italia">Italia</label>
 
-                            <input type="radio"
-                                   name="venditore_${venditore.id}_cittadinanza_tipo"
-                                   id="venditore_${venditore.id}_citt_estero"
-                                   value="estero"
-                                   ${(venditore.cittadinanza && venditore.cittadinanza !== 'italiana') ? 'checked' : ''}
-                                   data-venditore-id="${venditore.id}">
-                            <label for="venditore_${venditore.id}_citt_estero">Estero</label>
+                                <input type="radio"
+                                       name="venditore_${venditore.id}_cittadinanza_tipo"
+                                       id="venditore_${venditore.id}_citt_estero"
+                                       value="estero"
+                                       ${(venditore.cittadinanza && venditore.cittadinanza !== 'italiana') ? 'checked' : ''}
+                                       data-venditore-id="${venditore.id}">
+                                <label for="venditore_${venditore.id}_citt_estero">Estero</label>
 
-                            <div class="segmented-control-slider"></div>
+                                <div class="segmented-control-slider"></div>
+                            </div>
+
+                            <!-- Campo autocomplete (nascosto se Italia è selezionato) -->
+                            <div class="cittadinanza-field"
+                                 id="cittadinanza-field-${venditore.id}"
+                                 style="display: ${(!venditore.cittadinanza || venditore.cittadinanza === 'italiana') ? 'none' : 'block'}">
+                                <input type="text"
+                                       id="venditore_${venditore.id}_cittadinanza_custom"
+                                       list="paesi-cittadinanza-list"
+                                       value="${venditore.cittadinanza && venditore.cittadinanza !== 'italiana' ? venditore.cittadinanza : ''}"
+                                       placeholder="Digita il paese di cittadinanza..."
+                                       autocomplete="off">
+                                <datalist id="paesi-cittadinanza-list"></datalist>
+                                <small class="field-hint">Inizia a digitare per vedere i suggerimenti</small>
+                            </div>
                         </div>
 
-                        <!-- Campo autocomplete (nascosto se Italia è selezionato) -->
-                        <div class="cittadinanza-field"
-                             id="cittadinanza-field-${venditore.id}"
-                             style="display: ${(!venditore.cittadinanza || venditore.cittadinanza === 'italiana') ? 'none' : 'block'}">
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_professione">Professione</label>
                             <input type="text"
-                                   id="venditore_${venditore.id}_cittadinanza_custom"
-                                   list="paesi-cittadinanza-list"
-                                   value="${venditore.cittadinanza && venditore.cittadinanza !== 'italiana' ? venditore.cittadinanza : ''}"
-                                   placeholder="Digita il paese di cittadinanza..."
-                                   autocomplete="off">
-                            <datalist id="paesi-cittadinanza-list"></datalist>
-                            <small class="field-hint">Inizia a digitare per vedere i suggerimenti</small>
+                                   id="venditore_${venditore.id}_professione"
+                                   value="${venditore.professione || ''}"
+                                   placeholder="Es. Impiegato, Commerciante...">
                         </div>
                     </div>
 
@@ -2357,6 +2368,7 @@ renderVenditore(venditore) {
                 email1: document.getElementById(`venditore_${venditore.id}_email1`)?.value || '',
                 email2: document.getElementById(`venditore_${venditore.id}_email2`)?.value || '',
                 cittadinanza: cittadinanza,
+                professione: document.getElementById(`venditore_${venditore.id}_professione`)?.value || '',
                 // Permesso di soggiorno (solo se cittadinanza estera)
                 permesso_tipo: document.getElementById(`venditore_${venditore.id}_permesso_tipo`)?.value || '',
                 permesso_numero: document.getElementById(`venditore_${venditore.id}_permesso_numero`)?.value || '',
