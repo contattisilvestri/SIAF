@@ -1,14 +1,14 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.13.4-FINAL-2025-11-13-18:15
+// 🚀 VERSION: SIAF-v2.13.5-FINAL-2025-11-13-18:30
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
     minor: 13,
-    patch: 4,
+    patch: 5,
     date: '13/11/2025',
-    time: '18:15',
-    description: 'Fix calcolo CF: aggiornato per leggere nuovi campi nascita (comune/stato + toggle)',
+    time: '18:30',
+    description: 'Fix cittadinanza: applica conversione STATO→cittadinanza in collectAllFormData',
     color: '#007AFF'  // iOS blue - new feature
 };
 
@@ -3972,7 +3972,8 @@ renderVenditore(venditore) {
                 const cittItaliaRadio = document.getElementById(`venditore_${venditore.id}_citt_italia`);
                 const isItalia = cittItaliaRadio?.checked || false;
                 const cittadinanzaCustom = document.getElementById(`venditore_${venditore.id}_cittadinanza_custom`)?.value || '';
-                const cittadinanza = isItalia ? 'italiana' : (cittadinanzaCustom || '');
+                // Applica conversione STATO → cittadinanza (es: "FRANCIA" → "francese")
+                const cittadinanza = isItalia ? 'italiana' : (cittadinanzaCustom ? this.convertStatoToCittadinanza(cittadinanzaCustom) : '');
 
                 // Leggi luogo nascita con toggle Italia/Estero
                 const natoItaliaRadio = document.getElementById(`venditore_${venditore.id}_nato_italia`);
@@ -4029,7 +4030,8 @@ renderVenditore(venditore) {
                 const titolareCittItaliaRadio = document.getElementById(`venditore_${venditore.id}_titolare_citt_italia`);
                 const isItaliaTitolare = titolareCittItaliaRadio?.checked !== false;
                 const titolareCittadinanzaCustom = document.getElementById(`venditore_${venditore.id}_titolare_cittadinanza_custom`)?.value || '';
-                const titolareCittadinanza = isItaliaTitolare ? 'italiana' : titolareCittadinanzaCustom;
+                // Applica conversione STATO → cittadinanza
+                const titolareCittadinanza = isItaliaTitolare ? 'italiana' : (titolareCittadinanzaCustom ? this.convertStatoToCittadinanza(titolareCittadinanzaCustom) : '');
 
                 // Leggi luogo nascita titolare con toggle Italia/Estero
                 const titolareNatoItaliaRadio = document.getElementById(`venditore_${venditore.id}_titolare_nato_italia`);
@@ -4114,7 +4116,8 @@ renderVenditore(venditore) {
                     const rappresentanteCittItaliaRadio = document.getElementById(`venditore_${venditore.id}_rappresentante_citt_italia`);
                     const isItaliaRappresentante = rappresentanteCittItaliaRadio?.checked !== false;
                     const rappresentanteCittadinanzaCustom = document.getElementById(`venditore_${venditore.id}_rappresentante_cittadinanza_custom`)?.value || '';
-                    const rappresentanteCittadinanza = isItaliaRappresentante ? 'italiana' : rappresentanteCittadinanzaCustom;
+                    // Applica conversione STATO → cittadinanza
+                    const rappresentanteCittadinanza = isItaliaRappresentante ? 'italiana' : (rappresentanteCittadinanzaCustom ? this.convertStatoToCittadinanza(rappresentanteCittadinanzaCustom) : '');
 
                     // Leggi luogo nascita rappresentante con toggle Italia/Estero
                     const rappresentanteNatoItaliaRadio = document.getElementById(`venditore_${venditore.id}_rappresentante_nato_italia`);
@@ -4154,7 +4157,8 @@ renderVenditore(venditore) {
                     const designatoCittItaliaRadio = document.getElementById(`venditore_${venditore.id}_designato_citt_italia`);
                     const isItaliaDesignato = designatoCittItaliaRadio?.checked !== false;
                     const designatoCittadinanzaCustom = document.getElementById(`venditore_${venditore.id}_designato_cittadinanza_custom`)?.value || '';
-                    const designatoCittadinanza = isItaliaDesignato ? 'italiana' : designatoCittadinanzaCustom;
+                    // Applica conversione STATO → cittadinanza
+                    const designatoCittadinanza = isItaliaDesignato ? 'italiana' : (designatoCittadinanzaCustom ? this.convertStatoToCittadinanza(designatoCittadinanzaCustom) : '');
 
                     // Leggi luogo nascita designato con toggle Italia/Estero
                     const designatoNatoItaliaRadio = document.getElementById(`venditore_${venditore.id}_designato_nato_italia`);
