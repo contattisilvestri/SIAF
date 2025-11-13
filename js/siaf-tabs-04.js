@@ -1,21 +1,15 @@
-// ═══════════════════════════════════════════════════════════════════
-// 🔥 TEST CARICAMENTO FILE - Se vedi questo, il file viene eseguito!
-// ═══════════════════════════════════════════════════════════════════
-console.log('%c🔥🔥🔥 SIAF-TABS-04.JS CARICATO! 🔥🔥🔥', 'background: #FF0000; color: #FFFFFF; font-size: 20px; font-weight: bold; padding: 10px;');
-console.log('%c⏰ Timestamp caricamento:', 'font-weight: bold', new Date().toISOString());
-
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.3.15-FINAL-2025-11-03-19:00
+// 🚀 VERSION: SIAF-v2.10.0-FINAL-2025-11-13-10:10
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
-    minor: 9,
-    patch: 4,
-    date: '12/11/2025',
-    time: '19:30',
-    description: 'Hotfix: Regex fix per WordPress, protezione doppia inizializzazione, anti-crash',
-    color: '#FF3B30'  // iOS red - critical fix
+    minor: 10,
+    patch: 0,
+    date: '13/11/2025',
+    time: '10:10',
+    description: 'Fix caricamento WordPress async + Sistema debug completo + Performance ottimizzata',
+    color: '#34C759'  // iOS green - major fix
 };
 
 class SiafApp {
@@ -6689,11 +6683,7 @@ function calcolaValoriCondizioni(condizioni) {
 }
 
 // BLOCCO 7: Inizializzazione app quando DOM è pronto
-console.log('%c🎯 REGISTRAZIONE LISTENER DOMContentLoaded...', 'background: #FF00FF; color: white; font-size: 16px; padding: 5px;');
-console.log('%c📌 document.readyState:', 'font-weight: bold', document.readyState);
-
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('%c🚨🚨🚨 DOMContentLoaded TRIGGERED! 🚨🚨🚨', 'background: #00FF00; color: #000; font-size: 18px; font-weight: bold; padding: 10px;');
     const appStartTime = Date.now();
 
     console.log('%c╔═══════════════════════════════════════════════════════════╗', 'color: #00BFFF; font-weight: bold');
@@ -6782,16 +6772,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
-// FALLBACK: Se il DOM è già pronto quando il file viene caricato, esegui immediatamente
-console.log('%c🔍 CONTROLLO FALLBACK: document.readyState dopo registrazione listener:', 'background: #FFA500; color: white; font-size: 14px; padding: 5px;');
-console.log('%c📌 document.readyState =', 'font-weight: bold', document.readyState);
-
-if (document.readyState === 'loading') {
-    console.log('%c✅ DOM ancora in loading - Listener DOMContentLoaded gestirà l\'inizializzazione', 'background: #4CAF50; color: white; padding: 5px;');
-} else {
-    console.log('%c⚠️ DOM GIÀ PRONTO! DOMContentLoaded non si triggerà mai!', 'background: #FF0000; color: white; font-size: 16px; font-weight: bold; padding: 10px;');
-    console.log('%c🚀 ESEGUO INIZIALIZZAZIONE IMMEDIATA (FALLBACK)', 'background: #FF9800; color: white; font-size: 14px; padding: 5px;');
-
+// FALLBACK: Se il DOM è già pronto quando il file viene caricato (script async), esegui immediatamente
+if (document.readyState !== 'loading') {
+    // DOM già pronto - WordPress ha caricato lo script in modo asincrono
     // Trigger manuale dell'evento per eseguire il listener
     const event = new Event('DOMContentLoaded');
     document.dispatchEvent(event);
