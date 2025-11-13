@@ -1561,6 +1561,250 @@ input:invalid, select:invalid {
   padding: 12px;
 }
 
+/* ===============================
+   TABELLA VENDITORI E QUOTE DI POSSESSO
+================================ */
+
+/* Container wrapper */
+.venditori-quote-table {
+  margin-top: 16px;
+}
+
+/* Tabella principale */
+.venditori-quote-table-content {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Header tabella */
+.venditori-quote-table-content thead {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.venditori-quote-table-content th {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 700;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #dee2e6;
+}
+
+/* Colonne responsive */
+.venditori-quote-table-content th:nth-child(1) {
+  width: auto; /* Flex */
+}
+
+.venditori-quote-table-content th:nth-child(2) {
+  width: 140px;
+}
+
+.venditori-quote-table-content th:nth-child(3) {
+  width: 220px;
+}
+
+/* Body righe */
+.venditori-quote-table-content tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.2s ease;
+}
+
+.venditori-quote-table-content tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.venditori-quote-table-content tbody tr:last-child {
+  border-bottom: none;
+}
+
+.venditori-quote-table-content td {
+  padding: 16px;
+  vertical-align: middle;
+  font-size: 14px;
+  color: #495057;
+}
+
+.venditori-quote-table-content td strong {
+  font-weight: 600;
+  color: #0f172a;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Input quota nella cella */
+.venditori-quote-table-content .quota-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 2px solid #e9ecef;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.2s ease;
+  background: #ffffff;
+}
+
+.venditori-quote-table-content .quota-input:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+  background: #f0f7ff;
+}
+
+.venditori-quote-table-content .quota-input::-webkit-inner-spin-button,
+.venditori-quote-table-content .quota-input::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+/* Dropdown natura nella cella */
+.venditori-quote-table-content .natura-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 2px solid #e9ecef;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.venditori-quote-table-content .natura-input:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+/* Badge coniuge small (tabella) */
+.badge-coniuge-small {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 10px;
+  margin-left: 8px;
+  box-shadow: 0 2px 6px rgba(255, 107, 157, 0.25);
+  letter-spacing: 0.3px;
+  vertical-align: middle;
+}
+
+/* Alert validazione quote */
+.quota-totale {
+  margin-top: 12px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  border-left: 4px solid;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.quota-totale.valida {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  color: #155724;
+  border-color: #28a745;
+}
+
+.quota-totale.vuota {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+  color: #856404;
+  border-color: #ffc107;
+}
+
+.quota-totale.invalida {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  color: #721c24;
+  border-color: #dc3545;
+}
+
+.quota-totale span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Empty state */
+.venditori-quote-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+  font-size: 14px;
+  font-style: italic;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .venditori-quote-table-content th:nth-child(2),
+  .venditori-quote-table-content th:nth-child(3) {
+    width: auto;
+  }
+
+  .venditori-quote-table-content th,
+  .venditori-quote-table-content td {
+    padding: 12px 10px;
+    font-size: 13px;
+  }
+
+  .venditori-quote-table-content .quota-input,
+  .venditori-quote-table-content .natura-input {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Stacking verticale per mobile */
+  .venditori-quote-table-content,
+  .venditori-quote-table-content thead,
+  .venditori-quote-table-content tbody,
+  .venditori-quote-table-content th,
+  .venditori-quote-table-content td,
+  .venditori-quote-table-content tr {
+    display: block;
+  }
+
+  .venditori-quote-table-content thead {
+    display: none;
+  }
+
+  .venditori-quote-table-content tbody tr {
+    margin-bottom: 16px;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .venditori-quote-table-content td {
+    padding: 8px 0;
+    border: none;
+  }
+
+  .venditori-quote-table-content td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    display: block;
+    margin-bottom: 6px;
+    color: #6c757d;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+}
+
 /* Dropdown provincie e comuni */
 select[id*="_provincia"],
 select[id*="_comune"] {

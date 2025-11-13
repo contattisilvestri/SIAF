@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.12.0-FINAL-2025-11-13-13:30
+// 🚀 VERSION: SIAF-v2.12.1-FINAL-2025-11-13-14:00
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
     minor: 12,
-    patch: 0,
+    patch: 1,
     date: '13/11/2025',
-    time: '13:30',
-    description: 'Rimossa sezione Intestatari (sostituita da Venditori e Quote di Possesso)',
-    color: '#FF3B30'  // iOS red - breaking change / removal
+    time: '14:00',
+    description: 'Normalizzazione design tabella Venditori e Quote (Apple-style)',
+    color: '#5AC8FA'  // iOS cyan - UI improvements
 };
 
 class SiafApp {
@@ -5115,7 +5115,7 @@ renderVenditore(venditore) {
 
     renderVenditoriQuote(immobile) {
         if (this.venditori.length === 0) {
-            return '<p style="color: #999; text-align: center; padding: 20px;">Aggiungi almeno un venditore per specificare le quote</p>';
+            return '<div class="venditori-quote-empty">Aggiungi almeno un venditore per specificare le quote</div>';
         }
 
         // Calcola somma quote
@@ -5127,13 +5127,28 @@ renderVenditore(venditore) {
         const quotaValida = sommaQuote === 100;
         const quotaVuota = sommaQuote === 0;
 
+        // Determina classe CSS per alert
+        let alertClass = 'invalida';
+        let alertIcon = '⚠️';
+        let alertText = `Totale quote: ${sommaQuote.toFixed(2)}% (deve essere 100%)`;
+
+        if (quotaValida) {
+            alertClass = 'valida';
+            alertIcon = '✅';
+            alertText = `Totale quote: ${sommaQuote.toFixed(2)}%`;
+        } else if (quotaVuota) {
+            alertClass = 'vuota';
+            alertIcon = '⚠️';
+            alertText = `Totale quote: ${sommaQuote.toFixed(2)}% (specificare le quote)`;
+        }
+
         return `
             <table class="venditori-quote-table-content">
                 <thead>
                     <tr>
                         <th>Venditore</th>
-                        <th style="width: 120px;">Quota %</th>
-                        <th style="width: 200px;">Natura del Diritto</th>
+                        <th>Quota %</th>
+                        <th>Natura del Diritto</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -5145,11 +5160,11 @@ renderVenditore(venditore) {
 
                         return `
                             <tr>
-                                <td>
+                                <td data-label="Venditore">
                                     <strong>👤 ${nomeCompleto}</strong>
-                                    ${venditore.isConiuge ? '<span class="badge-coniuge-small" style="font-size: 11px; margin-left: 8px;">💍</span>' : ''}
+                                    ${venditore.isConiuge ? '<span class="badge-coniuge-small">💍 Coniuge</span>' : ''}
                                 </td>
-                                <td>
+                                <td data-label="Quota %">
                                     <input type="number"
                                            id="quota_${immobile.id}_${vq.venditore_id}"
                                            class="quota-input"
@@ -5160,7 +5175,7 @@ renderVenditore(venditore) {
                                            step="0.01"
                                            onchange="window.siafApp.updateVenditoreQuota(${immobile.id}, ${vq.venditore_id}, 'quota_percentuale', this.value)">
                                 </td>
-                                <td>
+                                <td data-label="Natura del Diritto">
                                     <select id="natura_${immobile.id}_${vq.venditore_id}"
                                             class="natura-input"
                                             onchange="window.siafApp.updateVenditoreQuota(${immobile.id}, ${vq.venditore_id}, 'natura_diritto', this.value)">
@@ -5175,13 +5190,8 @@ renderVenditore(venditore) {
                     }).join('')}
                 </tbody>
             </table>
-            <div class="quota-totale" style="margin-top: 12px; padding: 12px; background: ${quotaValida ? '#d4edda' : quotaVuota ? '#fff3cd' : '#f8d7da'}; border-radius: 6px; text-align: center;">
-                ${quotaValida ?
-                    `<span style="color: #155724; font-weight: bold;">✅ Totale quote: ${sommaQuote.toFixed(2)}%</span>` :
-                    quotaVuota ?
-                    `<span style="color: #856404; font-weight: bold;">⚠️ Totale quote: ${sommaQuote.toFixed(2)}% (specificare le quote)</span>` :
-                    `<span style="color: #721c24; font-weight: bold;">⚠️ Totale quote: ${sommaQuote.toFixed(2)}% (deve essere 100%)</span>`
-                }
+            <div class="quota-totale ${alertClass}">
+                <span>${alertIcon} ${alertText}</span>
             </div>
         `;
     }
