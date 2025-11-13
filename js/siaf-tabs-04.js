@@ -5,7 +5,7 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 9,
-    patch: 3,
+    patch: 4,
     date: '12/11/2025',
     time: '19:30',
     description: 'Hotfix: Regex fix per WordPress, protezione doppia inizializzazione, anti-crash',
