@@ -1,14 +1,14 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.13.0-FINAL-2025-11-13-16:00
+// 🚀 VERSION: SIAF-v2.13.1-FINAL-2025-11-13-17:00
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
     minor: 13,
-    patch: 0,
+    patch: 1,
     date: '13/11/2025',
-    time: '16:00',
-    description: 'Luogo nascita Italia/Estero con toggle e campi multipli',
+    time: '17:00',
+    description: 'Layout migliorato: toggle nascita a fianco sesso, comune sempre visibile',
     color: '#007AFF'  // iOS blue - new feature
 };
 
@@ -2184,34 +2184,33 @@ renderVenditore(venditore) {
                         </div>
                     </div>
 
-                    <!-- Sesso: Segmented Control iOS-style -->
-                    <div class="field-group">
-                        <label>Sesso</label>
-                        <div class="segmented-control sesso-control">
-                            <input type="radio"
-                                   name="venditore_${venditore.id}_sesso"
-                                   id="venditore_${venditore.id}_sesso_m"
-                                   value="M"
-                                   ${venditore.sesso === 'M' || !venditore.sesso ? 'checked' : ''}
-                                   data-venditore-id="${venditore.id}">
-                            <label for="venditore_${venditore.id}_sesso_m">Maschio</label>
-
-                            <input type="radio"
-                                   name="venditore_${venditore.id}_sesso"
-                                   id="venditore_${venditore.id}_sesso_f"
-                                   value="F"
-                                   ${venditore.sesso === 'F' ? 'checked' : ''}
-                                   data-venditore-id="${venditore.id}">
-                            <label for="venditore_${venditore.id}_sesso_f">Femmina</label>
-
-                            <div class="segmented-control-slider"></div>
-                        </div>
-                    </div>
-
-                    <!-- Luogo Nascita | Data Nascita -->
+                    <!-- Sesso | Nato in -->
                     <div class="field-row">
                         <div class="field-group">
-                            <label>Luogo di Nascita</label>
+                            <label>Sesso</label>
+                            <div class="segmented-control sesso-control">
+                                <input type="radio"
+                                       name="venditore_${venditore.id}_sesso"
+                                       id="venditore_${venditore.id}_sesso_m"
+                                       value="M"
+                                       ${venditore.sesso === 'M' || !venditore.sesso ? 'checked' : ''}
+                                       data-venditore-id="${venditore.id}">
+                                <label for="venditore_${venditore.id}_sesso_m">Maschio</label>
+
+                                <input type="radio"
+                                       name="venditore_${venditore.id}_sesso"
+                                       id="venditore_${venditore.id}_sesso_f"
+                                       value="F"
+                                       ${venditore.sesso === 'F' ? 'checked' : ''}
+                                       data-venditore-id="${venditore.id}">
+                                <label for="venditore_${venditore.id}_sesso_f">Femmina</label>
+
+                                <div class="segmented-control-slider"></div>
+                            </div>
+                        </div>
+
+                        <div class="field-group">
+                            <label>Nato in</label>
                             <div class="segmented-control nascita-control">
                                 <input type="radio"
                                        name="venditore_${venditore.id}_nato_tipo"
@@ -2231,43 +2230,38 @@ renderVenditore(venditore) {
 
                                 <div class="segmented-control-slider"></div>
                             </div>
+                        </div>
+                    </div>
 
-                            <!-- Campo Italia: Comune -->
-                            <div class="nascita-italia-field"
-                                 id="nascita-italia-field-${venditore.id}"
-                                 style="display: ${venditore.nato_italia !== false ? 'block' : 'none'}">
-                                <input type="text"
-                                       id="venditore_${venditore.id}_luogo_nascita_comune"
-                                       value="${venditore.luogo_nascita_comune || ''}"
-                                       placeholder="Comune di nascita (es: BERGAMO)"
-                                       autocomplete="off">
-                                <small class="field-hint">Inserisci il comune per il calcolo del CF</small>
-                            </div>
-
-                            <!-- Campo Estero: Città + Stato -->
-                            <div class="nascita-estero-field"
-                                 id="nascita-estero-field-${venditore.id}"
-                                 style="display: ${venditore.nato_italia === false ? 'block' : 'none'}">
-                                <input type="text"
-                                       id="venditore_${venditore.id}_luogo_nascita_citta"
-                                       value="${venditore.luogo_nascita_citta || ''}"
-                                       placeholder="Città di nascita (es: PARIGI)"
-                                       autocomplete="off"
-                                       style="margin-bottom: 8px;">
-                                <input type="text"
-                                       id="venditore_${venditore.id}_luogo_nascita_stato"
-                                       list="stati-esteri-list"
-                                       value="${venditore.luogo_nascita_stato || ''}"
-                                       placeholder="Stato (es: FRANCIA)"
-                                       autocomplete="off">
-                                <small class="field-hint">Lo stato è obbligatorio per il calcolo del CF</small>
-                            </div>
+                    <!-- Comune di Nascita | Data Nascita -->
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_luogo_nascita_comune">Comune di Nascita</label>
+                            <input type="text"
+                                   id="venditore_${venditore.id}_luogo_nascita_comune"
+                                   value="${venditore.luogo_nascita_comune || ''}"
+                                   placeholder="Comune di nascita (es: BERGAMO)"
+                                   autocomplete="off">
                         </div>
 
                         <div class="field-group">
                             <label for="venditore_${venditore.id}_data_nascita">Data di Nascita</label>
                             <input type="date" id="venditore_${venditore.id}_data_nascita" value="${venditore.data_nascita}">
                         </div>
+                    </div>
+
+                    <!-- Stato estero (visibile solo se Estero selezionato) -->
+                    <div class="field-group"
+                         id="nascita-estero-field-${venditore.id}"
+                         style="display: ${venditore.nato_italia === false ? 'block' : 'none'}">
+                        <label for="venditore_${venditore.id}_luogo_nascita_stato">Stato di Nascita</label>
+                        <input type="text"
+                               id="venditore_${venditore.id}_luogo_nascita_stato"
+                               list="stati-esteri-list"
+                               value="${venditore.luogo_nascita_stato || ''}"
+                               placeholder="Stato estero (es: FRANCIA)"
+                               autocomplete="off">
+                        <small class="field-hint">Obbligatorio per il calcolo del CF</small>
                     </div>
 
                     <!-- Cittadinanza | Professione -->
@@ -2526,24 +2520,23 @@ renderVenditore(venditore) {
                         </div>
                     </div>
 
-                    <!-- Sesso -->
-                    <div class="field-group">
-                        <label>Sesso</label>
-                        <div class="segmented-control sesso-control">
-                            <input type="radio" name="venditore_${venditore.id}_titolare_sesso" id="venditore_${venditore.id}_titolare_sesso_m" value="M" ${!venditore.titolare_sesso || venditore.titolare_sesso === 'M' ? 'checked' : ''}>
-                            <label for="venditore_${venditore.id}_titolare_sesso_m">Maschio</label>
-
-                            <input type="radio" name="venditore_${venditore.id}_titolare_sesso" id="venditore_${venditore.id}_titolare_sesso_f" value="F" ${venditore.titolare_sesso === 'F' ? 'checked' : ''}>
-                            <label for="venditore_${venditore.id}_titolare_sesso_f">Femmina</label>
-
-                            <div class="segmented-control-slider"></div>
-                        </div>
-                    </div>
-
-                    <!-- Luogo nascita | Data nascita -->
+                    <!-- Sesso | Nato in -->
                     <div class="field-row">
                         <div class="field-group">
-                            <label>Luogo di Nascita</label>
+                            <label>Sesso</label>
+                            <div class="segmented-control sesso-control">
+                                <input type="radio" name="venditore_${venditore.id}_titolare_sesso" id="venditore_${venditore.id}_titolare_sesso_m" value="M" ${!venditore.titolare_sesso || venditore.titolare_sesso === 'M' ? 'checked' : ''}>
+                                <label for="venditore_${venditore.id}_titolare_sesso_m">Maschio</label>
+
+                                <input type="radio" name="venditore_${venditore.id}_titolare_sesso" id="venditore_${venditore.id}_titolare_sesso_f" value="F" ${venditore.titolare_sesso === 'F' ? 'checked' : ''}>
+                                <label for="venditore_${venditore.id}_titolare_sesso_f">Femmina</label>
+
+                                <div class="segmented-control-slider"></div>
+                            </div>
+                        </div>
+
+                        <div class="field-group">
+                            <label>Nato in</label>
                             <div class="segmented-control nascita-control">
                                 <input type="radio"
                                        name="venditore_${venditore.id}_titolare_nato_tipo"
@@ -2565,43 +2558,38 @@ renderVenditore(venditore) {
 
                                 <div class="segmented-control-slider"></div>
                             </div>
+                        </div>
+                    </div>
 
-                            <!-- Campo Italia: Comune -->
-                            <div class="nascita-italia-field"
-                                 id="nascita-titolare-italia-field-${venditore.id}"
-                                 style="display: ${venditore.titolare_nato_italia !== false ? 'block' : 'none'}">
-                                <input type="text"
-                                       id="venditore_${venditore.id}_titolare_luogo_nascita_comune"
-                                       value="${venditore.titolare_luogo_nascita_comune || ''}"
-                                       placeholder="Comune di nascita (es: BERGAMO)"
-                                       autocomplete="off">
-                                <small class="field-hint">Inserisci il comune per il calcolo del CF</small>
-                            </div>
-
-                            <!-- Campo Estero: Città + Stato -->
-                            <div class="nascita-estero-field"
-                                 id="nascita-titolare-estero-field-${venditore.id}"
-                                 style="display: ${venditore.titolare_nato_italia === false ? 'block' : 'none'}">
-                                <input type="text"
-                                       id="venditore_${venditore.id}_titolare_luogo_nascita_citta"
-                                       value="${venditore.titolare_luogo_nascita_citta || ''}"
-                                       placeholder="Città di nascita (es: PARIGI)"
-                                       autocomplete="off"
-                                       style="margin-bottom: 8px;">
-                                <input type="text"
-                                       id="venditore_${venditore.id}_titolare_luogo_nascita_stato"
-                                       list="stati-esteri-list"
-                                       value="${venditore.titolare_luogo_nascita_stato || ''}"
-                                       placeholder="Stato (es: FRANCIA)"
-                                       autocomplete="off">
-                                <small class="field-hint">Lo stato è obbligatorio per il calcolo del CF</small>
-                            </div>
+                    <!-- Comune di Nascita | Data Nascita -->
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="venditore_${venditore.id}_titolare_luogo_nascita_comune">Comune di Nascita</label>
+                            <input type="text"
+                                   id="venditore_${venditore.id}_titolare_luogo_nascita_comune"
+                                   value="${venditore.titolare_luogo_nascita_comune || ''}"
+                                   placeholder="Comune di nascita (es: BERGAMO)"
+                                   autocomplete="off">
                         </div>
 
                         <div class="field-group">
                             <label for="venditore_${venditore.id}_titolare_data_nascita">Data di Nascita</label>
                             <input type="date" id="venditore_${venditore.id}_titolare_data_nascita" value="${venditore.titolare_data_nascita || ''}">
                         </div>
+                    </div>
+
+                    <!-- Stato estero (visibile solo se Estero selezionato) -->
+                    <div class="field-group"
+                         id="nascita-titolare-estero-field-${venditore.id}"
+                         style="display: ${venditore.titolare_nato_italia === false ? 'block' : 'none'}">
+                        <label for="venditore_${venditore.id}_titolare_luogo_nascita_stato">Stato di Nascita</label>
+                        <input type="text"
+                               id="venditore_${venditore.id}_titolare_luogo_nascita_stato"
+                               list="stati-esteri-list"
+                               value="${venditore.titolare_luogo_nascita_stato || ''}"
+                               placeholder="Stato estero (es: FRANCIA)"
+                               autocomplete="off">
+                        <small class="field-hint">Obbligatorio per il calcolo del CF</small>
                     </div>
 
                     <!-- Cittadinanza Titolare -->
@@ -2917,24 +2905,23 @@ renderVenditore(venditore) {
                             </div>
                         </div>
 
-                        <!-- Sesso -->
-                        <div class="field-group">
-                            <label>Sesso</label>
-                            <div class="segmented-control sesso-control">
-                                <input type="radio" name="venditore_${venditore.id}_rappresentante_sesso" id="venditore_${venditore.id}_rappresentante_sesso_m" value="M" ${!venditore.rappresentante_sesso || venditore.rappresentante_sesso === 'M' ? 'checked' : ''}>
-                                <label for="venditore_${venditore.id}_rappresentante_sesso_m">Maschio</label>
-
-                                <input type="radio" name="venditore_${venditore.id}_rappresentante_sesso" id="venditore_${venditore.id}_rappresentante_sesso_f" value="F" ${venditore.rappresentante_sesso === 'F' ? 'checked' : ''}>
-                                <label for="venditore_${venditore.id}_rappresentante_sesso_f">Femmina</label>
-
-                                <div class="segmented-control-slider"></div>
-                            </div>
-                        </div>
-
-                        <!-- Luogo nascita | Data nascita -->
+                        <!-- Sesso | Nato in -->
                         <div class="field-row">
                             <div class="field-group">
-                                <label>Luogo di Nascita</label>
+                                <label>Sesso</label>
+                                <div class="segmented-control sesso-control">
+                                    <input type="radio" name="venditore_${venditore.id}_rappresentante_sesso" id="venditore_${venditore.id}_rappresentante_sesso_m" value="M" ${!venditore.rappresentante_sesso || venditore.rappresentante_sesso === 'M' ? 'checked' : ''}>
+                                    <label for="venditore_${venditore.id}_rappresentante_sesso_m">Maschio</label>
+
+                                    <input type="radio" name="venditore_${venditore.id}_rappresentante_sesso" id="venditore_${venditore.id}_rappresentante_sesso_f" value="F" ${venditore.rappresentante_sesso === 'F' ? 'checked' : ''}>
+                                    <label for="venditore_${venditore.id}_rappresentante_sesso_f">Femmina</label>
+
+                                    <div class="segmented-control-slider"></div>
+                                </div>
+                            </div>
+
+                            <div class="field-group">
+                                <label>Nato in</label>
                                 <div class="segmented-control nascita-control">
                                     <input type="radio"
                                            name="venditore_${venditore.id}_rappresentante_nato_tipo"
@@ -2956,43 +2943,38 @@ renderVenditore(venditore) {
 
                                     <div class="segmented-control-slider"></div>
                                 </div>
+                            </div>
+                        </div>
 
-                                <!-- Campo Italia: Comune -->
-                                <div class="nascita-italia-field"
-                                     id="nascita-rappresentante-italia-field-${venditore.id}"
-                                     style="display: ${venditore.rappresentante_nato_italia !== false ? 'block' : 'none'}">
-                                    <input type="text"
-                                           id="venditore_${venditore.id}_rappresentante_luogo_nascita_comune"
-                                           value="${venditore.rappresentante_luogo_nascita_comune || ''}"
-                                           placeholder="Comune di nascita (es: BERGAMO)"
-                                           autocomplete="off">
-                                    <small class="field-hint">Inserisci il comune per il calcolo del CF</small>
-                                </div>
-
-                                <!-- Campo Estero: Città + Stato -->
-                                <div class="nascita-estero-field"
-                                     id="nascita-rappresentante-estero-field-${venditore.id}"
-                                     style="display: ${venditore.rappresentante_nato_italia === false ? 'block' : 'none'}">
-                                    <input type="text"
-                                           id="venditore_${venditore.id}_rappresentante_luogo_nascita_citta"
-                                           value="${venditore.rappresentante_luogo_nascita_citta || ''}"
-                                           placeholder="Città di nascita (es: PARIGI)"
-                                           autocomplete="off"
-                                           style="margin-bottom: 8px;">
-                                    <input type="text"
-                                           id="venditore_${venditore.id}_rappresentante_luogo_nascita_stato"
-                                           list="stati-esteri-list"
-                                           value="${venditore.rappresentante_luogo_nascita_stato || ''}"
-                                           placeholder="Stato (es: FRANCIA)"
-                                           autocomplete="off">
-                                    <small class="field-hint">Lo stato è obbligatorio per il calcolo del CF</small>
-                                </div>
+                        <!-- Comune di Nascita | Data Nascita -->
+                        <div class="field-row">
+                            <div class="field-group">
+                                <label for="venditore_${venditore.id}_rappresentante_luogo_nascita_comune">Comune di Nascita</label>
+                                <input type="text"
+                                       id="venditore_${venditore.id}_rappresentante_luogo_nascita_comune"
+                                       value="${venditore.rappresentante_luogo_nascita_comune || ''}"
+                                       placeholder="Comune di nascita (es: BERGAMO)"
+                                       autocomplete="off">
                             </div>
 
                             <div class="field-group">
                                 <label for="venditore_${venditore.id}_rappresentante_data_nascita">Data di Nascita</label>
                                 <input type="date" id="venditore_${venditore.id}_rappresentante_data_nascita" value="${venditore.rappresentante_data_nascita || ''}">
                             </div>
+                        </div>
+
+                        <!-- Stato estero (visibile solo se Estero selezionato) -->
+                        <div class="field-group"
+                             id="nascita-rappresentante-estero-field-${venditore.id}"
+                             style="display: ${venditore.rappresentante_nato_italia === false ? 'block' : 'none'}">
+                            <label for="venditore_${venditore.id}_rappresentante_luogo_nascita_stato">Stato di Nascita</label>
+                            <input type="text"
+                                   id="venditore_${venditore.id}_rappresentante_luogo_nascita_stato"
+                                   list="stati-esteri-list"
+                                   value="${venditore.rappresentante_luogo_nascita_stato || ''}"
+                                   placeholder="Stato estero (es: FRANCIA)"
+                                   autocomplete="off">
+                            <small class="field-hint">Obbligatorio per il calcolo del CF</small>
                         </div>
 
                         <!-- Cittadinanza Rappresentante -->
@@ -3160,23 +3142,23 @@ renderVenditore(venditore) {
                                 </div>
                             </div>
 
-                            <!-- Sesso -->
-                            <div class="field-group">
-                                <label>Sesso</label>
-                                <div class="segmented-control sesso-control">
-                                    <input type="radio" name="venditore_${venditore.id}_designato_sesso" id="venditore_${venditore.id}_designato_sesso_m" value="M" ${!venditore.designato_sesso || venditore.designato_sesso === 'M' ? 'checked' : ''}>
-                                    <label for="venditore_${venditore.id}_designato_sesso_m">Maschio</label>
-
-                                    <input type="radio" name="venditore_${venditore.id}_designato_sesso" id="venditore_${venditore.id}_designato_sesso_f" value="F" ${venditore.designato_sesso === 'F' ? 'checked' : ''}>
-                                    <label for="venditore_${venditore.id}_designato_sesso_f">Femmina</label>
-
-                                    <div class="segmented-control-slider"></div>
-                                </div>
-                            </div>
-
+                            <!-- Sesso | Nato in -->
                             <div class="field-row">
                                 <div class="field-group">
-                                    <label>Luogo di Nascita</label>
+                                    <label>Sesso</label>
+                                    <div class="segmented-control sesso-control">
+                                        <input type="radio" name="venditore_${venditore.id}_designato_sesso" id="venditore_${venditore.id}_designato_sesso_m" value="M" ${!venditore.designato_sesso || venditore.designato_sesso === 'M' ? 'checked' : ''}>
+                                        <label for="venditore_${venditore.id}_designato_sesso_m">Maschio</label>
+
+                                        <input type="radio" name="venditore_${venditore.id}_designato_sesso" id="venditore_${venditore.id}_designato_sesso_f" value="F" ${venditore.designato_sesso === 'F' ? 'checked' : ''}>
+                                        <label for="venditore_${venditore.id}_designato_sesso_f">Femmina</label>
+
+                                        <div class="segmented-control-slider"></div>
+                                    </div>
+                                </div>
+
+                                <div class="field-group">
+                                    <label>Nato in</label>
                                     <div class="segmented-control nascita-control">
                                         <input type="radio"
                                                name="venditore_${venditore.id}_designato_nato_tipo"
@@ -3198,43 +3180,38 @@ renderVenditore(venditore) {
 
                                         <div class="segmented-control-slider"></div>
                                     </div>
+                                </div>
+                            </div>
 
-                                    <!-- Campo Italia: Comune -->
-                                    <div class="nascita-italia-field"
-                                         id="nascita-designato-italia-field-${venditore.id}"
-                                         style="display: ${venditore.designato_nato_italia !== false ? 'block' : 'none'}">
-                                        <input type="text"
-                                               id="venditore_${venditore.id}_designato_luogo_nascita_comune"
-                                               value="${venditore.designato_luogo_nascita_comune || ''}"
-                                               placeholder="Comune di nascita (es: BERGAMO)"
-                                               autocomplete="off">
-                                        <small class="field-hint">Inserisci il comune per il calcolo del CF</small>
-                                    </div>
-
-                                    <!-- Campo Estero: Città + Stato -->
-                                    <div class="nascita-estero-field"
-                                         id="nascita-designato-estero-field-${venditore.id}"
-                                         style="display: ${venditore.designato_nato_italia === false ? 'block' : 'none'}">
-                                        <input type="text"
-                                               id="venditore_${venditore.id}_designato_luogo_nascita_citta"
-                                               value="${venditore.designato_luogo_nascita_citta || ''}"
-                                               placeholder="Città di nascita (es: PARIGI)"
-                                               autocomplete="off"
-                                               style="margin-bottom: 8px;">
-                                        <input type="text"
-                                               id="venditore_${venditore.id}_designato_luogo_nascita_stato"
-                                               list="stati-esteri-list"
-                                               value="${venditore.designato_luogo_nascita_stato || ''}"
-                                               placeholder="Stato (es: FRANCIA)"
-                                               autocomplete="off">
-                                        <small class="field-hint">Lo stato è obbligatorio per il calcolo del CF</small>
-                                    </div>
+                            <!-- Comune di Nascita | Data Nascita -->
+                            <div class="field-row">
+                                <div class="field-group">
+                                    <label for="venditore_${venditore.id}_designato_luogo_nascita_comune">Comune di Nascita</label>
+                                    <input type="text"
+                                           id="venditore_${venditore.id}_designato_luogo_nascita_comune"
+                                           value="${venditore.designato_luogo_nascita_comune || ''}"
+                                           placeholder="Comune di nascita (es: BERGAMO)"
+                                           autocomplete="off">
                                 </div>
 
                                 <div class="field-group">
                                     <label for="venditore_${venditore.id}_designato_data_nascita">Data di Nascita</label>
                                     <input type="date" id="venditore_${venditore.id}_designato_data_nascita" value="${venditore.designato_data_nascita || ''}">
                                 </div>
+                            </div>
+
+                            <!-- Stato estero (visibile solo se Estero selezionato) -->
+                            <div class="field-group"
+                                 id="nascita-designato-estero-field-${venditore.id}"
+                                 style="display: ${venditore.designato_nato_italia === false ? 'block' : 'none'}">
+                                <label for="venditore_${venditore.id}_designato_luogo_nascita_stato">Stato di Nascita</label>
+                                <input type="text"
+                                       id="venditore_${venditore.id}_designato_luogo_nascita_stato"
+                                       list="stati-esteri-list"
+                                       value="${venditore.designato_luogo_nascita_stato || ''}"
+                                       placeholder="Stato estero (es: FRANCIA)"
+                                       autocomplete="off">
+                                <small class="field-hint">Obbligatorio per il calcolo del CF</small>
                             </div>
 
                             <!-- Cittadinanza Designato -->
@@ -3504,14 +3481,12 @@ renderVenditore(venditore) {
             // Privato
             const natoItaliaRadio = document.getElementById(`venditore_${venditore.id}_nato_italia`);
             const natoEsteroRadio = document.getElementById(`venditore_${venditore.id}_nato_estero`);
-            const nascitaItaliaField = document.getElementById(`nascita-italia-field-${venditore.id}`);
             const nascitaEsteroField = document.getElementById(`nascita-estero-field-${venditore.id}`);
 
             const handleNascitaChange = () => {
                 const isItalia = natoItaliaRadio.checked;
 
-                // Mostra/nascondi campi
-                if (nascitaItaliaField) nascitaItaliaField.style.display = isItalia ? 'block' : 'none';
+                // Mostra/nascondi solo campo stato estero (comune sempre visibile)
                 if (nascitaEsteroField) nascitaEsteroField.style.display = isItalia ? 'none' : 'block';
 
                 // Aggiorna l'oggetto venditore in memoria
@@ -3531,13 +3506,11 @@ renderVenditore(venditore) {
             // Titolare Ditta
             const titNatoItaliaRadio = document.getElementById(`venditore_${venditore.id}_titolare_nato_italia`);
             const titNatoEsteroRadio = document.getElementById(`venditore_${venditore.id}_titolare_nato_estero`);
-            const titNascitaItaliaField = document.getElementById(`nascita-titolare-italia-field-${venditore.id}`);
             const titNascitaEsteroField = document.getElementById(`nascita-titolare-estero-field-${venditore.id}`);
 
             const handleTitolareNascitaChange = () => {
                 const isItalia = titNatoItaliaRadio.checked;
 
-                if (titNascitaItaliaField) titNascitaItaliaField.style.display = isItalia ? 'block' : 'none';
                 if (titNascitaEsteroField) titNascitaEsteroField.style.display = isItalia ? 'none' : 'block';
 
                 const v = this.venditori.find(ven => ven.id === venditore.id);
@@ -3556,13 +3529,11 @@ renderVenditore(venditore) {
             // Rappresentante Società
             const rappNatoItaliaRadio = document.getElementById(`venditore_${venditore.id}_rappresentante_nato_italia`);
             const rappNatoEsteroRadio = document.getElementById(`venditore_${venditore.id}_rappresentante_nato_estero`);
-            const rappNascitaItaliaField = document.getElementById(`nascita-rappresentante-italia-field-${venditore.id}`);
             const rappNascitaEsteroField = document.getElementById(`nascita-rappresentante-estero-field-${venditore.id}`);
 
             const handleRappresentanteNascitaChange = () => {
                 const isItalia = rappNatoItaliaRadio.checked;
 
-                if (rappNascitaItaliaField) rappNascitaItaliaField.style.display = isItalia ? 'block' : 'none';
                 if (rappNascitaEsteroField) rappNascitaEsteroField.style.display = isItalia ? 'none' : 'block';
 
                 const v = this.venditori.find(ven => ven.id === venditore.id);
@@ -3581,13 +3552,11 @@ renderVenditore(venditore) {
             // Designato Società
             const desNatoItaliaRadio = document.getElementById(`venditore_${venditore.id}_designato_nato_italia`);
             const desNatoEsteroRadio = document.getElementById(`venditore_${venditore.id}_designato_nato_estero`);
-            const desNascitaItaliaField = document.getElementById(`nascita-designato-italia-field-${venditore.id}`);
             const desNascitaEsteroField = document.getElementById(`nascita-designato-estero-field-${venditore.id}`);
 
             const handleDesignatoNascitaChange = () => {
                 const isItalia = desNatoItaliaRadio.checked;
 
-                if (desNascitaItaliaField) desNascitaItaliaField.style.display = isItalia ? 'block' : 'none';
                 if (desNascitaEsteroField) desNascitaEsteroField.style.display = isItalia ? 'none' : 'block';
 
                 const v = this.venditori.find(ven => ven.id === venditore.id);
