@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.10.3-FINAL-2025-11-13-11:00
+// 🚀 VERSION: SIAF-v2.10.4-FINAL-2025-11-13-11:15
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
     minor: 10,
-    patch: 3,
+    patch: 4,
     date: '13/11/2025',
-    time: '11:00',
-    description: 'Database cittadinanza COMPLETO: 196 nazioni (da 152) + ITALIA + ARABIA SAUDITA + 42 stati mancanti',
-    color: '#FF9500'  // iOS orange - major content update
+    time: '11:15',
+    description: 'UX coniuge auto-aggiunto: rimosso toggle Privato/Ditta/Società (sempre privato)',
+    color: '#5AC8FA'  // iOS cyan - UI cleanup
 };
 
 class SiafApp {
@@ -1544,6 +1544,7 @@ addConiugeAuto(principaleId) {
     // Crea il nuovo venditore coniuge con dati ereditati
     const coniuge = {
         id: ++this.venditoreCounter,
+        tipo: 'privato', // Il coniuge è sempre una persona fisica
         nome: '',
         cognome: principale.cognome || '', // Eredita cognome
         sesso: principale.sesso === 'M' ? 'F' : 'M', // Sesso opposto
@@ -2040,6 +2041,7 @@ renderVenditore(venditore) {
                         👤 Venditore ${venditore.id}
                         ${isConiugeAuto ? '<span class="badge-coniuge">💍 CONIUGE AUTO-AGGIUNTO</span>' : ''}
                     </h3>
+                    ${!isConiugeAuto ? `
                     <div class="segmented-control tipo-soggetto-control">
                         <input type="radio" name="venditore_${venditore.id}_tipo" id="venditore_${venditore.id}_tipo_privato" value="privato" ${!venditore.tipo || venditore.tipo === 'privato' ? 'checked' : ''}>
                         <label for="venditore_${venditore.id}_tipo_privato">Privato</label>
@@ -2052,6 +2054,7 @@ renderVenditore(venditore) {
 
                         <div class="segmented-control-slider"></div>
                     </div>
+                    ` : ''}
                 </div>
                 <div>
                     ${!isFirst && !isConiugeAuto ? `<button type="button" class="btn-remove" onclick="window.siafApp.removeVenditore(${venditore.id})">❌ Rimuovi</button>` : ''}
