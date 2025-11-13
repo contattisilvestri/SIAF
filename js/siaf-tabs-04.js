@@ -1,14 +1,14 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.13.1-FINAL-2025-11-13-17:00
+// 🚀 VERSION: SIAF-v2.13.2-FINAL-2025-11-13-17:30
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
     minor: 13,
-    patch: 1,
+    patch: 2,
     date: '13/11/2025',
-    time: '17:00',
-    description: 'Layout migliorato: toggle nascita a fianco sesso, comune sempre visibile',
+    time: '17:30',
+    description: 'Fix toggle nascita visibilità + ordine campi stato prima comune',
     color: '#007AFF'  // iOS blue - new feature
 };
 
@@ -2233,6 +2233,20 @@ renderVenditore(venditore) {
                         </div>
                     </div>
 
+                    <!-- Stato estero (visibile solo se Estero selezionato) -->
+                    <div class="field-group"
+                         id="nascita-estero-field-${venditore.id}"
+                         style="display: ${venditore.nato_italia === false ? 'block' : 'none'}">
+                        <label for="venditore_${venditore.id}_luogo_nascita_stato">Stato di Nascita</label>
+                        <input type="text"
+                               id="venditore_${venditore.id}_luogo_nascita_stato"
+                               list="stati-esteri-list"
+                               value="${venditore.luogo_nascita_stato || ''}"
+                               placeholder="Stato estero (es: FRANCIA)"
+                               autocomplete="off">
+                        <small class="field-hint">Obbligatorio per il calcolo del CF</small>
+                    </div>
+
                     <!-- Comune di Nascita | Data Nascita -->
                     <div class="field-row">
                         <div class="field-group">
@@ -2248,20 +2262,6 @@ renderVenditore(venditore) {
                             <label for="venditore_${venditore.id}_data_nascita">Data di Nascita</label>
                             <input type="date" id="venditore_${venditore.id}_data_nascita" value="${venditore.data_nascita}">
                         </div>
-                    </div>
-
-                    <!-- Stato estero (visibile solo se Estero selezionato) -->
-                    <div class="field-group"
-                         id="nascita-estero-field-${venditore.id}"
-                         style="display: ${venditore.nato_italia === false ? 'block' : 'none'}">
-                        <label for="venditore_${venditore.id}_luogo_nascita_stato">Stato di Nascita</label>
-                        <input type="text"
-                               id="venditore_${venditore.id}_luogo_nascita_stato"
-                               list="stati-esteri-list"
-                               value="${venditore.luogo_nascita_stato || ''}"
-                               placeholder="Stato estero (es: FRANCIA)"
-                               autocomplete="off">
-                        <small class="field-hint">Obbligatorio per il calcolo del CF</small>
                     </div>
 
                     <!-- Cittadinanza | Professione -->
@@ -2561,6 +2561,20 @@ renderVenditore(venditore) {
                         </div>
                     </div>
 
+                    <!-- Stato estero (visibile solo se Estero selezionato) -->
+                    <div class="field-group"
+                         id="nascita-titolare-estero-field-${venditore.id}"
+                         style="display: ${venditore.titolare_nato_italia === false ? 'block' : 'none'}">
+                        <label for="venditore_${venditore.id}_titolare_luogo_nascita_stato">Stato di Nascita</label>
+                        <input type="text"
+                               id="venditore_${venditore.id}_titolare_luogo_nascita_stato"
+                               list="stati-esteri-list"
+                               value="${venditore.titolare_luogo_nascita_stato || ''}"
+                               placeholder="Stato estero (es: FRANCIA)"
+                               autocomplete="off">
+                        <small class="field-hint">Obbligatorio per il calcolo del CF</small>
+                    </div>
+
                     <!-- Comune di Nascita | Data Nascita -->
                     <div class="field-row">
                         <div class="field-group">
@@ -2576,20 +2590,6 @@ renderVenditore(venditore) {
                             <label for="venditore_${venditore.id}_titolare_data_nascita">Data di Nascita</label>
                             <input type="date" id="venditore_${venditore.id}_titolare_data_nascita" value="${venditore.titolare_data_nascita || ''}">
                         </div>
-                    </div>
-
-                    <!-- Stato estero (visibile solo se Estero selezionato) -->
-                    <div class="field-group"
-                         id="nascita-titolare-estero-field-${venditore.id}"
-                         style="display: ${venditore.titolare_nato_italia === false ? 'block' : 'none'}">
-                        <label for="venditore_${venditore.id}_titolare_luogo_nascita_stato">Stato di Nascita</label>
-                        <input type="text"
-                               id="venditore_${venditore.id}_titolare_luogo_nascita_stato"
-                               list="stati-esteri-list"
-                               value="${venditore.titolare_luogo_nascita_stato || ''}"
-                               placeholder="Stato estero (es: FRANCIA)"
-                               autocomplete="off">
-                        <small class="field-hint">Obbligatorio per il calcolo del CF</small>
                     </div>
 
                     <!-- Cittadinanza Titolare -->
@@ -2946,6 +2946,20 @@ renderVenditore(venditore) {
                             </div>
                         </div>
 
+                        <!-- Stato estero (visibile solo se Estero selezionato) -->
+                        <div class="field-group"
+                             id="nascita-rappresentante-estero-field-${venditore.id}"
+                             style="display: ${venditore.rappresentante_nato_italia === false ? 'block' : 'none'}">
+                            <label for="venditore_${venditore.id}_rappresentante_luogo_nascita_stato">Stato di Nascita</label>
+                            <input type="text"
+                                   id="venditore_${venditore.id}_rappresentante_luogo_nascita_stato"
+                                   list="stati-esteri-list"
+                                   value="${venditore.rappresentante_luogo_nascita_stato || ''}"
+                                   placeholder="Stato estero (es: FRANCIA)"
+                                   autocomplete="off">
+                            <small class="field-hint">Obbligatorio per il calcolo del CF</small>
+                        </div>
+
                         <!-- Comune di Nascita | Data Nascita -->
                         <div class="field-row">
                             <div class="field-group">
@@ -2961,20 +2975,6 @@ renderVenditore(venditore) {
                                 <label for="venditore_${venditore.id}_rappresentante_data_nascita">Data di Nascita</label>
                                 <input type="date" id="venditore_${venditore.id}_rappresentante_data_nascita" value="${venditore.rappresentante_data_nascita || ''}">
                             </div>
-                        </div>
-
-                        <!-- Stato estero (visibile solo se Estero selezionato) -->
-                        <div class="field-group"
-                             id="nascita-rappresentante-estero-field-${venditore.id}"
-                             style="display: ${venditore.rappresentante_nato_italia === false ? 'block' : 'none'}">
-                            <label for="venditore_${venditore.id}_rappresentante_luogo_nascita_stato">Stato di Nascita</label>
-                            <input type="text"
-                                   id="venditore_${venditore.id}_rappresentante_luogo_nascita_stato"
-                                   list="stati-esteri-list"
-                                   value="${venditore.rappresentante_luogo_nascita_stato || ''}"
-                                   placeholder="Stato estero (es: FRANCIA)"
-                                   autocomplete="off">
-                            <small class="field-hint">Obbligatorio per il calcolo del CF</small>
                         </div>
 
                         <!-- Cittadinanza Rappresentante -->
@@ -3183,6 +3183,20 @@ renderVenditore(venditore) {
                                 </div>
                             </div>
 
+                            <!-- Stato estero (visibile solo se Estero selezionato) -->
+                            <div class="field-group"
+                                 id="nascita-designato-estero-field-${venditore.id}"
+                                 style="display: ${venditore.designato_nato_italia === false ? 'block' : 'none'}">
+                                <label for="venditore_${venditore.id}_designato_luogo_nascita_stato">Stato di Nascita</label>
+                                <input type="text"
+                                       id="venditore_${venditore.id}_designato_luogo_nascita_stato"
+                                       list="stati-esteri-list"
+                                       value="${venditore.designato_luogo_nascita_stato || ''}"
+                                       placeholder="Stato estero (es: FRANCIA)"
+                                       autocomplete="off">
+                                <small class="field-hint">Obbligatorio per il calcolo del CF</small>
+                            </div>
+
                             <!-- Comune di Nascita | Data Nascita -->
                             <div class="field-row">
                                 <div class="field-group">
@@ -3198,20 +3212,6 @@ renderVenditore(venditore) {
                                     <label for="venditore_${venditore.id}_designato_data_nascita">Data di Nascita</label>
                                     <input type="date" id="venditore_${venditore.id}_designato_data_nascita" value="${venditore.designato_data_nascita || ''}">
                                 </div>
-                            </div>
-
-                            <!-- Stato estero (visibile solo se Estero selezionato) -->
-                            <div class="field-group"
-                                 id="nascita-designato-estero-field-${venditore.id}"
-                                 style="display: ${venditore.designato_nato_italia === false ? 'block' : 'none'}">
-                                <label for="venditore_${venditore.id}_designato_luogo_nascita_stato">Stato di Nascita</label>
-                                <input type="text"
-                                       id="venditore_${venditore.id}_designato_luogo_nascita_stato"
-                                       list="stati-esteri-list"
-                                       value="${venditore.designato_luogo_nascita_stato || ''}"
-                                       placeholder="Stato estero (es: FRANCIA)"
-                                       autocomplete="off">
-                                <small class="field-hint">Obbligatorio per il calcolo del CF</small>
                             </div>
 
                             <!-- Cittadinanza Designato -->
