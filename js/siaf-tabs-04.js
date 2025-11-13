@@ -5,11 +5,11 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 9,
-    patch: 0,
+    patch: 1,
     date: '12/11/2025',
-    time: '06:00',
-    description: 'Supporto Persone Giuridiche: Ditte individuali e Società (con società-amministratore)',
-    color: '#5856D6'  // iOS indigo - major feature
+    time: '15:30',
+    description: 'Bugfix: Cittadinanza e calcolo CF per titolare, rappresentante, designato',
+    color: '#34C759'  // iOS green - bugfix
 };
 
 class SiafApp {
@@ -1258,6 +1258,7 @@ addVenditore() {
         titolare_sesso: 'M',
         titolare_luogo_nascita: '',
         titolare_data_nascita: '',
+        titolare_cittadinanza: 'italiana',
         cf_titolare: '',
         titolare_tipo_documento: 'carta_identita',
         titolare_numero_documento: '',
@@ -1313,6 +1314,7 @@ addVenditore() {
         rappresentante_sesso: 'M',
         rappresentante_luogo_nascita: '',
         rappresentante_data_nascita: '',
+        rappresentante_cittadinanza: 'italiana',
         rappresentante_cf: '',
         rappresentante_tipo_documento: 'carta_identita',
         rappresentante_numero_documento: '',
@@ -1341,6 +1343,7 @@ addVenditore() {
         designato_sesso: 'M',
         designato_luogo_nascita: '',
         designato_data_nascita: '',
+        designato_cittadinanza: 'italiana',
         designato_cf: '',
         designato_tipo_documento: 'carta_identita',
         designato_numero_documento: '',
@@ -1599,8 +1602,10 @@ async initializeCFCalculator() {
 
 /**
  * Calcola il codice fiscale per un venditore
+ * @param {number} venditoreId - ID del venditore
+ * @param {string} tipo - Tipo di persona: 'privato' | 'titolare' | 'rappresentante' | 'designato'
  */
-async calculateCF(venditoreId) {
+async calculateCF(venditoreId, tipo = 'privato') {
     try {
         // Inizializza calculator se necessario (lazy loading)
         if (!this.cfCalculatorReady) {
@@ -1612,18 +1617,25 @@ async calculateCF(venditoreId) {
         const venditore = this.venditori.find(v => v.id === venditoreId);
         if (!venditore) return;
 
+        // Determina prefisso campo in base al tipo
+        const fieldPrefix = tipo === 'privato' ? '' : `${tipo}_`;
+
         // Raccogli dati necessari
-        const nome = document.getElementById(`venditore_${venditoreId}_nome`)?.value;
-        const cognome = document.getElementById(`venditore_${venditoreId}_cognome`)?.value;
+        const nome = document.getElementById(`venditore_${venditoreId}_${fieldPrefix}nome`)?.value;
+        const cognome = document.getElementById(`venditore_${venditoreId}_${fieldPrefix}cognome`)?.value;
 
         // Leggi sesso dai radio button
-        const sessoRadioM = document.getElementById(`venditore_${venditoreId}_sesso_m`);
-        const sessoRadioF = document.getElementById(`venditore_${venditoreId}_sesso_f`);
+        const sessoRadioM = document.getElementById(`venditore_${venditoreId}_${fieldPrefix}sesso_m`);
+        const sessoRadioF = document.getElementById(`venditore_${venditoreId}_${fieldPrefix}sesso_f`);
         const sesso = sessoRadioM?.checked ? 'M' : (sessoRadioF?.checked ? 'F' : null);
 
-        const dataNascita = document.getElementById(`venditore_${venditoreId}_data_nascita`)?.value;
-        const luogoNascita = document.getElementById(`venditore_${venditoreId}_luogo_nascita`)?.value;
-        const provincia = document.getElementById(`venditore_${venditoreId}_provincia`)?.value;
+        const dataNascita = document.getElementById(`venditore_${venditoreId}_${fieldPrefix}data_nascita`)?.value;
+        const luogoNascita = document.getElementById(`venditore_${venditoreId}_${fieldPrefix}luogo_nascita`)?.value;
+
+        // Per privato usiamo 'provincia', per gli altri il campo non esiste (usiamo null)
+        const provincia = tipo === 'privato'
+            ? document.getElementById(`venditore_${venditoreId}_provincia`)?.value
+            : null;
 
         // Validazione campi obbligatori
         const campiMancanti = [];
@@ -1702,11 +1714,34 @@ async calculateCF(venditoreId) {
         }
 
         // Successo!
-        const cfInput = document.getElementById(`venditore_${venditoreId}_codice_fiscale`);
-        cfInput.value = result.cf;
+        // Determina l'ID del campo CF in base al tipo
+        let cfInputId;
+        let cfFieldName;
+        switch (tipo) {
+            case 'titolare':
+                cfInputId = `venditore_${venditoreId}_cf_titolare`;
+                cfFieldName = 'cf_titolare';
+                break;
+            case 'rappresentante':
+                cfInputId = `venditore_${venditoreId}_rappresentante_cf`;
+                cfFieldName = 'rappresentante_cf';
+                break;
+            case 'designato':
+                cfInputId = `venditore_${venditoreId}_designato_cf`;
+                cfFieldName = 'designato_cf';
+                break;
+            default: // privato
+                cfInputId = `venditore_${venditoreId}_codice_fiscale`;
+                cfFieldName = 'codice_fiscale';
+        }
+
+        const cfInput = document.getElementById(cfInputId);
+        if (cfInput) {
+            cfInput.value = result.cf;
+        }
 
         // Aggiorna venditore object
-        venditore.codice_fiscale = result.cf;
+        venditore[cfFieldName] = result.cf;
         this.isDirty = true;
 
         // Mostra successo
@@ -2233,6 +2268,23 @@ renderVenditore(venditore) {
                         </div>
                     </div>
 
+                    <!-- Cittadinanza Titolare -->
+                    <div class="field-group">
+                        <label>Cittadinanza</label>
+                        <div class="segmented-control cittadinanza-control">
+                            <input type="radio" name="venditore_${venditore.id}_titolare_cittadinanza_tipo" id="venditore_${venditore.id}_titolare_citt_italia" value="italia" ${!venditore.titolare_cittadinanza || venditore.titolare_cittadinanza === 'italiana' ? 'checked' : ''}>
+                            <label for="venditore_${venditore.id}_titolare_citt_italia">Italia</label>
+
+                            <input type="radio" name="venditore_${venditore.id}_titolare_cittadinanza_tipo" id="venditore_${venditore.id}_titolare_citt_estero" value="estero" ${venditore.titolare_cittadinanza && venditore.titolare_cittadinanza !== 'italiana' ? 'checked' : ''}>
+                            <label for="venditore_${venditore.id}_titolare_citt_estero">Estero</label>
+
+                            <div class="segmented-control-slider"></div>
+                        </div>
+                        <div class="cittadinanza-field" id="cittadinanza-titolare-field-${venditore.id}" style="display: ${venditore.titolare_cittadinanza && venditore.titolare_cittadinanza !== 'italiana' ? 'block' : 'none'};">
+                            <input type="text" id="venditore_${venditore.id}_titolare_cittadinanza_custom" value="${venditore.titolare_cittadinanza !== 'italiana' ? venditore.titolare_cittadinanza || '' : ''}" list="paesi-cittadinanza-list" placeholder="Specificare paese">
+                        </div>
+                    </div>
+
                     <!-- Codice Fiscale titolare -->
                     <div class="field-group">
                         <label for="venditore_${venditore.id}_cf_titolare">Codice Fiscale Titolare</label>
@@ -2555,6 +2607,23 @@ renderVenditore(venditore) {
                             </div>
                         </div>
 
+                        <!-- Cittadinanza Rappresentante -->
+                        <div class="field-group">
+                            <label>Cittadinanza</label>
+                            <div class="segmented-control cittadinanza-control">
+                                <input type="radio" name="venditore_${venditore.id}_rappresentante_cittadinanza_tipo" id="venditore_${venditore.id}_rappresentante_citt_italia" value="italia" ${!venditore.rappresentante_cittadinanza || venditore.rappresentante_cittadinanza === 'italiana' ? 'checked' : ''}>
+                                <label for="venditore_${venditore.id}_rappresentante_citt_italia">Italia</label>
+
+                                <input type="radio" name="venditore_${venditore.id}_rappresentante_cittadinanza_tipo" id="venditore_${venditore.id}_rappresentante_citt_estero" value="estero" ${venditore.rappresentante_cittadinanza && venditore.rappresentante_cittadinanza !== 'italiana' ? 'checked' : ''}>
+                                <label for="venditore_${venditore.id}_rappresentante_citt_estero">Estero</label>
+
+                                <div class="segmented-control-slider"></div>
+                            </div>
+                            <div class="cittadinanza-field" id="cittadinanza-rappresentante-field-${venditore.id}" style="display: ${venditore.rappresentante_cittadinanza && venditore.rappresentante_cittadinanza !== 'italiana' ? 'block' : 'none'};">
+                                <input type="text" id="venditore_${venditore.id}_rappresentante_cittadinanza_custom" value="${venditore.rappresentante_cittadinanza !== 'italiana' ? venditore.rappresentante_cittadinanza || '' : ''}" list="paesi-cittadinanza-list" placeholder="Specificare paese">
+                            </div>
+                        </div>
+
                         <!-- CF -->
                         <div class="field-group">
                             <label for="venditore_${venditore.id}_rappresentante_cf">Codice Fiscale</label>
@@ -2725,6 +2794,23 @@ renderVenditore(venditore) {
                                 <div class="field-group">
                                     <label for="venditore_${venditore.id}_designato_data_nascita">Data di Nascita</label>
                                     <input type="date" id="venditore_${venditore.id}_designato_data_nascita" value="${venditore.designato_data_nascita || ''}">
+                                </div>
+                            </div>
+
+                            <!-- Cittadinanza Designato -->
+                            <div class="field-group">
+                                <label>Cittadinanza</label>
+                                <div class="segmented-control cittadinanza-control">
+                                    <input type="radio" name="venditore_${venditore.id}_designato_cittadinanza_tipo" id="venditore_${venditore.id}_designato_citt_italia" value="italia" ${!venditore.designato_cittadinanza || venditore.designato_cittadinanza === 'italiana' ? 'checked' : ''}>
+                                    <label for="venditore_${venditore.id}_designato_citt_italia">Italia</label>
+
+                                    <input type="radio" name="venditore_${venditore.id}_designato_cittadinanza_tipo" id="venditore_${venditore.id}_designato_citt_estero" value="estero" ${venditore.designato_cittadinanza && venditore.designato_cittadinanza !== 'italiana' ? 'checked' : ''}>
+                                    <label for="venditore_${venditore.id}_designato_citt_estero">Estero</label>
+
+                                    <div class="segmented-control-slider"></div>
+                                </div>
+                                <div class="cittadinanza-field" id="cittadinanza-designato-field-${venditore.id}" style="display: ${venditore.designato_cittadinanza && venditore.designato_cittadinanza !== 'italiana' ? 'block' : 'none'};">
+                                    <input type="text" id="venditore_${venditore.id}_designato_cittadinanza_custom" value="${venditore.designato_cittadinanza !== 'italiana' ? venditore.designato_cittadinanza || '' : ''}" list="paesi-cittadinanza-list" placeholder="Specificare paese">
                                 </div>
                             </div>
 
@@ -3088,6 +3174,155 @@ renderVenditore(venditore) {
                     }
                 });
             }
+
+            // ========== EVENT LISTENERS: CITTADINANZA TITOLARE (DITTA) ==========
+            const titolareCittItaliaRadio = document.getElementById(`venditore_${venditore.id}_titolare_citt_italia`);
+            const titolareCittEsteroRadio = document.getElementById(`venditore_${venditore.id}_titolare_citt_estero`);
+            const titolareCittadinanzaField = document.getElementById(`cittadinanza-titolare-field-${venditore.id}`);
+            const titolareCittadinanzaInput = document.getElementById(`venditore_${venditore.id}_titolare_cittadinanza_custom`);
+
+            const handleTitolareCittadinanzaChange = () => {
+                const isItalia = titolareCittItaliaRadio.checked;
+
+                // Mostra/nascondi campo autocomplete
+                if (titolareCittadinanzaField) {
+                    titolareCittadinanzaField.style.display = isItalia ? 'none' : 'block';
+                }
+
+                // Reset campo se Italia
+                if (isItalia && titolareCittadinanzaInput) {
+                    titolareCittadinanzaInput.value = '';
+                }
+
+                // Aggiorna l'oggetto venditore in memoria
+                const v = this.venditori.find(ven => ven.id === venditore.id);
+                if (v) {
+                    v.titolare_cittadinanza = isItalia ? 'italiana' : (titolareCittadinanzaInput?.value || '');
+                    console.log(`🌍 Cittadinanza titolare venditore ${venditore.id} aggiornata: ${v.titolare_cittadinanza}`);
+                }
+            };
+
+            if (titolareCittItaliaRadio && titolareCittEsteroRadio) {
+                titolareCittItaliaRadio.addEventListener('change', handleTitolareCittadinanzaChange);
+                titolareCittEsteroRadio.addEventListener('change', handleTitolareCittadinanzaChange);
+
+                // Listener per quando digita nel campo estero
+                if (titolareCittadinanzaInput) {
+                    titolareCittadinanzaInput.addEventListener('change', () => {
+                        const v = this.venditori.find(ven => ven.id === venditore.id);
+                        if (v && titolareCittEsteroRadio.checked) {
+                            v.titolare_cittadinanza = titolareCittadinanzaInput.value;
+                            console.log(`🌍 Cittadinanza estera titolare venditore ${venditore.id} aggiornata: ${v.titolare_cittadinanza}`);
+                        }
+                    });
+                }
+
+                console.log(`✅ Event listeners cittadinanza titolare attivati per venditore ${venditore.id}`);
+            }
+
+            // ========== EVENT LISTENERS: CITTADINANZA RAPPRESENTANTE (SOCIETÀ) ==========
+            const rappresentanteCittItaliaRadio = document.getElementById(`venditore_${venditore.id}_rappresentante_citt_italia`);
+            const rappresentanteCittEsteroRadio = document.getElementById(`venditore_${venditore.id}_rappresentante_citt_estero`);
+            const rappresentanteCittadinanzaField = document.getElementById(`cittadinanza-rappresentante-field-${venditore.id}`);
+            const rappresentanteCittadinanzaInput = document.getElementById(`venditore_${venditore.id}_rappresentante_cittadinanza_custom`);
+
+            const handleRappresentanteCittadinanzaChange = () => {
+                const isItalia = rappresentanteCittItaliaRadio.checked;
+
+                // Mostra/nascondi campo autocomplete
+                if (rappresentanteCittadinanzaField) {
+                    rappresentanteCittadinanzaField.style.display = isItalia ? 'none' : 'block';
+                }
+
+                // Reset campo se Italia
+                if (isItalia && rappresentanteCittadinanzaInput) {
+                    rappresentanteCittadinanzaInput.value = '';
+                }
+
+                // Aggiorna l'oggetto venditore in memoria
+                const v = this.venditori.find(ven => ven.id === venditore.id);
+                if (v) {
+                    v.rappresentante_cittadinanza = isItalia ? 'italiana' : (rappresentanteCittadinanzaInput?.value || '');
+                    console.log(`🌍 Cittadinanza rappresentante venditore ${venditore.id} aggiornata: ${v.rappresentante_cittadinanza}`);
+                }
+            };
+
+            if (rappresentanteCittItaliaRadio && rappresentanteCittEsteroRadio) {
+                rappresentanteCittItaliaRadio.addEventListener('change', handleRappresentanteCittadinanzaChange);
+                rappresentanteCittEsteroRadio.addEventListener('change', handleRappresentanteCittadinanzaChange);
+
+                // Listener per quando digita nel campo estero
+                if (rappresentanteCittadinanzaInput) {
+                    rappresentanteCittadinanzaInput.addEventListener('change', () => {
+                        const v = this.venditori.find(ven => ven.id === venditore.id);
+                        if (v && rappresentanteCittEsteroRadio.checked) {
+                            v.rappresentante_cittadinanza = rappresentanteCittadinanzaInput.value;
+                            console.log(`🌍 Cittadinanza estera rappresentante venditore ${venditore.id} aggiornata: ${v.rappresentante_cittadinanza}`);
+                        }
+                    });
+                }
+
+                console.log(`✅ Event listeners cittadinanza rappresentante attivati per venditore ${venditore.id}`);
+            }
+
+            // ========== EVENT LISTENERS: CITTADINANZA DESIGNATO (SOCIETÀ) ==========
+            const designatoCittItaliaRadio = document.getElementById(`venditore_${venditore.id}_designato_citt_italia`);
+            const designatoCittEsteroRadio = document.getElementById(`venditore_${venditore.id}_designato_citt_estero`);
+            const designatoCittadinanzaField = document.getElementById(`cittadinanza-designato-field-${venditore.id}`);
+            const designatoCittadinanzaInput = document.getElementById(`venditore_${venditore.id}_designato_cittadinanza_custom`);
+
+            const handleDesignatoCittadinanzaChange = () => {
+                const isItalia = designatoCittItaliaRadio.checked;
+
+                // Mostra/nascondi campo autocomplete
+                if (designatoCittadinanzaField) {
+                    designatoCittadinanzaField.style.display = isItalia ? 'none' : 'block';
+                }
+
+                // Reset campo se Italia
+                if (isItalia && designatoCittadinanzaInput) {
+                    designatoCittadinanzaInput.value = '';
+                }
+
+                // Aggiorna l'oggetto venditore in memoria
+                const v = this.venditori.find(ven => ven.id === venditore.id);
+                if (v) {
+                    v.designato_cittadinanza = isItalia ? 'italiana' : (designatoCittadinanzaInput?.value || '');
+                    console.log(`🌍 Cittadinanza designato venditore ${venditore.id} aggiornata: ${v.designato_cittadinanza}`);
+                }
+            };
+
+            if (designatoCittItaliaRadio && designatoCittEsteroRadio) {
+                designatoCittItaliaRadio.addEventListener('change', handleDesignatoCittadinanzaChange);
+                designatoCittEsteroRadio.addEventListener('change', handleDesignatoCittadinanzaChange);
+
+                // Listener per quando digita nel campo estero
+                if (designatoCittadinanzaInput) {
+                    designatoCittadinanzaInput.addEventListener('change', () => {
+                        const v = this.venditori.find(ven => ven.id === venditore.id);
+                        if (v && designatoCittEsteroRadio.checked) {
+                            v.designato_cittadinanza = designatoCittadinanzaInput.value;
+                            console.log(`🌍 Cittadinanza estera designato venditore ${venditore.id} aggiornata: ${v.designato_cittadinanza}`);
+                        }
+                    });
+                }
+
+                console.log(`✅ Event listeners cittadinanza designato attivati per venditore ${venditore.id}`);
+            }
+
+            // ========== EVENT LISTENERS: CALCOLA CF (Titolare, Rappresentante, Designato) ==========
+            // Trova tutti i button con classe btn-calculate-cf per questo venditore
+            const cfButtons = document.querySelectorAll(`.btn-calculate-cf[data-venditore-id="${venditore.id}"]`);
+
+            cfButtons.forEach(button => {
+                const tipo = button.dataset.tipo; // 'titolare', 'rappresentante', o 'designato'
+                if (tipo && ['titolare', 'rappresentante', 'designato'].includes(tipo)) {
+                    button.addEventListener('click', () => {
+                        this.calculateCF(venditore.id, tipo);
+                    });
+                    console.log(`✅ Event listener calcola CF attivato per ${tipo} venditore ${venditore.id}`);
+                }
+            });
         }, 100);
     } else {
         console.log(`⏭️ Venditore ${venditore.id} è un coniuge auto-aggiunto - event listeners non necessari`);
@@ -3249,6 +3484,12 @@ renderVenditore(venditore) {
                 const titolareSessoF = document.getElementById(`venditore_${venditore.id}_titolare_sesso_f`);
                 const titolareSesso = titolareSessoM?.checked ? 'M' : 'F';
 
+                // Leggi cittadinanza titolare
+                const titolareCittItaliaRadio = document.getElementById(`venditore_${venditore.id}_titolare_citt_italia`);
+                const isItaliaTitolare = titolareCittItaliaRadio?.checked !== false;
+                const titolareCittadinanzaCustom = document.getElementById(`venditore_${venditore.id}_titolare_cittadinanza_custom`)?.value || '';
+                const titolareCittadinanza = isItaliaTitolare ? 'italiana' : titolareCittadinanzaCustom;
+
                 data = {
                     ...data,
                     titolare_nome: document.getElementById(`venditore_${venditore.id}_titolare_nome`)?.value || '',
@@ -3256,6 +3497,7 @@ renderVenditore(venditore) {
                     titolare_sesso: titolareSesso,
                     titolare_luogo_nascita: document.getElementById(`venditore_${venditore.id}_titolare_luogo_nascita`)?.value || '',
                     titolare_data_nascita: document.getElementById(`venditore_${venditore.id}_titolare_data_nascita`)?.value || '',
+                    titolare_cittadinanza: titolareCittadinanza,
                     cf_titolare: document.getElementById(`venditore_${venditore.id}_cf_titolare`)?.value || '',
                     titolare_tipo_documento: document.getElementById(`venditore_${venditore.id}_titolare_tipo_documento`)?.value || '',
                     titolare_numero_documento: document.getElementById(`venditore_${venditore.id}_titolare_numero_documento`)?.value || '',
@@ -3319,6 +3561,12 @@ renderVenditore(venditore) {
                     const rappSessoF = document.getElementById(`venditore_${venditore.id}_rappresentante_sesso_f`);
                     const rappSesso = rappSessoM?.checked ? 'M' : 'F';
 
+                    // Leggi cittadinanza rappresentante
+                    const rappresentanteCittItaliaRadio = document.getElementById(`venditore_${venditore.id}_rappresentante_citt_italia`);
+                    const isItaliaRappresentante = rappresentanteCittItaliaRadio?.checked !== false;
+                    const rappresentanteCittadinanzaCustom = document.getElementById(`venditore_${venditore.id}_rappresentante_cittadinanza_custom`)?.value || '';
+                    const rappresentanteCittadinanza = isItaliaRappresentante ? 'italiana' : rappresentanteCittadinanzaCustom;
+
                     data = {
                         ...data,
                         rappresentante_nome: document.getElementById(`venditore_${venditore.id}_rappresentante_nome`)?.value || '',
@@ -3326,6 +3574,7 @@ renderVenditore(venditore) {
                         rappresentante_sesso: rappSesso,
                         rappresentante_luogo_nascita: document.getElementById(`venditore_${venditore.id}_rappresentante_luogo_nascita`)?.value || '',
                         rappresentante_data_nascita: document.getElementById(`venditore_${venditore.id}_rappresentante_data_nascita`)?.value || '',
+                        rappresentante_cittadinanza: rappresentanteCittadinanza,
                         rappresentante_cf: document.getElementById(`venditore_${venditore.id}_rappresentante_cf`)?.value || '',
                         rappresentante_tipo_documento: document.getElementById(`venditore_${venditore.id}_rappresentante_tipo_documento`)?.value || '',
                         rappresentante_numero_documento: document.getElementById(`venditore_${venditore.id}_rappresentante_numero_documento`)?.value || '',
@@ -3344,6 +3593,12 @@ renderVenditore(venditore) {
                     const designatoSessoF = document.getElementById(`venditore_${venditore.id}_designato_sesso_f`);
                     const designatoSesso = designatoSessoM?.checked ? 'M' : 'F';
 
+                    // Leggi cittadinanza designato
+                    const designatoCittItaliaRadio = document.getElementById(`venditore_${venditore.id}_designato_citt_italia`);
+                    const isItaliaDesignato = designatoCittItaliaRadio?.checked !== false;
+                    const designatoCittadinanzaCustom = document.getElementById(`venditore_${venditore.id}_designato_cittadinanza_custom`)?.value || '';
+                    const designatoCittadinanza = isItaliaDesignato ? 'italiana' : designatoCittadinanzaCustom;
+
                     data = {
                         ...data,
                         soc_amm_ragione_sociale: document.getElementById(`venditore_${venditore.id}_soc_amm_ragione_sociale`)?.value || '',
@@ -3361,6 +3616,7 @@ renderVenditore(venditore) {
                         designato_sesso: designatoSesso,
                         designato_luogo_nascita: document.getElementById(`venditore_${venditore.id}_designato_luogo_nascita`)?.value || '',
                         designato_data_nascita: document.getElementById(`venditore_${venditore.id}_designato_data_nascita`)?.value || '',
+                        designato_cittadinanza: designatoCittadinanza,
                         designato_cf: document.getElementById(`venditore_${venditore.id}_designato_cf`)?.value || '',
                         designato_tipo_documento: document.getElementById(`venditore_${venditore.id}_designato_tipo_documento`)?.value || '',
                         designato_numero_documento: document.getElementById(`venditore_${venditore.id}_designato_numero_documento`)?.value || '',
