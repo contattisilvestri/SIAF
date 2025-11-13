@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.11.0-FINAL-2025-11-13-13:00
+// 🚀 VERSION: SIAF-v2.12.0-FINAL-2025-11-13-13:30
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
-    minor: 11,
+    minor: 12,
     patch: 0,
     date: '13/11/2025',
-    time: '13:00',
-    description: 'Quota e Natura Diritto: aggiunta tabella quote possesso e natura diritto per ogni venditore',
-    color: '#FF9500'  // iOS orange - new feature
+    time: '13:30',
+    description: 'Rimossa sezione Intestatari (sostituita da Venditori e Quote di Possesso)',
+    color: '#FF3B30'  // iOS red - breaking change / removal
 };
 
 class SiafApp {
@@ -677,7 +677,6 @@ class SiafApp {
                 comune: immobileData.comune || 'Bergantino',
                 via: immobileData.via || '',
                 numero: immobileData.numero || '',
-                intestatari: immobileData.intestatari || [{ nome: '', cognome: '' }],
                 blocchiCatastali: immobileData.blocchiCatastali || [],
                 confini: immobileData.confini || {
                     nord: [''],
@@ -3852,9 +3851,6 @@ renderVenditore(venditore) {
             if (viaField) immobile.via = viaField.value || '';
             if (numeroField) immobile.numero = numeroField.value || '';
 
-            // Salva intestatari
-            this.saveAllIntestatariData(immobile.id);
-
             // Salva tutti i blocchi catastali
             this.saveBlocchiCatastaliData(immobile.id);
 
@@ -4910,7 +4906,6 @@ renderVenditore(venditore) {
             comune: 'Bergantino',
             via: '',
             numero: '',
-            intestatari: [{ nome: '', cognome: '' }],
             blocchiCatastali: [],  // Inizialmente vuoto - l'utente sceglierà il tipo
             confini: {
                 nord: [''],
@@ -5068,17 +5063,6 @@ renderVenditore(venditore) {
                     </div>
                 </div>
 
-                <!-- Intestatari -->
-                <div class="field-card">
-                    <div class="field-header">
-                        <h4>👤 Proprietà intestata a</h4>
-                        <button type="button" class="btn btn-sm" onclick="window.siafApp.addIntestatario(${immobile.id})">➕ Aggiungi Intestatario</button>
-                    </div>
-                    <div id="intestatari-${immobile.id}" class="intestatari-container">
-                        ${this.renderIntestatari(immobile)}
-                    </div>
-                </div>
-
                 <!-- Venditori e Quote di Possesso -->
                 <div class="field-card">
                     <h4>📊 Venditori e Quote di Possesso</h4>
@@ -5127,26 +5111,6 @@ renderVenditore(venditore) {
         }, 100);
 
         console.log(`✅ Immobile ${immobile.id} renderizzato`);
-    }
-
-    renderIntestatari(immobile) {
-        return immobile.intestatari.map((intestatario, index) => `
-            <div class="intestatario-row">
-                <input type="text" class="intestatario-input"
-                       id="intestatario_nome_${immobile.id}_${index}"
-                       value="${intestatario.nome || ''}"
-                       placeholder="Nome"
-                       onchange="window.siafApp.updateIntestatario(${immobile.id}, ${index}, 'nome', this.value)">
-                <input type="text" class="intestatario-input"
-                       id="intestatario_cognome_${immobile.id}_${index}"
-                       value="${intestatario.cognome || ''}"
-                       placeholder="Cognome"
-                       onchange="window.siafApp.updateIntestatario(${immobile.id}, ${index}, 'cognome', this.value)">
-                ${immobile.intestatari.length > 1 ?
-                    `<button type="button" class="btn-remove-mappale" onclick="window.siafApp.removeIntestatario(${immobile.id}, ${index})">❌</button>` :
-                    ''}
-            </div>
-        `).join('');
     }
 
     renderVenditoriQuote(immobile) {
@@ -5640,83 +5604,6 @@ renderVenditore(venditore) {
 
     // Funzioni di gestione eventi
 
-    addIntestatario(immobileId) {
-        const immobile = this.immobili.find(i => i.id === immobileId);
-        if (immobile) {
-            const newIntestatario = { nome: '', cognome: '' };
-            immobile.intestatari.push(newIntestatario);
-
-            // Aggiungi solo il nuovo intestatario senza refresh completo
-            this.appendNewIntestatario(immobileId, newIntestatario, immobile.intestatari.length - 1);
-            this.isDirty = true;
-
-            console.log(`✅ Aggiunto intestatario per immobile ${immobileId}`);
-        }
-    }
-
-    appendNewIntestatario(immobileId, intestatario, index) {
-        const container = document.getElementById(`intestatari-${immobileId}`);
-        if (container) {
-            const intestatarioHtml = this.renderSingleIntestatario(immobileId, intestatario, index, true);
-            container.insertAdjacentHTML('beforeend', intestatarioHtml);
-        }
-    }
-
-    renderSingleIntestatario(immobileId, intestatario, index, showRemoveButton = false) {
-        return `
-            <div class="intestatario-row">
-                <input type="text" class="intestatario-input"
-                       id="intestatario_nome_${immobileId}_${index}"
-                       value="${intestatario.nome || ''}"
-                       placeholder="Nome"
-                       onchange="window.siafApp.updateIntestatario(${immobileId}, ${index}, 'nome', this.value)">
-                <input type="text" class="intestatario-input"
-                       id="intestatario_cognome_${immobileId}_${index}"
-                       value="${intestatario.cognome || ''}"
-                       placeholder="Cognome"
-                       onchange="window.siafApp.updateIntestatario(${immobileId}, ${index}, 'cognome', this.value)">
-                ${showRemoveButton ?
-                    `<button type="button" class="btn-remove-mappale" onclick="window.siafApp.removeIntestatario(${immobileId}, ${index})">❌</button>` :
-                    ''}
-            </div>
-        `;
-    }
-
-    saveAllIntestatariData(immobileId) {
-        const immobile = this.immobili.find(i => i.id === immobileId);
-        if (!immobile) return;
-
-        // Salva TUTTI i campi intestatari visibili attualmente
-        const container = document.getElementById(`intestatari-${immobileId}`);
-        if (!container) return;
-
-        const nomeInputs = container.querySelectorAll('input[id*="intestatario_nome_"]');
-        const cognomeInputs = container.querySelectorAll('input[id*="intestatario_cognome_"]');
-
-        nomeInputs.forEach((input, index) => {
-            if (immobile.intestatari[index]) {
-                immobile.intestatari[index].nome = input.value || '';
-            }
-        });
-
-        cognomeInputs.forEach((input, index) => {
-            if (immobile.intestatari[index]) {
-                immobile.intestatari[index].cognome = input.value || '';
-            }
-        });
-
-        console.log(`💾 Salvati ${nomeInputs.length} intestatari per immobile ${immobileId}`);
-    }
-
-    updateIntestatario(immobileId, index, field, value) {
-        const immobile = this.immobili.find(i => i.id === immobileId);
-        if (immobile && immobile.intestatari[index]) {
-            immobile.intestatari[index][field] = value;
-            this.isDirty = true;
-            console.log(`📝 Aggiornato intestatario ${index}: ${field} = ${value}`);
-        }
-    }
-
     updateImmobileField(immobileId, field, value) {
         const immobile = this.immobili.find(i => i.id === immobileId);
         if (immobile) {
@@ -5724,43 +5611,6 @@ renderVenditore(venditore) {
             this.isDirty = true;
             console.log(`📝 Aggiornato immobile ${immobileId}: ${field} = ${value}`);
         }
-    }
-
-    removeIntestatario(immobileId, index) {
-        const immobile = this.immobili.find(i => i.id === immobileId);
-        if (immobile && immobile.intestatari.length > 1) {
-            immobile.intestatari.splice(index, 1);
-            this.refreshIntestatari(immobileId);
-        }
-    }
-
-    refreshIntestatari(immobileId) {
-        const immobile = this.immobili.find(i => i.id === immobileId);
-        const container = document.getElementById(`intestatari-${immobileId}`);
-        if (container && immobile) {
-            // Salva i dati attuali prima del re-rendering
-            this.saveIntestatariData(immobileId);
-            container.innerHTML = this.renderIntestatari(immobile);
-        }
-    }
-
-    saveIntestatariData(immobileId) {
-        const immobile = this.immobili.find(i => i.id === immobileId);
-        if (!immobile) return;
-
-        immobile.intestatari.forEach((intestatario, index) => {
-            const nomeField = document.getElementById(`intestatario_nome_${immobileId}_${index}`);
-            const cognomeField = document.getElementById(`intestatario_cognome_${immobileId}_${index}`);
-
-            if (nomeField) {
-                intestatario.nome = nomeField.value || '';
-            }
-            if (cognomeField) {
-                intestatario.cognome = cognomeField.value || '';
-            }
-        });
-
-        console.log(`💾 Salvati dati intestatari immobile ${immobileId}`);
     }
 
     addFirstBloccoCatastale(immobileId, tipo) {

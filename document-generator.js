@@ -1874,40 +1874,6 @@ ${JSON.stringify(immobiliData)}
 {{TABELLE_CATASTALI_END}}`;
 }
 
-function generateIntestatariCompleto(immobiliArray) {
-  const tuttiIntestatari = [];
-
-  immobiliArray.forEach((immobile, index) => {
-    if (immobile.intestatari && Array.isArray(immobile.intestatari)) {
-      immobile.intestatari.forEach(intestatario => {
-        if (intestatario.nome && intestatario.cognome) {
-          const nomeCompleto = `**${intestatario.nome} ${intestatario.cognome}**`;
-          if (tuttiIntestatari.indexOf(nomeCompleto) === -1) {
-            tuttiIntestatari.push(nomeCompleto);
-          }
-        }
-      });
-    }
-  });
-
-  return tuttiIntestatari.join(', ');
-}
-
-// BLOCCO: Genera intestatari di un SINGOLO immobile
-function generateIntestatariSingoloImmobile(immobile) {
-  const intestatari = [];
-
-  if (immobile.intestatari && Array.isArray(immobile.intestatari)) {
-    immobile.intestatari.forEach(intestatario => {
-      if (intestatario.nome && intestatario.cognome) {
-        intestatari.push(`**${intestatario.nome} ${intestatario.cognome}**`);
-      }
-    });
-  }
-
-  return intestatari.length > 0 ? intestatari.join(', ') : '[INTESTATARIO NON SPECIFICATO]';
-}
-
 // ========== MERGE DOCUMENTI ==========
 
 // BLOCCO 1: Applicazione stili ai blocchi speciali agenzia
@@ -2635,12 +2601,6 @@ function processTabelleCatastaliDirettamente(doc, body, mergeData, immobiliData)
     const indirizzoCompleto = `Provincia di ${provincia}, Comune di ${comune}, ${via} n. ${numero}`;
     const indirizzoParagraph = body.insertParagraph(currentIndex, indirizzoCompleto);
     indirizzoParagraph.editAsText().setFontSize(11);
-    currentIndex++;
-
-    // Riga: Intestato a: **nome cognome**, **nome cognome**
-    const intestatari = generateIntestatariSingoloImmobile(immobile);
-    const intestatariParagraph = body.insertParagraph(currentIndex, `Intestato a: ${intestatari}`);
-    intestatariParagraph.editAsText().setFontSize(11);
     currentIndex++;
 
     // Riga: Attualmente distinto nel catasto dei [fabbricati/terreni] al:
