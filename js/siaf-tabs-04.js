@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.12.2-FINAL-2025-11-13-14:30
+// 🚀 VERSION: SIAF-v2.13.0-FINAL-2025-11-13-16:00
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
-    minor: 12,
-    patch: 2,
+    minor: 13,
+    patch: 0,
     date: '13/11/2025',
-    time: '14:30',
-    description: 'Alert validazione quote real-time + gradient verde vivace',
-    color: '#34C759'  // iOS green - success feature
+    time: '16:00',
+    description: 'Luogo nascita Italia/Estero con toggle e campi multipli',
+    color: '#007AFF'  // iOS blue - new feature
 };
 
 class SiafApp {
@@ -45,6 +45,10 @@ class SiafApp {
         // Cittadinanza list (lazy loaded)
         this.cittadinanzaData = null;
         this.cittadinanzaLoaded = false;
+
+        // Stati esteri (Belfiore codes) list (lazy loaded)
+        this.statiEsteriData = null;
+        this.statiEsteriLoaded = false;
 
         // Condizioni Economiche (a livello pratica)
         this.condizioniEconomiche = {
@@ -1320,7 +1324,12 @@ addVenditore() {
         nome: '',
         cognome: '',
         sesso: 'M',
-        luogo_nascita: '',
+        luogo_nascita: '',  // DEPRECATO: mantenuto per retrocompatibilità
+        nato_italia: true,
+        luogo_nascita_comune: '',
+        luogo_nascita_provincia: '',
+        luogo_nascita_citta: '',     // Solo se nato_italia = false
+        luogo_nascita_stato: '',      // Solo se nato_italia = false
         data_nascita: '',
         codice_fiscale: '',
         tipo_documento: '',
@@ -1357,7 +1366,12 @@ addVenditore() {
         titolare_nome: '',
         titolare_cognome: '',
         titolare_sesso: 'M',
-        titolare_luogo_nascita: '',
+        titolare_luogo_nascita: '',  // DEPRECATO: mantenuto per retrocompatibilità
+        titolare_nato_italia: true,
+        titolare_luogo_nascita_comune: '',
+        titolare_luogo_nascita_provincia: '',
+        titolare_luogo_nascita_citta: '',
+        titolare_luogo_nascita_stato: '',
         titolare_data_nascita: '',
         titolare_cittadinanza: 'italiana',
         cf_titolare: '',
@@ -1413,7 +1427,12 @@ addVenditore() {
         rappresentante_nome: '',
         rappresentante_cognome: '',
         rappresentante_sesso: 'M',
-        rappresentante_luogo_nascita: '',
+        rappresentante_luogo_nascita: '',  // DEPRECATO: mantenuto per retrocompatibilità
+        rappresentante_nato_italia: true,
+        rappresentante_luogo_nascita_comune: '',
+        rappresentante_luogo_nascita_provincia: '',
+        rappresentante_luogo_nascita_citta: '',
+        rappresentante_luogo_nascita_stato: '',
         rappresentante_data_nascita: '',
         rappresentante_cittadinanza: 'italiana',
         rappresentante_cf: '',
@@ -1442,7 +1461,12 @@ addVenditore() {
         designato_nome: '',
         designato_cognome: '',
         designato_sesso: 'M',
-        designato_luogo_nascita: '',
+        designato_luogo_nascita: '',  // DEPRECATO: mantenuto per retrocompatibilità
+        designato_nato_italia: true,
+        designato_luogo_nascita_comune: '',
+        designato_luogo_nascita_provincia: '',
+        designato_luogo_nascita_citta: '',
+        designato_luogo_nascita_stato: '',
         designato_data_nascita: '',
         designato_cittadinanza: 'italiana',
         designato_cf: '',
@@ -2046,6 +2070,54 @@ convertStatoToCittadinanza(statoInput) {
     return statoInput;
 }
 
+/**
+ * Carica la lista degli stati esteri (codici Belfiore) e popola il datalist
+ * Lazy loading - carica solo una volta
+ */
+async loadStatiEsteriList() {
+    // Se già caricato, esci
+    if (this.statiEsteriLoaded) return;
+
+    try {
+        console.log('🌍 Caricamento lista stati esteri (Belfiore)...');
+        const response = await fetch('https://contattisilvestri.github.io/SIAF/DATA/belfiore-stati-esteri.json');
+
+        if (!response.ok) {
+            console.warn('⚠️ File belfiore-stati-esteri.json non trovato, funzionalità disabilitata');
+            return;
+        }
+
+        this.statiEsteriData = await response.json();
+
+        // Cerca o crea il datalist
+        let datalist = document.getElementById('stati-esteri-list');
+        if (!datalist) {
+            console.log('📝 Datalist stati esteri non trovato - Creazione automatica...');
+            datalist = document.createElement('datalist');
+            datalist.id = 'stati-esteri-list';
+            document.body.appendChild(datalist);
+            console.log('✅ Datalist stati esteri creato e aggiunto al DOM');
+        } else {
+            // Svuota datalist esistente
+            datalist.innerHTML = '';
+        }
+
+        // Aggiungi tutti gli stati (nome + codice catastale)
+        this.statiEsteriData.forEach(stato => {
+            const option = document.createElement('option');
+            option.value = stato.nome; // Es: "FRANCIA"
+            option.setAttribute('data-codice', stato.codiceCatastale); // Es: "Z326"
+            datalist.appendChild(option);
+        });
+
+        this.statiEsteriLoaded = true;
+        console.log(`✅ Caricati ${this.statiEsteriData.length} stati esteri con codici Belfiore`);
+
+    } catch (error) {
+        console.error('❌ Errore caricamento stati esteri:', error);
+    }
+}
+
 renderVenditore(venditore) {
     const container = document.getElementById('venditori-container');
 
@@ -2056,6 +2128,9 @@ renderVenditore(venditore) {
 
     // Carica lista cittadinanze (lazy load - solo la prima volta)
     this.loadCittadinanzaList();
+
+    // Carica lista stati esteri per luogo di nascita (lazy load - solo la prima volta)
+    this.loadStatiEsteriList();
 
     const isFirst = this.venditori.length === 1;
     const isConiugeAuto = venditore.isConiuge || false;
@@ -2136,9 +2211,59 @@ renderVenditore(venditore) {
                     <!-- Luogo Nascita | Data Nascita -->
                     <div class="field-row">
                         <div class="field-group">
-                            <label for="venditore_${venditore.id}_luogo_nascita">Luogo di Nascita</label>
-                            <input type="text" id="venditore_${venditore.id}_luogo_nascita" value="${venditore.luogo_nascita}">
+                            <label>Luogo di Nascita</label>
+                            <div class="segmented-control nascita-control">
+                                <input type="radio"
+                                       name="venditore_${venditore.id}_nato_tipo"
+                                       id="venditore_${venditore.id}_nato_italia"
+                                       value="italia"
+                                       ${venditore.nato_italia !== false ? 'checked' : ''}
+                                       data-venditore-id="${venditore.id}">
+                                <label for="venditore_${venditore.id}_nato_italia">Italia</label>
+
+                                <input type="radio"
+                                       name="venditore_${venditore.id}_nato_tipo"
+                                       id="venditore_${venditore.id}_nato_estero"
+                                       value="estero"
+                                       ${venditore.nato_italia === false ? 'checked' : ''}
+                                       data-venditore-id="${venditore.id}">
+                                <label for="venditore_${venditore.id}_nato_estero">Estero</label>
+
+                                <div class="segmented-control-slider"></div>
+                            </div>
+
+                            <!-- Campo Italia: Comune -->
+                            <div class="nascita-italia-field"
+                                 id="nascita-italia-field-${venditore.id}"
+                                 style="display: ${venditore.nato_italia !== false ? 'block' : 'none'}">
+                                <input type="text"
+                                       id="venditore_${venditore.id}_luogo_nascita_comune"
+                                       value="${venditore.luogo_nascita_comune || ''}"
+                                       placeholder="Comune di nascita (es: BERGAMO)"
+                                       autocomplete="off">
+                                <small class="field-hint">Inserisci il comune per il calcolo del CF</small>
+                            </div>
+
+                            <!-- Campo Estero: Città + Stato -->
+                            <div class="nascita-estero-field"
+                                 id="nascita-estero-field-${venditore.id}"
+                                 style="display: ${venditore.nato_italia === false ? 'block' : 'none'}">
+                                <input type="text"
+                                       id="venditore_${venditore.id}_luogo_nascita_citta"
+                                       value="${venditore.luogo_nascita_citta || ''}"
+                                       placeholder="Città di nascita (es: PARIGI)"
+                                       autocomplete="off"
+                                       style="margin-bottom: 8px;">
+                                <input type="text"
+                                       id="venditore_${venditore.id}_luogo_nascita_stato"
+                                       list="stati-esteri-list"
+                                       value="${venditore.luogo_nascita_stato || ''}"
+                                       placeholder="Stato (es: FRANCIA)"
+                                       autocomplete="off">
+                                <small class="field-hint">Lo stato è obbligatorio per il calcolo del CF</small>
+                            </div>
                         </div>
+
                         <div class="field-group">
                             <label for="venditore_${venditore.id}_data_nascita">Data di Nascita</label>
                             <input type="date" id="venditore_${venditore.id}_data_nascita" value="${venditore.data_nascita}">
@@ -2418,9 +2543,61 @@ renderVenditore(venditore) {
                     <!-- Luogo nascita | Data nascita -->
                     <div class="field-row">
                         <div class="field-group">
-                            <label for="venditore_${venditore.id}_titolare_luogo_nascita">Luogo di Nascita</label>
-                            <input type="text" id="venditore_${venditore.id}_titolare_luogo_nascita" value="${venditore.titolare_luogo_nascita || ''}">
+                            <label>Luogo di Nascita</label>
+                            <div class="segmented-control nascita-control">
+                                <input type="radio"
+                                       name="venditore_${venditore.id}_titolare_nato_tipo"
+                                       id="venditore_${venditore.id}_titolare_nato_italia"
+                                       value="italia"
+                                       ${venditore.titolare_nato_italia !== false ? 'checked' : ''}
+                                       data-venditore-id="${venditore.id}"
+                                       data-tipo="titolare">
+                                <label for="venditore_${venditore.id}_titolare_nato_italia">Italia</label>
+
+                                <input type="radio"
+                                       name="venditore_${venditore.id}_titolare_nato_tipo"
+                                       id="venditore_${venditore.id}_titolare_nato_estero"
+                                       value="estero"
+                                       ${venditore.titolare_nato_italia === false ? 'checked' : ''}
+                                       data-venditore-id="${venditore.id}"
+                                       data-tipo="titolare">
+                                <label for="venditore_${venditore.id}_titolare_nato_estero">Estero</label>
+
+                                <div class="segmented-control-slider"></div>
+                            </div>
+
+                            <!-- Campo Italia: Comune -->
+                            <div class="nascita-italia-field"
+                                 id="nascita-titolare-italia-field-${venditore.id}"
+                                 style="display: ${venditore.titolare_nato_italia !== false ? 'block' : 'none'}">
+                                <input type="text"
+                                       id="venditore_${venditore.id}_titolare_luogo_nascita_comune"
+                                       value="${venditore.titolare_luogo_nascita_comune || ''}"
+                                       placeholder="Comune di nascita (es: BERGAMO)"
+                                       autocomplete="off">
+                                <small class="field-hint">Inserisci il comune per il calcolo del CF</small>
+                            </div>
+
+                            <!-- Campo Estero: Città + Stato -->
+                            <div class="nascita-estero-field"
+                                 id="nascita-titolare-estero-field-${venditore.id}"
+                                 style="display: ${venditore.titolare_nato_italia === false ? 'block' : 'none'}">
+                                <input type="text"
+                                       id="venditore_${venditore.id}_titolare_luogo_nascita_citta"
+                                       value="${venditore.titolare_luogo_nascita_citta || ''}"
+                                       placeholder="Città di nascita (es: PARIGI)"
+                                       autocomplete="off"
+                                       style="margin-bottom: 8px;">
+                                <input type="text"
+                                       id="venditore_${venditore.id}_titolare_luogo_nascita_stato"
+                                       list="stati-esteri-list"
+                                       value="${venditore.titolare_luogo_nascita_stato || ''}"
+                                       placeholder="Stato (es: FRANCIA)"
+                                       autocomplete="off">
+                                <small class="field-hint">Lo stato è obbligatorio per il calcolo del CF</small>
+                            </div>
                         </div>
+
                         <div class="field-group">
                             <label for="venditore_${venditore.id}_titolare_data_nascita">Data di Nascita</label>
                             <input type="date" id="venditore_${venditore.id}_titolare_data_nascita" value="${venditore.titolare_data_nascita || ''}">
@@ -2757,9 +2934,61 @@ renderVenditore(venditore) {
                         <!-- Luogo nascita | Data nascita -->
                         <div class="field-row">
                             <div class="field-group">
-                                <label for="venditore_${venditore.id}_rappresentante_luogo_nascita">Luogo di Nascita</label>
-                                <input type="text" id="venditore_${venditore.id}_rappresentante_luogo_nascita" value="${venditore.rappresentante_luogo_nascita || ''}">
+                                <label>Luogo di Nascita</label>
+                                <div class="segmented-control nascita-control">
+                                    <input type="radio"
+                                           name="venditore_${venditore.id}_rappresentante_nato_tipo"
+                                           id="venditore_${venditore.id}_rappresentante_nato_italia"
+                                           value="italia"
+                                           ${venditore.rappresentante_nato_italia !== false ? 'checked' : ''}
+                                           data-venditore-id="${venditore.id}"
+                                           data-tipo="rappresentante">
+                                    <label for="venditore_${venditore.id}_rappresentante_nato_italia">Italia</label>
+
+                                    <input type="radio"
+                                           name="venditore_${venditore.id}_rappresentante_nato_tipo"
+                                           id="venditore_${venditore.id}_rappresentante_nato_estero"
+                                           value="estero"
+                                           ${venditore.rappresentante_nato_italia === false ? 'checked' : ''}
+                                           data-venditore-id="${venditore.id}"
+                                           data-tipo="rappresentante">
+                                    <label for="venditore_${venditore.id}_rappresentante_nato_estero">Estero</label>
+
+                                    <div class="segmented-control-slider"></div>
+                                </div>
+
+                                <!-- Campo Italia: Comune -->
+                                <div class="nascita-italia-field"
+                                     id="nascita-rappresentante-italia-field-${venditore.id}"
+                                     style="display: ${venditore.rappresentante_nato_italia !== false ? 'block' : 'none'}">
+                                    <input type="text"
+                                           id="venditore_${venditore.id}_rappresentante_luogo_nascita_comune"
+                                           value="${venditore.rappresentante_luogo_nascita_comune || ''}"
+                                           placeholder="Comune di nascita (es: BERGAMO)"
+                                           autocomplete="off">
+                                    <small class="field-hint">Inserisci il comune per il calcolo del CF</small>
+                                </div>
+
+                                <!-- Campo Estero: Città + Stato -->
+                                <div class="nascita-estero-field"
+                                     id="nascita-rappresentante-estero-field-${venditore.id}"
+                                     style="display: ${venditore.rappresentante_nato_italia === false ? 'block' : 'none'}">
+                                    <input type="text"
+                                           id="venditore_${venditore.id}_rappresentante_luogo_nascita_citta"
+                                           value="${venditore.rappresentante_luogo_nascita_citta || ''}"
+                                           placeholder="Città di nascita (es: PARIGI)"
+                                           autocomplete="off"
+                                           style="margin-bottom: 8px;">
+                                    <input type="text"
+                                           id="venditore_${venditore.id}_rappresentante_luogo_nascita_stato"
+                                           list="stati-esteri-list"
+                                           value="${venditore.rappresentante_luogo_nascita_stato || ''}"
+                                           placeholder="Stato (es: FRANCIA)"
+                                           autocomplete="off">
+                                    <small class="field-hint">Lo stato è obbligatorio per il calcolo del CF</small>
+                                </div>
                             </div>
+
                             <div class="field-group">
                                 <label for="venditore_${venditore.id}_rappresentante_data_nascita">Data di Nascita</label>
                                 <input type="date" id="venditore_${venditore.id}_rappresentante_data_nascita" value="${venditore.rappresentante_data_nascita || ''}">
@@ -2947,9 +3176,61 @@ renderVenditore(venditore) {
 
                             <div class="field-row">
                                 <div class="field-group">
-                                    <label for="venditore_${venditore.id}_designato_luogo_nascita">Luogo di Nascita</label>
-                                    <input type="text" id="venditore_${venditore.id}_designato_luogo_nascita" value="${venditore.designato_luogo_nascita || ''}">
+                                    <label>Luogo di Nascita</label>
+                                    <div class="segmented-control nascita-control">
+                                        <input type="radio"
+                                               name="venditore_${venditore.id}_designato_nato_tipo"
+                                               id="venditore_${venditore.id}_designato_nato_italia"
+                                               value="italia"
+                                               ${venditore.designato_nato_italia !== false ? 'checked' : ''}
+                                               data-venditore-id="${venditore.id}"
+                                               data-tipo="designato">
+                                        <label for="venditore_${venditore.id}_designato_nato_italia">Italia</label>
+
+                                        <input type="radio"
+                                               name="venditore_${venditore.id}_designato_nato_tipo"
+                                               id="venditore_${venditore.id}_designato_nato_estero"
+                                               value="estero"
+                                               ${venditore.designato_nato_italia === false ? 'checked' : ''}
+                                               data-venditore-id="${venditore.id}"
+                                               data-tipo="designato">
+                                        <label for="venditore_${venditore.id}_designato_nato_estero">Estero</label>
+
+                                        <div class="segmented-control-slider"></div>
+                                    </div>
+
+                                    <!-- Campo Italia: Comune -->
+                                    <div class="nascita-italia-field"
+                                         id="nascita-designato-italia-field-${venditore.id}"
+                                         style="display: ${venditore.designato_nato_italia !== false ? 'block' : 'none'}">
+                                        <input type="text"
+                                               id="venditore_${venditore.id}_designato_luogo_nascita_comune"
+                                               value="${venditore.designato_luogo_nascita_comune || ''}"
+                                               placeholder="Comune di nascita (es: BERGAMO)"
+                                               autocomplete="off">
+                                        <small class="field-hint">Inserisci il comune per il calcolo del CF</small>
+                                    </div>
+
+                                    <!-- Campo Estero: Città + Stato -->
+                                    <div class="nascita-estero-field"
+                                         id="nascita-designato-estero-field-${venditore.id}"
+                                         style="display: ${venditore.designato_nato_italia === false ? 'block' : 'none'}">
+                                        <input type="text"
+                                               id="venditore_${venditore.id}_designato_luogo_nascita_citta"
+                                               value="${venditore.designato_luogo_nascita_citta || ''}"
+                                               placeholder="Città di nascita (es: PARIGI)"
+                                               autocomplete="off"
+                                               style="margin-bottom: 8px;">
+                                        <input type="text"
+                                               id="venditore_${venditore.id}_designato_luogo_nascita_stato"
+                                               list="stati-esteri-list"
+                                               value="${venditore.designato_luogo_nascita_stato || ''}"
+                                               placeholder="Stato (es: FRANCIA)"
+                                               autocomplete="off">
+                                        <small class="field-hint">Lo stato è obbligatorio per il calcolo del CF</small>
+                                    </div>
                                 </div>
+
                                 <div class="field-group">
                                     <label for="venditore_${venditore.id}_designato_data_nascita">Data di Nascita</label>
                                     <input type="date" id="venditore_${venditore.id}_designato_data_nascita" value="${venditore.designato_data_nascita || ''}">
@@ -3217,6 +3498,109 @@ renderVenditore(venditore) {
                 }
 
                 console.log(`✅ Event listeners segmented control cittadinanza attivati per venditore ${venditore.id}`);
+            }
+
+            // ========== EVENT LISTENERS: LUOGO DI NASCITA TOGGLE (Italia/Estero) ==========
+            // Privato
+            const natoItaliaRadio = document.getElementById(`venditore_${venditore.id}_nato_italia`);
+            const natoEsteroRadio = document.getElementById(`venditore_${venditore.id}_nato_estero`);
+            const nascitaItaliaField = document.getElementById(`nascita-italia-field-${venditore.id}`);
+            const nascitaEsteroField = document.getElementById(`nascita-estero-field-${venditore.id}`);
+
+            const handleNascitaChange = () => {
+                const isItalia = natoItaliaRadio.checked;
+
+                // Mostra/nascondi campi
+                if (nascitaItaliaField) nascitaItaliaField.style.display = isItalia ? 'block' : 'none';
+                if (nascitaEsteroField) nascitaEsteroField.style.display = isItalia ? 'none' : 'block';
+
+                // Aggiorna l'oggetto venditore in memoria
+                const v = this.venditori.find(ven => ven.id === venditore.id);
+                if (v) {
+                    v.nato_italia = isItalia;
+                    console.log(`🌍 Luogo nascita Privato venditore ${venditore.id}: ${isItalia ? 'Italia' : 'Estero'}`);
+                }
+            };
+
+            if (natoItaliaRadio && natoEsteroRadio) {
+                natoItaliaRadio.addEventListener('change', handleNascitaChange);
+                natoEsteroRadio.addEventListener('change', handleNascitaChange);
+                console.log(`✅ Event listeners luogo nascita Privato attivati per venditore ${venditore.id}`);
+            }
+
+            // Titolare Ditta
+            const titNatoItaliaRadio = document.getElementById(`venditore_${venditore.id}_titolare_nato_italia`);
+            const titNatoEsteroRadio = document.getElementById(`venditore_${venditore.id}_titolare_nato_estero`);
+            const titNascitaItaliaField = document.getElementById(`nascita-titolare-italia-field-${venditore.id}`);
+            const titNascitaEsteroField = document.getElementById(`nascita-titolare-estero-field-${venditore.id}`);
+
+            const handleTitolareNascitaChange = () => {
+                const isItalia = titNatoItaliaRadio.checked;
+
+                if (titNascitaItaliaField) titNascitaItaliaField.style.display = isItalia ? 'block' : 'none';
+                if (titNascitaEsteroField) titNascitaEsteroField.style.display = isItalia ? 'none' : 'block';
+
+                const v = this.venditori.find(ven => ven.id === venditore.id);
+                if (v) {
+                    v.titolare_nato_italia = isItalia;
+                    console.log(`🌍 Luogo nascita Titolare venditore ${venditore.id}: ${isItalia ? 'Italia' : 'Estero'}`);
+                }
+            };
+
+            if (titNatoItaliaRadio && titNatoEsteroRadio) {
+                titNatoItaliaRadio.addEventListener('change', handleTitolareNascitaChange);
+                titNatoEsteroRadio.addEventListener('change', handleTitolareNascitaChange);
+                console.log(`✅ Event listeners luogo nascita Titolare attivati per venditore ${venditore.id}`);
+            }
+
+            // Rappresentante Società
+            const rappNatoItaliaRadio = document.getElementById(`venditore_${venditore.id}_rappresentante_nato_italia`);
+            const rappNatoEsteroRadio = document.getElementById(`venditore_${venditore.id}_rappresentante_nato_estero`);
+            const rappNascitaItaliaField = document.getElementById(`nascita-rappresentante-italia-field-${venditore.id}`);
+            const rappNascitaEsteroField = document.getElementById(`nascita-rappresentante-estero-field-${venditore.id}`);
+
+            const handleRappresentanteNascitaChange = () => {
+                const isItalia = rappNatoItaliaRadio.checked;
+
+                if (rappNascitaItaliaField) rappNascitaItaliaField.style.display = isItalia ? 'block' : 'none';
+                if (rappNascitaEsteroField) rappNascitaEsteroField.style.display = isItalia ? 'none' : 'block';
+
+                const v = this.venditori.find(ven => ven.id === venditore.id);
+                if (v) {
+                    v.rappresentante_nato_italia = isItalia;
+                    console.log(`🌍 Luogo nascita Rappresentante venditore ${venditore.id}: ${isItalia ? 'Italia' : 'Estero'}`);
+                }
+            };
+
+            if (rappNatoItaliaRadio && rappNatoEsteroRadio) {
+                rappNatoItaliaRadio.addEventListener('change', handleRappresentanteNascitaChange);
+                rappNatoEsteroRadio.addEventListener('change', handleRappresentanteNascitaChange);
+                console.log(`✅ Event listeners luogo nascita Rappresentante attivati per venditore ${venditore.id}`);
+            }
+
+            // Designato Società
+            const desNatoItaliaRadio = document.getElementById(`venditore_${venditore.id}_designato_nato_italia`);
+            const desNatoEsteroRadio = document.getElementById(`venditore_${venditore.id}_designato_nato_estero`);
+            const desNascitaItaliaField = document.getElementById(`nascita-designato-italia-field-${venditore.id}`);
+            const desNascitaEsteroField = document.getElementById(`nascita-designato-estero-field-${venditore.id}`);
+
+            const handleDesignatoNascitaChange = () => {
+                const isItalia = desNatoItaliaRadio.checked;
+
+                if (desNascitaItaliaField) desNascitaItaliaField.style.display = isItalia ? 'block' : 'none';
+                if (desNascitaEsteroField) desNascitaEsteroField.style.display = isItalia ? 'none' : 'block';
+
+                const v = this.venditori.find(ven => ven.id === venditore.id);
+                if (v) {
+                    v.designato_nato_italia = isItalia;
+                    console.log(`🌍 Luogo nascita Designato venditore ${venditore.id}: ${isItalia ? 'Italia' : 'Estero'}`);
+                }
+            };
+
+            if (desNatoItaliaRadio && desNatoEsteroRadio) {
+                desNatoItaliaRadio.addEventListener('change', handleDesignatoNascitaChange);
+                desNatoEsteroRadio.addEventListener('change', handleDesignatoNascitaChange);
+                console.log(`✅ Event listeners luogo nascita Designato attivati per venditore ${venditore.id}`);
             }
 
             // ========== EVENT LISTENERS: TIPO SOGGETTO (Privato/Ditta/Società) ==========

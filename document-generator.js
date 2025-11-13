@@ -681,8 +681,23 @@ function generatePrivatoText(venditore, index, isLast, venditori) {
 
   result += `**${venditore.nome} ${venditore.cognome}**`;
 
-  if (venditore.luogo_nascita && venditore.data_nascita) {
-    result += ` nat${isFemale ? 'a' : 'o'} a ${venditore.luogo_nascita} il ${venditore.data_nascita}`;
+  // Luogo di nascita (Italia o Estero)
+  if (venditore.data_nascita) {
+    const natoPrefix = ` nat${isFemale ? 'a' : 'o'} a `;
+
+    if (venditore.nato_italia !== false && venditore.luogo_nascita_comune) {
+      // Nato in Italia: "nato a BERGAMO"
+      result += `${natoPrefix}${venditore.luogo_nascita_comune}`;
+    } else if (venditore.nato_italia === false && venditore.luogo_nascita_stato) {
+      // Nato all'estero: "nato a PARIGI (FRANCIA)"
+      const citta = venditore.luogo_nascita_citta ? `${venditore.luogo_nascita_citta} ` : '';
+      result += `${natoPrefix}${citta}(${venditore.luogo_nascita_stato})`;
+    } else if (venditore.luogo_nascita) {
+      // Fallback per retrocompatibilità con vecchi dati
+      result += `${natoPrefix}${venditore.luogo_nascita}`;
+    }
+
+    result += ` il ${venditore.data_nascita}`;
   }
 
   if (venditore.codice_fiscale) {
@@ -791,8 +806,23 @@ function generateDittaText(venditore, index, isLast) {
 
   result += `**${venditore.titolare_nome} ${venditore.titolare_cognome}**`;
 
-  if (venditore.titolare_luogo_nascita && venditore.titolare_data_nascita) {
-    result += ` nat${isFemale ? 'a' : 'o'} a ${venditore.titolare_luogo_nascita} il ${venditore.titolare_data_nascita}`;
+  // Luogo di nascita titolare (Italia o Estero)
+  if (venditore.titolare_data_nascita) {
+    const natoPrefix = ` nat${isFemale ? 'a' : 'o'} a `;
+
+    if (venditore.titolare_nato_italia !== false && venditore.titolare_luogo_nascita_comune) {
+      // Nato in Italia: "nato a BERGAMO"
+      result += `${natoPrefix}${venditore.titolare_luogo_nascita_comune}`;
+    } else if (venditore.titolare_nato_italia === false && venditore.titolare_luogo_nascita_stato) {
+      // Nato all'estero: "nato a PARIGI (FRANCIA)"
+      const citta = venditore.titolare_luogo_nascita_citta ? `${venditore.titolare_luogo_nascita_citta} ` : '';
+      result += `${natoPrefix}${citta}(${venditore.titolare_luogo_nascita_stato})`;
+    } else if (venditore.titolare_luogo_nascita) {
+      // Fallback per retrocompatibilità con vecchi dati
+      result += `${natoPrefix}${venditore.titolare_luogo_nascita}`;
+    }
+
+    result += ` il ${venditore.titolare_data_nascita}`;
   }
 
   if (venditore.cf_titolare) {
@@ -973,8 +1003,23 @@ function generateSocietaText(venditore, index, isLast) {
       result += '**[NOME COGNOME RAPPRESENTANTE]**';
     }
 
-    if (venditore.rappresentante_luogo_nascita && venditore.rappresentante_data_nascita) {
-      result += ` nat${isFemale ? 'a' : 'o'} a ${venditore.rappresentante_luogo_nascita} il ${venditore.rappresentante_data_nascita}`;
+    // Luogo di nascita rappresentante (Italia o Estero)
+    if (venditore.rappresentante_data_nascita) {
+      const natoPrefix = ` nat${isFemale ? 'a' : 'o'} a `;
+
+      if (venditore.rappresentante_nato_italia !== false && venditore.rappresentante_luogo_nascita_comune) {
+        // Nato in Italia: "nato a BERGAMO"
+        result += `${natoPrefix}${venditore.rappresentante_luogo_nascita_comune}`;
+      } else if (venditore.rappresentante_nato_italia === false && venditore.rappresentante_luogo_nascita_stato) {
+        // Nato all'estero: "nato a PARIGI (FRANCIA)"
+        const citta = venditore.rappresentante_luogo_nascita_citta ? `${venditore.rappresentante_luogo_nascita_citta} ` : '';
+        result += `${natoPrefix}${citta}(${venditore.rappresentante_luogo_nascita_stato})`;
+      } else if (venditore.rappresentante_luogo_nascita) {
+        // Fallback per retrocompatibilità con vecchi dati
+        result += `${natoPrefix}${venditore.rappresentante_luogo_nascita}`;
+      }
+
+      result += ` il ${venditore.rappresentante_data_nascita}`;
     }
 
     if (venditore.rappresentante_cf) {
@@ -1043,8 +1088,23 @@ function generateSocietaText(venditore, index, isLast) {
       result += '**[NOME COGNOME DESIGNATO]**';
     }
 
-    if (venditore.designato_luogo_nascita && venditore.designato_data_nascita) {
-      result += ` nat${isFemale ? 'a' : 'o'} a ${venditore.designato_luogo_nascita} il ${venditore.designato_data_nascita}`;
+    // Luogo di nascita designato (Italia o Estero)
+    if (venditore.designato_data_nascita) {
+      const natoPrefix = ` nat${isFemale ? 'a' : 'o'} a `;
+
+      if (venditore.designato_nato_italia !== false && venditore.designato_luogo_nascita_comune) {
+        // Nato in Italia: "nato a BERGAMO"
+        result += `${natoPrefix}${venditore.designato_luogo_nascita_comune}`;
+      } else if (venditore.designato_nato_italia === false && venditore.designato_luogo_nascita_stato) {
+        // Nato all'estero: "nato a PARIGI (FRANCIA)"
+        const citta = venditore.designato_luogo_nascita_citta ? `${venditore.designato_luogo_nascita_citta} ` : '';
+        result += `${natoPrefix}${citta}(${venditore.designato_luogo_nascita_stato})`;
+      } else if (venditore.designato_luogo_nascita) {
+        // Fallback per retrocompatibilità con vecchi dati
+        result += `${natoPrefix}${venditore.designato_luogo_nascita}`;
+      }
+
+      result += ` il ${venditore.designato_data_nascita}`;
     }
 
     if (venditore.designato_cf) {
