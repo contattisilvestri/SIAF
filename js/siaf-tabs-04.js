@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.13.5-FINAL-2025-11-13-18:30
+// 🚀 VERSION: SIAF-v2.14.0-FINAL-2025-11-13-19:00
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
-    minor: 13,
-    patch: 5,
+    minor: 14,
+    patch: 0,
     date: '13/11/2025',
-    time: '18:30',
-    description: 'Fix cittadinanza: applica conversione STATO→cittadinanza in collectAllFormData',
-    color: '#007AFF'  // iOS blue - new feature
+    time: '19:00',
+    description: 'Aggiunto campo "Note aggiuntive" a sezioni Conformità e Vincoli',
+    color: '#34C759'  // iOS green - new feature
 };
 
 class SiafApp {
@@ -4301,13 +4301,15 @@ renderVenditore(venditore) {
         immobile.stato.conformita = {
             edilizia: isChecked(`conf_edilizia_${immobileId}`),
             catastale: isChecked(`conf_catastale_${immobileId}`),
-            impianti: isChecked(`conf_impianti_${immobileId}`)
+            impianti: isChecked(`conf_impianti_${immobileId}`),
+            note: getValue(`conformita_note_${immobileId}`)
         };
 
         // Vincoli
         immobile.stato.vincoli = {
             iscrizioni_pregiudizievoli: isChecked(`iscriz_preg_${immobileId}`),
-            vincoli_servitu: isChecked(`vincoli_serv_${immobileId}`)
+            vincoli_servitu: isChecked(`vincoli_serv_${immobileId}`),
+            note: getValue(`vincoli_note_${immobileId}`)
         };
 
         // Certificazione energetica
@@ -5943,6 +5945,14 @@ renderVenditore(venditore) {
                         <input type="checkbox" id="conf_impianti_${id}" ${stato.conformita?.impianti ? 'checked' : ''}>
                         <label for="conf_impianti_${id}" class="stato-success">Impianti conformi normative</label>
                     </div>
+
+                    <!-- Note aggiuntive Conformità -->
+                    <div style="margin-top: 10px;">
+                        <label for="conformita_note_${id}">Note aggiuntive:</label>
+                        <textarea id="conformita_note_${id}"
+                                  placeholder="Eventuali note o specificazioni relative alla conformità..."
+                                  style="width: 100%; min-height: 60px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical;">${stato.conformita?.note || ''}</textarea>
+                    </div>
                 </div>
 
                 <!-- VINCOLI (2 elementi in riga) -->
@@ -5954,6 +5964,14 @@ renderVenditore(venditore) {
 
                         <input type="checkbox" id="vincoli_serv_${id}" ${stato.vincoli?.vincoli_servitu ? 'checked' : ''}>
                         <label for="vincoli_serv_${id}" class="stato-danger">Vincoli e/o servitù attive/passive</label>
+                    </div>
+
+                    <!-- Note aggiuntive Vincoli -->
+                    <div style="margin-top: 10px;">
+                        <label for="vincoli_note_${id}">Note aggiuntive:</label>
+                        <textarea id="vincoli_note_${id}"
+                                  placeholder="Eventuali note o specificazioni relative ai vincoli..."
+                                  style="width: 100%; min-height: 60px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical;">${stato.vincoli?.note || ''}</textarea>
                     </div>
                 </div>
 
