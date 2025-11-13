@@ -5,11 +5,11 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 9,
-    patch: 2,
+    patch: 3,
     date: '12/11/2025',
-    time: '18:00',
-    description: 'Performance: Loading robusto con timeout, retry e indicatori progressivi',
-    color: '#FF9500'  // iOS orange - performance
+    time: '19:30',
+    description: 'Hotfix: Regex fix per WordPress, protezione doppia inizializzazione, anti-crash',
+    color: '#FF3B30'  // iOS red - critical fix
 };
 
 class SiafApp {
@@ -6643,11 +6643,18 @@ function calcolaValoriCondizioni(condizioni) {
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🚀 Inizializzazione SIAF App...');
 
+    // Previeni inizializzazione multipla
+    if (window.siafApp && window.siafApp.isInitialized) {
+        console.warn('⚠️ SIAF App già inizializzata, skip');
+        return;
+    }
+
     // Timeout di 10 secondi per l'inizializzazione
     const INIT_TIMEOUT = 10000; // 10 secondi
 
     try {
         window.siafApp = new SiafApp();
+        window.siafApp.isInitialized = false;
 
         // Promise con timeout
         const initPromise = window.siafApp.init();
@@ -6658,11 +6665,17 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Race tra init e timeout
         await Promise.race([initPromise, timeoutPromise]);
 
+        // Marca come inizializzata
+        window.siafApp.isInitialized = true;
+
         console.log('✅ SIAF App pronta!');
 
         // 🚀 VERSION FINALE - Sempre ultimo messaggio in console
         const version = window.SIAF_VERSION;
-        console.log(`%c🚀 SIAF SYSTEM v${version.major}.${version.minor}.${version.patch}-FINAL-${version.date.replace(/\//g, '-')}-${version.time.replace(':', '')} 🚀`, `background: ${version.color}; color: white; font-size: 16px; font-weight: bold; padding: 10px; border-radius: 5px;`);
+        // Usa split/join invece di regex per evitare problemi con minificatori WordPress
+        const dateFormatted = version.date.split('/').join('-');
+        const timeFormatted = version.time.split(':').join('');
+        console.log(`%c🚀 SIAF SYSTEM v${version.major}.${version.minor}.${version.patch}-FINAL-${dateFormatted}-${timeFormatted} 🚀`, `background: ${version.color}; color: white; font-size: 16px; font-weight: bold; padding: 10px; border-radius: 5px;`);
         console.log(`%c📅 Last Update: ${version.date} ${version.time} - ${version.description}`, 'background: #2196F3; color: white; font-size: 12px; padding: 5px;');
 
     } catch (error) {
