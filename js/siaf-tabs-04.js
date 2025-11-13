@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.10.1-FINAL-2025-11-13-10:20
+// 🚀 VERSION: SIAF-v2.10.2-FINAL-2025-11-13-10:40
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
     minor: 10,
-    patch: 1,
+    patch: 2,
     date: '13/11/2025',
-    time: '10:20',
-    description: 'Fix cittadinanza estero: datalist auto-creato + autocomplete sempre funzionante',
-    color: '#007AFF'  // iOS blue - feature fix
+    time: '10:40',
+    description: 'UX cittadinanza: cerca NAZIONE (FRANCIA) invece di cittadinanza (francese) - conversione automatica',
+    color: '#5856D6'  // iOS purple - UX improvement
 };
 
 class SiafApp {
@@ -1978,20 +1978,43 @@ async loadCittadinanzaList() {
             datalist.innerHTML = '';
         }
 
-        // Aggiungi tutte le cittadinanze
+        // Aggiungi tutti gli stati (più intuitivo per l'operatore cercare "Francia" invece di "francese")
         this.cittadinanzaData.forEach(paese => {
             const option = document.createElement('option');
-            option.value = paese.cittadinanza;
-            option.setAttribute('data-stato', paese.stato);
+            option.value = paese.stato; // Mostra il nome dello stato
+            option.setAttribute('data-cittadinanza', paese.cittadinanza); // Salva la cittadinanza come attributo
             datalist.appendChild(option);
         });
 
         this.cittadinanzaLoaded = true;
-        console.log(`✅ Caricate ${this.cittadinanzaData.length} cittadinanze`);
+        console.log(`✅ Caricate ${this.cittadinanzaData.length} nazioni/cittadinanze`);
 
     } catch (error) {
         console.error('❌ Errore caricamento cittadinanze:', error);
     }
+}
+
+/**
+ * Converte il nome dello STATO nella cittadinanza corrispondente
+ * Es: "FRANCIA" → "francese", "SPAGNA" → "spagnola"
+ */
+convertStatoToCittadinanza(statoInput) {
+    if (!statoInput || !this.cittadinanzaData) return statoInput;
+
+    // Normalizza input (maiuscolo, trim)
+    const statoNormalized = statoInput.trim().toUpperCase();
+
+    // Cerca nel database
+    const paese = this.cittadinanzaData.find(p => p.stato === statoNormalized);
+
+    if (paese) {
+        console.log(`🔄 Conversione: "${statoInput}" → "${paese.cittadinanza}"`);
+        return paese.cittadinanza;
+    }
+
+    // Se non trovato, ritorna l'input originale (potrebbe essere già una cittadinanza)
+    console.warn(`⚠️ Stato "${statoInput}" non trovato nel database, mantengo il valore originale`);
+    return statoInput;
 }
 
 renderVenditore(venditore) {
@@ -2123,9 +2146,9 @@ renderVenditore(venditore) {
                                        id="venditore_${venditore.id}_cittadinanza_custom"
                                        list="paesi-cittadinanza-list"
                                        value="${venditore.cittadinanza && venditore.cittadinanza !== 'italiana' ? venditore.cittadinanza : ''}"
-                                       placeholder="Digita il paese di cittadinanza..."
+                                       placeholder="Cerca la nazione (es: FRANCIA, SPAGNA...)"
                                        autocomplete="off">
-                                <small class="field-hint">Inizia a digitare per vedere i suggerimenti</small>
+                                <small class="field-hint">Digita il nome della nazione per vedere i suggerimenti</small>
                             </div>
                         </div>
 
@@ -2386,7 +2409,7 @@ renderVenditore(venditore) {
                             <div class="segmented-control-slider"></div>
                         </div>
                         <div class="cittadinanza-field" id="cittadinanza-titolare-field-${venditore.id}" style="display: ${venditore.titolare_cittadinanza && venditore.titolare_cittadinanza !== 'italiana' ? 'block' : 'none'};">
-                            <input type="text" id="venditore_${venditore.id}_titolare_cittadinanza_custom" value="${venditore.titolare_cittadinanza !== 'italiana' ? venditore.titolare_cittadinanza || '' : ''}" list="paesi-cittadinanza-list" placeholder="Specificare paese">
+                            <input type="text" id="venditore_${venditore.id}_titolare_cittadinanza_custom" value="${venditore.titolare_cittadinanza !== 'italiana' ? venditore.titolare_cittadinanza || '' : ''}" list="paesi-cittadinanza-list" placeholder="Cerca nazione (es: FRANCIA)">
                         </div>
                     </div>
 
@@ -2725,7 +2748,7 @@ renderVenditore(venditore) {
                                 <div class="segmented-control-slider"></div>
                             </div>
                             <div class="cittadinanza-field" id="cittadinanza-rappresentante-field-${venditore.id}" style="display: ${venditore.rappresentante_cittadinanza && venditore.rappresentante_cittadinanza !== 'italiana' ? 'block' : 'none'};">
-                                <input type="text" id="venditore_${venditore.id}_rappresentante_cittadinanza_custom" value="${venditore.rappresentante_cittadinanza !== 'italiana' ? venditore.rappresentante_cittadinanza || '' : ''}" list="paesi-cittadinanza-list" placeholder="Specificare paese">
+                                <input type="text" id="venditore_${venditore.id}_rappresentante_cittadinanza_custom" value="${venditore.rappresentante_cittadinanza !== 'italiana' ? venditore.rappresentante_cittadinanza || '' : ''}" list="paesi-cittadinanza-list" placeholder="Cerca nazione (es: FRANCIA)">
                             </div>
                         </div>
 
@@ -2915,7 +2938,7 @@ renderVenditore(venditore) {
                                     <div class="segmented-control-slider"></div>
                                 </div>
                                 <div class="cittadinanza-field" id="cittadinanza-designato-field-${venditore.id}" style="display: ${venditore.designato_cittadinanza && venditore.designato_cittadinanza !== 'italiana' ? 'block' : 'none'};">
-                                    <input type="text" id="venditore_${venditore.id}_designato_cittadinanza_custom" value="${venditore.designato_cittadinanza !== 'italiana' ? venditore.designato_cittadinanza || '' : ''}" list="paesi-cittadinanza-list" placeholder="Specificare paese">
+                                    <input type="text" id="venditore_${venditore.id}_designato_cittadinanza_custom" value="${venditore.designato_cittadinanza !== 'italiana' ? venditore.designato_cittadinanza || '' : ''}" list="paesi-cittadinanza-list" placeholder="Cerca nazione (es: FRANCIA)">
                                 </div>
                             </div>
 
@@ -3150,12 +3173,13 @@ renderVenditore(venditore) {
                 cittItaliaRadio.addEventListener('change', handleCittadinanzaChange);
                 cittEsteroRadio.addEventListener('change', handleCittadinanzaChange);
 
-                // Listener per quando digita nel campo estero
+                // Listener per quando digita/seleziona nel campo estero
                 if (cittadinanzaInput) {
-                    cittadinanzaInput.addEventListener('change', () => {
+                    cittadinanzaInput.addEventListener('input', () => {
                         const v = this.venditori.find(ven => ven.id === venditore.id);
                         if (v && cittEsteroRadio.checked) {
-                            v.cittadinanza = cittadinanzaInput.value;
+                            // Converte automaticamente STATO → cittadinanza (es: "FRANCIA" → "francese")
+                            v.cittadinanza = this.convertStatoToCittadinanza(cittadinanzaInput.value);
                             console.log(`🌍 Cittadinanza estera venditore ${venditore.id} aggiornata: ${v.cittadinanza}`);
                         }
                     });
@@ -3311,12 +3335,13 @@ renderVenditore(venditore) {
                 titolareCittItaliaRadio.addEventListener('change', handleTitolareCittadinanzaChange);
                 titolareCittEsteroRadio.addEventListener('change', handleTitolareCittadinanzaChange);
 
-                // Listener per quando digita nel campo estero
+                // Listener per quando digita/seleziona nel campo estero
                 if (titolareCittadinanzaInput) {
-                    titolareCittadinanzaInput.addEventListener('change', () => {
+                    titolareCittadinanzaInput.addEventListener('input', () => {
                         const v = this.venditori.find(ven => ven.id === venditore.id);
                         if (v && titolareCittEsteroRadio.checked) {
-                            v.titolare_cittadinanza = titolareCittadinanzaInput.value;
+                            // Converte automaticamente STATO → cittadinanza
+                            v.titolare_cittadinanza = this.convertStatoToCittadinanza(titolareCittadinanzaInput.value);
                             console.log(`🌍 Cittadinanza estera titolare venditore ${venditore.id} aggiornata: ${v.titolare_cittadinanza}`);
                         }
                     });
@@ -3356,12 +3381,13 @@ renderVenditore(venditore) {
                 rappresentanteCittItaliaRadio.addEventListener('change', handleRappresentanteCittadinanzaChange);
                 rappresentanteCittEsteroRadio.addEventListener('change', handleRappresentanteCittadinanzaChange);
 
-                // Listener per quando digita nel campo estero
+                // Listener per quando digita/seleziona nel campo estero
                 if (rappresentanteCittadinanzaInput) {
-                    rappresentanteCittadinanzaInput.addEventListener('change', () => {
+                    rappresentanteCittadinanzaInput.addEventListener('input', () => {
                         const v = this.venditori.find(ven => ven.id === venditore.id);
                         if (v && rappresentanteCittEsteroRadio.checked) {
-                            v.rappresentante_cittadinanza = rappresentanteCittadinanzaInput.value;
+                            // Converte automaticamente STATO → cittadinanza
+                            v.rappresentante_cittadinanza = this.convertStatoToCittadinanza(rappresentanteCittadinanzaInput.value);
                             console.log(`🌍 Cittadinanza estera rappresentante venditore ${venditore.id} aggiornata: ${v.rappresentante_cittadinanza}`);
                         }
                     });
@@ -3401,12 +3427,13 @@ renderVenditore(venditore) {
                 designatoCittItaliaRadio.addEventListener('change', handleDesignatoCittadinanzaChange);
                 designatoCittEsteroRadio.addEventListener('change', handleDesignatoCittadinanzaChange);
 
-                // Listener per quando digita nel campo estero
+                // Listener per quando digita/seleziona nel campo estero
                 if (designatoCittadinanzaInput) {
-                    designatoCittadinanzaInput.addEventListener('change', () => {
+                    designatoCittadinanzaInput.addEventListener('input', () => {
                         const v = this.venditori.find(ven => ven.id === venditore.id);
                         if (v && designatoCittEsteroRadio.checked) {
-                            v.designato_cittadinanza = designatoCittadinanzaInput.value;
+                            // Converte automaticamente STATO → cittadinanza
+                            v.designato_cittadinanza = this.convertStatoToCittadinanza(designatoCittadinanzaInput.value);
                             console.log(`🌍 Cittadinanza estera designato venditore ${venditore.id} aggiornata: ${v.designato_cittadinanza}`);
                         }
                     });
