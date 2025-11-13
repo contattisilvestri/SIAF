@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.10.2-FINAL-2025-11-13-10:40
+// 🚀 VERSION: SIAF-v2.10.3-FINAL-2025-11-13-11:00
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
     minor: 10,
-    patch: 2,
+    patch: 3,
     date: '13/11/2025',
-    time: '10:40',
-    description: 'UX cittadinanza: cerca NAZIONE (FRANCIA) invece di cittadinanza (francese) - conversione automatica',
-    color: '#5856D6'  // iOS purple - UX improvement
+    time: '11:00',
+    description: 'Database cittadinanza COMPLETO: 196 nazioni (da 152) + ITALIA + ARABIA SAUDITA + 42 stati mancanti',
+    color: '#FF9500'  // iOS orange - major content update
 };
 
 class SiafApp {
