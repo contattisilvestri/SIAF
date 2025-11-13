@@ -6689,7 +6689,11 @@ function calcolaValoriCondizioni(condizioni) {
 }
 
 // BLOCCO 7: Inizializzazione app quando DOM è pronto
+console.log('%c🎯 REGISTRAZIONE LISTENER DOMContentLoaded...', 'background: #FF00FF; color: white; font-size: 16px; padding: 5px;');
+console.log('%c📌 document.readyState:', 'font-weight: bold', document.readyState);
+
 document.addEventListener('DOMContentLoaded', async function() {
+    console.log('%c🚨🚨🚨 DOMContentLoaded TRIGGERED! 🚨🚨🚨', 'background: #00FF00; color: #000; font-size: 18px; font-weight: bold; padding: 10px;');
     const appStartTime = Date.now();
 
     console.log('%c╔═══════════════════════════════════════════════════════════╗', 'color: #00BFFF; font-weight: bold');
@@ -6777,3 +6781,18 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 });
+
+// FALLBACK: Se il DOM è già pronto quando il file viene caricato, esegui immediatamente
+console.log('%c🔍 CONTROLLO FALLBACK: document.readyState dopo registrazione listener:', 'background: #FFA500; color: white; font-size: 14px; padding: 5px;');
+console.log('%c📌 document.readyState =', 'font-weight: bold', document.readyState);
+
+if (document.readyState === 'loading') {
+    console.log('%c✅ DOM ancora in loading - Listener DOMContentLoaded gestirà l\'inizializzazione', 'background: #4CAF50; color: white; padding: 5px;');
+} else {
+    console.log('%c⚠️ DOM GIÀ PRONTO! DOMContentLoaded non si triggerà mai!', 'background: #FF0000; color: white; font-size: 16px; font-weight: bold; padding: 10px;');
+    console.log('%c🚀 ESEGUO INIZIALIZZAZIONE IMMEDIATA (FALLBACK)', 'background: #FF9800; color: white; font-size: 14px; padding: 5px;');
+
+    // Trigger manuale dell'evento per eseguire il listener
+    const event = new Event('DOMContentLoaded');
+    document.dispatchEvent(event);
+}
