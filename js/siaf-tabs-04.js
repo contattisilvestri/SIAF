@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.12.1-FINAL-2025-11-13-14:00
+// 🚀 VERSION: SIAF-v2.12.2-FINAL-2025-11-13-14:30
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
     minor: 12,
-    patch: 1,
+    patch: 2,
     date: '13/11/2025',
-    time: '14:00',
-    description: 'Normalizzazione design tabella Venditori e Quote (Apple-style)',
-    color: '#5AC8FA'  // iOS cyan - UI improvements
+    time: '14:30',
+    description: 'Alert validazione quote real-time + gradient verde vivace',
+    color: '#34C759'  // iOS green - success feature
 };
 
 class SiafApp {
@@ -5012,7 +5012,7 @@ renderVenditore(venditore) {
         const isFirst = this.immobili.length === 1;
 
         const immobileHtml = `
-            <div id="immobile-${immobile.id}" class="immobile-card">
+            <div id="immobile-${immobile.id}" class="immobile-card" data-immobile-id="${immobile.id}">
                 <div class="immobile-header">
                     <h3>🏠 Immobile ${immobile.id}</h3>
                     ${!isFirst ? `<button type="button" class="btn-remove" onclick="window.siafApp.removeImmobile(${immobile.id})">❌ Rimuovi Immobile</button>` : ''}
@@ -5197,6 +5197,65 @@ renderVenditore(venditore) {
     }
 
     // ============================================================
+    // BLOCCO 92A: Aggiornamento Dinamico Alert Validazione Quote
+    // ============================================================
+    updateQuotaValidationAlert(immobileId) {
+        console.log(`🔄 Aggiornamento alert validazione per immobile ${immobileId}`);
+
+        // Trova l'immobile
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        if (!immobile) {
+            console.error(`❌ Immobile ${immobileId} non trovato`);
+            return;
+        }
+
+        // Calcola somma quote
+        const sommaQuote = immobile.venditori_quote.reduce((sum, vq) => {
+            const quota = parseFloat(vq.quota_percentuale) || 0;
+            return sum + quota;
+        }, 0);
+
+        const quotaValida = sommaQuote === 100;
+        const quotaVuota = sommaQuote === 0;
+
+        // Determina classe CSS e testo
+        let alertClass = 'invalida';
+        let alertIcon = '⚠️';
+        let alertText = `Totale quote: ${sommaQuote.toFixed(2)}% (deve essere 100%)`;
+
+        if (quotaValida) {
+            alertClass = 'valida';
+            alertIcon = '✅';
+            alertText = `Totale quote: ${sommaQuote.toFixed(2)}%`;
+        } else if (quotaVuota) {
+            alertClass = 'vuota';
+            alertIcon = '⚠️';
+            alertText = `Totale quote: ${sommaQuote.toFixed(2)}% (specificare le quote)`;
+        }
+
+        // Trova il div dell'alert nel DOM
+        const immobileCard = document.querySelector(`[data-immobile-id="${immobileId}"]`);
+        if (!immobileCard) {
+            console.warn(`⚠️ Card immobile ${immobileId} non trovato nel DOM`);
+            return;
+        }
+
+        const alertDiv = immobileCard.querySelector('.quota-totale');
+        if (!alertDiv) {
+            console.warn(`⚠️ Alert quota-totale non trovato per immobile ${immobileId}`);
+            return;
+        }
+
+        // Aggiorna classi CSS (rimuovi vecchie, aggiungi nuova)
+        alertDiv.className = `quota-totale ${alertClass}`;
+
+        // Aggiorna contenuto
+        alertDiv.innerHTML = `<span>${alertIcon} ${alertText}</span>`;
+
+        console.log(`✅ Alert aggiornato: classe="${alertClass}", somma=${sommaQuote}%`);
+    }
+
+    // ============================================================
     // BLOCCO 93: Aggiornamento Quote Venditori
     // ============================================================
     updateVenditoreQuota(immobileId, venditoreId, field, value) {
@@ -5229,8 +5288,8 @@ renderVenditore(venditore) {
         // Marca come modificato
         this.isDirty = true;
 
-        // Re-render per aggiornare validazione somma
-        this.renderImmobili();
+        // Aggiorna SOLO l'alert validazione (non re-render completo!)
+        this.updateQuotaValidationAlert(immobileId);
 
         console.log('💾 Dati aggiornati:', quotaEntry);
     }
