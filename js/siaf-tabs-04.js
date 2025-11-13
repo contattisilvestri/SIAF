@@ -94,40 +94,79 @@ class SiafApp {
     }
 
     async init() {
-        console.log('🚀 SIAF App inizializzata');
+        const startTime = Date.now();
+        console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #00ff00; font-weight: bold');
+        console.log('%c🚀 INIZIO INIT - SIAF App', 'color: #00ff00; font-weight: bold; font-size: 14px');
+        console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #00ff00; font-weight: bold');
 
         try {
             // Inizializza componenti CORE (sincroni e veloci)
             this.updateLoadingStatus('Inizializzazione componenti...', 20);
+
+            console.log('📍 [1/8] initializeTabs - START');
             this.initializeTabs();
+            console.log('✅ [1/8] initializeTabs - OK (' + (Date.now() - startTime) + 'ms)');
+
+            console.log('📍 [2/8] initializePraticaSelection - START');
             this.initializePraticaSelection();
+            console.log('✅ [2/8] initializePraticaSelection - OK (' + (Date.now() - startTime) + 'ms)');
+
+            console.log('📍 [3/8] initializeForm - START');
             this.initializeForm();
+            console.log('✅ [3/8] initializeForm - OK (' + (Date.now() - startTime) + 'ms)');
+
+            console.log('📍 [4/8] initializeVenditori - START');
             this.initializeVenditori();
+            console.log('✅ [4/8] initializeVenditori - OK (' + (Date.now() - startTime) + 'ms)');
+
+            console.log('📍 [5/8] initializeImmobili - START');
             this.initializeImmobili();
+            console.log('✅ [5/8] initializeImmobili - OK (' + (Date.now() - startTime) + 'ms)');
+
+            console.log('📍 [6/8] initializeCondizioniTab - START');
             this.initializeCondizioniTab();
+            console.log('✅ [6/8] initializeCondizioniTab - OK (' + (Date.now() - startTime) + 'ms)');
+
+            console.log('📍 [7/8] initializeActions - START');
             this.initializeActions();
+            console.log('✅ [7/8] initializeActions - OK (' + (Date.now() - startTime) + 'ms)');
 
             this.updateLoadingStatus('Configurazione interfaccia...', 60);
+
+            console.log('📍 [8/8] Configurazione UI - START');
             // Renderizza ultime pratiche
             this.renderUltimePratiche();
+            console.log('  → renderUltimePratiche OK');
 
             // Auto-popola data
             this.setCurrentDate();
+            console.log('  → setCurrentDate OK');
 
             // Auto-save periodico
             this.startAutoSave();
+            console.log('✅ [8/8] Configurazione UI - OK (' + (Date.now() - startTime) + 'ms)');
 
             this.updateLoadingStatus('Caricamento dati geografici...', 80);
             // Carica geodati italiani in background (non bloccante)
+            console.log('📍 Avvio loadGeoDataInBackground (async)...');
             this.loadGeoDataInBackground();
 
             this.updateLoadingStatus('Completato!', 100);
+
+            const totalTime = Date.now() - startTime;
+            console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #00ff00; font-weight: bold');
+            console.log('%c✅ INIT COMPLETATO in ' + totalTime + 'ms', 'color: #00ff00; font-weight: bold; font-size: 14px');
+            console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #00ff00; font-weight: bold');
 
             // Nascondi loading dopo 500ms
             setTimeout(() => this.hideLoadingIndicator(), 500);
 
         } catch (error) {
-            console.error('❌ Errore durante init():', error);
+            console.error('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #ff0000; font-weight: bold');
+            console.error('%c❌ ERRORE IN INIT dopo ' + (Date.now() - startTime) + 'ms', 'color: #ff0000; font-weight: bold; font-size: 14px');
+            console.error('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #ff0000; font-weight: bold');
+            console.error('Errore dettagliato:', error);
+            console.error('Stack:', error.stack);
             this.updateLoadingStatus('Errore di inizializzazione', 0, true);
             throw error;
         }
@@ -155,9 +194,10 @@ class SiafApp {
 
     async loadGeoDataInBackground() {
         const GEODATA_TIMEOUT = 5000; // 5 secondi max per geodati
+        const geoStartTime = Date.now();
 
         try {
-            console.log('📍 Caricamento geodati in background...');
+            console.log('%c🌍 [GEODATA] Inizio caricamento...', 'background: #2196F3; color: white; padding: 2px 5px;');
 
             // Promise con timeout per geodati
             const geoDataPromise = loadItalyGeoData();
@@ -168,7 +208,8 @@ class SiafApp {
             await Promise.race([geoDataPromise, timeoutPromise]);
             this.geoDataLoaded = true;
 
-            console.log('✅ Geodati caricati - Province disponibili:', Object.keys(PROVINCE_COMUNI).length);
+            const geoTime = Date.now() - geoStartTime;
+            console.log('%c✅ [GEODATA] Caricati in ' + geoTime + 'ms - Province: ' + Object.keys(PROVINCE_COMUNI).length, 'background: #4CAF50; color: white; padding: 2px 5px;');
 
             // Aggiorna UI se ci sono immobili già renderizzati
             this.refreshProvinciaDropdowns();
@@ -176,11 +217,13 @@ class SiafApp {
             // Forza aggiornamento di tutte le dropdown provincia
             setTimeout(() => {
                 this.forceUpdateAllProvinciaDropdowns();
+                console.log('🔄 [GEODATA] Dropdown aggiornate');
             }, 500);
 
         } catch (error) {
-            console.warn('⚠️ Geodati non disponibili o timeout, usando fallback');
-            console.error('Errore dettagliato:', error);
+            const geoTime = Date.now() - geoStartTime;
+            console.warn('%c⚠️ [GEODATA] Fallback dopo ' + geoTime + 'ms', 'background: #FF9800; color: white; padding: 2px 5px;');
+            console.warn('Errore geodati:', error.message);
             this.geoDataLoaded = false;
             // L'applicazione continua a funzionare con le province base
         }
@@ -6641,21 +6684,30 @@ function calcolaValoriCondizioni(condizioni) {
 
 // BLOCCO 7: Inizializzazione app quando DOM è pronto
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('🚀 Inizializzazione SIAF App...');
+    const appStartTime = Date.now();
+
+    console.log('%c╔═══════════════════════════════════════════════════════════╗', 'color: #00BFFF; font-weight: bold');
+    console.log('%c║  🚀 SIAF SYSTEM - AVVIO APPLICAZIONE                    ║', 'color: #00BFFF; font-weight: bold');
+    console.log('%c╚═══════════════════════════════════════════════════════════╝', 'color: #00BFFF; font-weight: bold');
+    console.log('⏱️  Timestamp avvio:', new Date().toISOString());
 
     // Previeni inizializzazione multipla
     if (window.siafApp && window.siafApp.isInitialized) {
-        console.warn('⚠️ SIAF App già inizializzata, skip');
+        console.warn('%c⚠️  SIAF App già inizializzata - SKIP', 'background: #FF9800; color: white; padding: 5px;');
         return;
     }
 
     // Timeout di 10 secondi per l'inizializzazione
     const INIT_TIMEOUT = 10000; // 10 secondi
+    console.log('⏰ Timeout impostato:', INIT_TIMEOUT + 'ms');
 
     try {
+        console.log('📦 [STEP 1/4] Creazione istanza SiafApp...');
         window.siafApp = new SiafApp();
         window.siafApp.isInitialized = false;
+        console.log('✅ [STEP 1/4] Istanza creata in ' + (Date.now() - appStartTime) + 'ms');
 
+        console.log('📦 [STEP 2/4] Avvio init() con timeout race...');
         // Promise con timeout
         const initPromise = window.siafApp.init();
         const timeoutPromise = new Promise((_, reject) =>
@@ -6664,19 +6716,28 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         // Race tra init e timeout
         await Promise.race([initPromise, timeoutPromise]);
+        console.log('✅ [STEP 2/4] Init completato in ' + (Date.now() - appStartTime) + 'ms');
 
         // Marca come inizializzata
         window.siafApp.isInitialized = true;
+        console.log('📦 [STEP 3/4] Flag isInitialized = true');
 
-        console.log('✅ SIAF App pronta!');
-
+        console.log('📦 [STEP 4/4] Versioning e finalizzazione...');
         // 🚀 VERSION FINALE - Sempre ultimo messaggio in console
         const version = window.SIAF_VERSION;
         // Usa split/join invece di regex per evitare problemi con minificatori WordPress
         const dateFormatted = version.date.split('/').join('-');
         const timeFormatted = version.time.split(':').join('');
-        console.log(`%c🚀 SIAF SYSTEM v${version.major}.${version.minor}.${version.patch}-FINAL-${dateFormatted}-${timeFormatted} 🚀`, `background: ${version.color}; color: white; font-size: 16px; font-weight: bold; padding: 10px; border-radius: 5px;`);
+
+        const totalAppTime = Date.now() - appStartTime;
+
+        console.log('%c╔═══════════════════════════════════════════════════════════╗', 'color: #00ff00; font-weight: bold');
+        console.log(`%c║  ✅ SIAF SYSTEM v${version.major}.${version.minor}.${version.patch} - PRONTO!                      ║`, 'color: #00ff00; font-weight: bold');
+        console.log('%c╚═══════════════════════════════════════════════════════════╝', 'color: #00ff00; font-weight: bold');
+        console.log(`%c🚀 SISTEMA AVVIATO IN ${totalAppTime}ms`, `background: ${version.color}; color: white; font-size: 16px; font-weight: bold; padding: 10px; border-radius: 5px;`);
+        console.log(`%c📦 Version Tag: v${version.major}.${version.minor}.${version.patch}-FINAL-${dateFormatted}-${timeFormatted}`, 'background: #9C27B0; color: white; font-size: 11px; padding: 4px;');
         console.log(`%c📅 Last Update: ${version.date} ${version.time} - ${version.description}`, 'background: #2196F3; color: white; font-size: 12px; padding: 5px;');
+        console.log('✅ [STEP 4/4] Completato in ' + totalAppTime + 'ms');
 
     } catch (error) {
         console.error('❌ ERRORE CRITICO durante inizializzazione:', error);
