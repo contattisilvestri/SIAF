@@ -5,11 +5,11 @@
 window.SIAF_VERSION = {
     major: 2,
     minor: 9,
-    patch: 1,
+    patch: 2,
     date: '12/11/2025',
-    time: '15:30',
-    description: 'Bugfix: Cittadinanza e calcolo CF per titolare, rappresentante, designato',
-    color: '#34C759'  // iOS green - bugfix
+    time: '18:00',
+    description: 'Performance: Loading robusto con timeout, retry e indicatori progressivi',
+    color: '#FF9500'  // iOS orange - performance
 };
 
 class SiafApp {
@@ -96,31 +96,76 @@ class SiafApp {
     async init() {
         console.log('🚀 SIAF App inizializzata');
 
-        // Carica geodati italiani (asincrono)
-        this.loadGeoDataInBackground();
+        try {
+            // Inizializza componenti CORE (sincroni e veloci)
+            this.updateLoadingStatus('Inizializzazione componenti...', 20);
+            this.initializeTabs();
+            this.initializePraticaSelection();
+            this.initializeForm();
+            this.initializeVenditori();
+            this.initializeImmobili();
+            this.initializeCondizioniTab();
+            this.initializeActions();
 
-        // Inizializza componenti
-        this.initializeTabs();
-        this.initializePraticaSelection();
-        this.initializeForm();
-        this.initializeVenditori();
-        this.initializeImmobili();
-        this.initializeCondizioniTab();
-        this.initializeActions();
+            this.updateLoadingStatus('Configurazione interfaccia...', 60);
+            // Renderizza ultime pratiche
+            this.renderUltimePratiche();
 
-        // Renderizza ultime pratiche
-        this.renderUltimePratiche();
+            // Auto-popola data
+            this.setCurrentDate();
 
-        // Auto-popola data
-        this.setCurrentDate();
+            // Auto-save periodico
+            this.startAutoSave();
 
-        // Auto-save periodico
-        this.startAutoSave();
+            this.updateLoadingStatus('Caricamento dati geografici...', 80);
+            // Carica geodati italiani in background (non bloccante)
+            this.loadGeoDataInBackground();
+
+            this.updateLoadingStatus('Completato!', 100);
+
+            // Nascondi loading dopo 500ms
+            setTimeout(() => this.hideLoadingIndicator(), 500);
+
+        } catch (error) {
+            console.error('❌ Errore durante init():', error);
+            this.updateLoadingStatus('Errore di inizializzazione', 0, true);
+            throw error;
+        }
+    }
+
+    updateLoadingStatus(message, progress, isError = false) {
+        const indicator = document.getElementById('version-indicator');
+        if (indicator) {
+            indicator.textContent = isError ? `❌ ${message}` : `⏳ ${message} (${progress}%)`;
+            indicator.style.background = isError ? '#dc3545' : '#FF9500';
+            indicator.style.color = 'white';
+        }
+        console.log(`📊 Loading: ${message} - ${progress}%`);
+    }
+
+    hideLoadingIndicator() {
+        const indicator = document.getElementById('version-indicator');
+        if (indicator) {
+            // Chiamata alla funzione updateVersionIndicator che esiste già
+            if (typeof updateVersionIndicator === 'function') {
+                updateVersionIndicator();
+            }
+        }
     }
 
     async loadGeoDataInBackground() {
+        const GEODATA_TIMEOUT = 5000; // 5 secondi max per geodati
+
         try {
-            await loadItalyGeoData();
+            console.log('📍 Caricamento geodati in background...');
+
+            // Promise con timeout per geodati
+            const geoDataPromise = loadItalyGeoData();
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Timeout caricamento geodati')), GEODATA_TIMEOUT)
+            );
+
+            await Promise.race([geoDataPromise, timeoutPromise]);
             this.geoDataLoaded = true;
 
             console.log('✅ Geodati caricati - Province disponibili:', Object.keys(PROVINCE_COMUNI).length);
@@ -134,8 +179,10 @@ class SiafApp {
             }, 500);
 
         } catch (error) {
-            console.warn('⚠️ Geodati non disponibili, usando fallback');
+            console.warn('⚠️ Geodati non disponibili o timeout, usando fallback');
             console.error('Errore dettagliato:', error);
+            this.geoDataLoaded = false;
+            // L'applicazione continua a funzionare con le province base
         }
     }
 
@@ -1582,21 +1629,34 @@ showNotification(message, type = 'info', duration = 3000) {
 async initializeCFCalculator() {
     if (this.cfCalculatorReady) return;
 
+    const CF_INIT_TIMEOUT = 8000; // 8 secondi max per CF calculator
+
     try {
         console.log('🔄 Inizializzazione CF Calculator...');
+
+        // Verifica che la classe sia disponibile
+        if (!window.CodiceFiscaleCalculator) {
+            throw new Error('CodiceFiscaleCalculator non disponibile');
+        }
 
         // Crea istanza calculator
         this.cfCalculator = new window.CodiceFiscaleCalculator();
 
-        // Inizializza (carica database Belfiore)
-        await this.cfCalculator.init();
+        // Inizializza con timeout (carica database Belfiore)
+        const initPromise = this.cfCalculator.init();
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Timeout inizializzazione CF Calculator')), CF_INIT_TIMEOUT)
+        );
+
+        await Promise.race([initPromise, timeoutPromise]);
 
         this.cfCalculatorReady = true;
         console.log('✅ CF Calculator ready');
 
     } catch (error) {
         console.error('❌ Errore inizializzazione CF Calculator:', error);
-        alert('Errore caricamento sistema calcolo CF. Ricarica la pagina.');
+        this.cfCalculatorReady = false;
+        throw new Error(`Impossibile caricare il sistema di calcolo CF: ${error.message}`);
     }
 }
 
@@ -6583,14 +6643,22 @@ function calcolaValoriCondizioni(condizioni) {
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🚀 Inizializzazione SIAF App...');
 
+    // Timeout di 10 secondi per l'inizializzazione
+    const INIT_TIMEOUT = 10000; // 10 secondi
+
     try {
         window.siafApp = new SiafApp();
-        await window.siafApp.init();  // ← AWAIT per aspettare completamento
+
+        // Promise con timeout
+        const initPromise = window.siafApp.init();
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Timeout inizializzazione (10s)')), INIT_TIMEOUT)
+        );
+
+        // Race tra init e timeout
+        await Promise.race([initPromise, timeoutPromise]);
 
         console.log('✅ SIAF App pronta!');
-
-        // Aggiorna indicatore versione SOLO dopo init() completato
-        updateVersionIndicator();
 
         // 🚀 VERSION FINALE - Sempre ultimo messaggio in console
         const version = window.SIAF_VERSION;
@@ -6603,11 +6671,29 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Aggiorna indicatore con stato errore
         const indicator = document.getElementById('version-indicator');
         if (indicator) {
-            indicator.textContent = '❌ Errore caricamento';
+            indicator.textContent = '❌ Errore - Ricarica pagina';
             indicator.style.background = '#dc3545';
             indicator.style.color = 'white';
+            indicator.style.cursor = 'pointer';
+
+            // Click per ricaricare
+            indicator.addEventListener('click', () => {
+                window.location.reload(true);
+            });
         }
 
-        alert('Errore durante il caricamento dell\'applicazione.\n\nRicarica la pagina (Ctrl+F5) o contatta l\'assistenza se il problema persiste.');
+        // Mostra alert con opzione retry
+        const retry = confirm(
+            'Errore durante il caricamento dell\'applicazione.\n\n' +
+            'Possibili cause:\n' +
+            '• Connessione internet lenta\n' +
+            '• Cache del browser\n' +
+            '• Problemi temporanei del server\n\n' +
+            'Clicca OK per ricaricare la pagina, Annulla per continuare.'
+        );
+
+        if (retry) {
+            window.location.reload(true);
+        }
     }
 });
