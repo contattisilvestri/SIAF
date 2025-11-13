@@ -1,14 +1,14 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.13.3-FINAL-2025-11-13-18:00
+// 🚀 VERSION: SIAF-v2.13.4-FINAL-2025-11-13-18:15
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
     minor: 13,
-    patch: 3,
+    patch: 4,
     date: '13/11/2025',
-    time: '18:00',
-    description: 'Fix toggle nascita per coniuge auto-aggiunto (event listeners sempre attivi)',
+    time: '18:15',
+    description: 'Fix calcolo CF: aggiornato per leggere nuovi campi nascita (comune/stato + toggle)',
     color: '#007AFF'  // iOS blue - new feature
 };
 
@@ -1786,7 +1786,21 @@ async calculateCF(venditoreId, tipo = 'privato') {
         const sesso = sessoRadioM?.checked ? 'M' : (sessoRadioF?.checked ? 'F' : null);
 
         const dataNascita = document.getElementById(`venditore_${venditoreId}_${fieldPrefix}data_nascita`)?.value;
-        const luogoNascita = document.getElementById(`venditore_${venditoreId}_${fieldPrefix}luogo_nascita`)?.value;
+
+        // ========== LUOGO DI NASCITA: GESTIONE TOGGLE ITALIA/ESTERO ==========
+        // Leggi toggle nato in Italia/Estero
+        const natoItaliaRadio = document.getElementById(`venditore_${venditoreId}_${fieldPrefix}nato_italia`);
+        const isNatoItalia = natoItaliaRadio?.checked !== false; // Default Italia se non trovato
+
+        // Leggi campo corretto in base al toggle
+        let luogoNascita;
+        if (isNatoItalia) {
+            // Italia: usa campo COMUNE
+            luogoNascita = document.getElementById(`venditore_${venditoreId}_${fieldPrefix}luogo_nascita_comune`)?.value;
+        } else {
+            // Estero: usa campo STATO (es: FRANCIA)
+            luogoNascita = document.getElementById(`venditore_${venditoreId}_${fieldPrefix}luogo_nascita_stato`)?.value;
+        }
 
         // Per privato usiamo 'provincia', per gli altri il campo non esiste (usiamo null)
         const provincia = tipo === 'privato'
@@ -3960,6 +3974,12 @@ renderVenditore(venditore) {
                 const cittadinanzaCustom = document.getElementById(`venditore_${venditore.id}_cittadinanza_custom`)?.value || '';
                 const cittadinanza = isItalia ? 'italiana' : (cittadinanzaCustom || '');
 
+                // Leggi luogo nascita con toggle Italia/Estero
+                const natoItaliaRadio = document.getElementById(`venditore_${venditore.id}_nato_italia`);
+                const natoItalia = natoItaliaRadio?.checked !== false; // Default Italia
+                const luogoNascitaComune = document.getElementById(`venditore_${venditore.id}_luogo_nascita_comune`)?.value || '';
+                const luogoNascitaStato = document.getElementById(`venditore_${venditore.id}_luogo_nascita_stato`)?.value || '';
+
                 data = {
                     ...data,
                     nome: document.getElementById(`venditore_${venditore.id}_nome`)?.value || '',
@@ -3972,7 +3992,9 @@ renderVenditore(venditore) {
                     linkedTo: venditore.linkedTo || null,
                     hasConiuge: venditore.hasConiuge || false,
                     coniugeId: venditore.coniugeId || null,
-                    luogo_nascita: document.getElementById(`venditore_${venditore.id}_luogo_nascita`)?.value || '',
+                    nato_italia: natoItalia,
+                    luogo_nascita_comune: luogoNascitaComune,
+                    luogo_nascita_stato: luogoNascitaStato,
                     data_nascita: document.getElementById(`venditore_${venditore.id}_data_nascita`)?.value || '',
                     codice_fiscale: document.getElementById(`venditore_${venditore.id}_codice_fiscale`)?.value || '',
                     tipo_documento: document.getElementById(`venditore_${venditore.id}_tipo_documento`)?.value || '',
@@ -4009,12 +4031,20 @@ renderVenditore(venditore) {
                 const titolareCittadinanzaCustom = document.getElementById(`venditore_${venditore.id}_titolare_cittadinanza_custom`)?.value || '';
                 const titolareCittadinanza = isItaliaTitolare ? 'italiana' : titolareCittadinanzaCustom;
 
+                // Leggi luogo nascita titolare con toggle Italia/Estero
+                const titolareNatoItaliaRadio = document.getElementById(`venditore_${venditore.id}_titolare_nato_italia`);
+                const titolareNatoItalia = titolareNatoItaliaRadio?.checked !== false;
+                const titolareLuogoNascitaComune = document.getElementById(`venditore_${venditore.id}_titolare_luogo_nascita_comune`)?.value || '';
+                const titolareLuogoNascitaStato = document.getElementById(`venditore_${venditore.id}_titolare_luogo_nascita_stato`)?.value || '';
+
                 data = {
                     ...data,
                     titolare_nome: document.getElementById(`venditore_${venditore.id}_titolare_nome`)?.value || '',
                     titolare_cognome: document.getElementById(`venditore_${venditore.id}_titolare_cognome`)?.value || '',
                     titolare_sesso: titolareSesso,
-                    titolare_luogo_nascita: document.getElementById(`venditore_${venditore.id}_titolare_luogo_nascita`)?.value || '',
+                    titolare_nato_italia: titolareNatoItalia,
+                    titolare_luogo_nascita_comune: titolareLuogoNascitaComune,
+                    titolare_luogo_nascita_stato: titolareLuogoNascitaStato,
                     titolare_data_nascita: document.getElementById(`venditore_${venditore.id}_titolare_data_nascita`)?.value || '',
                     titolare_cittadinanza: titolareCittadinanza,
                     cf_titolare: document.getElementById(`venditore_${venditore.id}_cf_titolare`)?.value || '',
@@ -4086,12 +4116,20 @@ renderVenditore(venditore) {
                     const rappresentanteCittadinanzaCustom = document.getElementById(`venditore_${venditore.id}_rappresentante_cittadinanza_custom`)?.value || '';
                     const rappresentanteCittadinanza = isItaliaRappresentante ? 'italiana' : rappresentanteCittadinanzaCustom;
 
+                    // Leggi luogo nascita rappresentante con toggle Italia/Estero
+                    const rappresentanteNatoItaliaRadio = document.getElementById(`venditore_${venditore.id}_rappresentante_nato_italia`);
+                    const rappresentanteNatoItalia = rappresentanteNatoItaliaRadio?.checked !== false;
+                    const rappresentanteLuogoNascitaComune = document.getElementById(`venditore_${venditore.id}_rappresentante_luogo_nascita_comune`)?.value || '';
+                    const rappresentanteLuogoNascitaStato = document.getElementById(`venditore_${venditore.id}_rappresentante_luogo_nascita_stato`)?.value || '';
+
                     data = {
                         ...data,
                         rappresentante_nome: document.getElementById(`venditore_${venditore.id}_rappresentante_nome`)?.value || '',
                         rappresentante_cognome: document.getElementById(`venditore_${venditore.id}_rappresentante_cognome`)?.value || '',
                         rappresentante_sesso: rappSesso,
-                        rappresentante_luogo_nascita: document.getElementById(`venditore_${venditore.id}_rappresentante_luogo_nascita`)?.value || '',
+                        rappresentante_nato_italia: rappresentanteNatoItalia,
+                        rappresentante_luogo_nascita_comune: rappresentanteLuogoNascitaComune,
+                        rappresentante_luogo_nascita_stato: rappresentanteLuogoNascitaStato,
                         rappresentante_data_nascita: document.getElementById(`venditore_${venditore.id}_rappresentante_data_nascita`)?.value || '',
                         rappresentante_cittadinanza: rappresentanteCittadinanza,
                         rappresentante_cf: document.getElementById(`venditore_${venditore.id}_rappresentante_cf`)?.value || '',
@@ -4118,6 +4156,12 @@ renderVenditore(venditore) {
                     const designatoCittadinanzaCustom = document.getElementById(`venditore_${venditore.id}_designato_cittadinanza_custom`)?.value || '';
                     const designatoCittadinanza = isItaliaDesignato ? 'italiana' : designatoCittadinanzaCustom;
 
+                    // Leggi luogo nascita designato con toggle Italia/Estero
+                    const designatoNatoItaliaRadio = document.getElementById(`venditore_${venditore.id}_designato_nato_italia`);
+                    const designatoNatoItalia = designatoNatoItaliaRadio?.checked !== false;
+                    const designatoLuogoNascitaComune = document.getElementById(`venditore_${venditore.id}_designato_luogo_nascita_comune`)?.value || '';
+                    const designatoLuogoNascitaStato = document.getElementById(`venditore_${venditore.id}_designato_luogo_nascita_stato`)?.value || '';
+
                     data = {
                         ...data,
                         soc_amm_ragione_sociale: document.getElementById(`venditore_${venditore.id}_soc_amm_ragione_sociale`)?.value || '',
@@ -4133,7 +4177,9 @@ renderVenditore(venditore) {
                         designato_nome: document.getElementById(`venditore_${venditore.id}_designato_nome`)?.value || '',
                         designato_cognome: document.getElementById(`venditore_${venditore.id}_designato_cognome`)?.value || '',
                         designato_sesso: designatoSesso,
-                        designato_luogo_nascita: document.getElementById(`venditore_${venditore.id}_designato_luogo_nascita`)?.value || '',
+                        designato_nato_italia: designatoNatoItalia,
+                        designato_luogo_nascita_comune: designatoLuogoNascitaComune,
+                        designato_luogo_nascita_stato: designatoLuogoNascitaStato,
                         designato_data_nascita: document.getElementById(`venditore_${venditore.id}_designato_data_nascita`)?.value || '',
                         designato_cittadinanza: designatoCittadinanza,
                         designato_cf: document.getElementById(`venditore_${venditore.id}_designato_cf`)?.value || '',
