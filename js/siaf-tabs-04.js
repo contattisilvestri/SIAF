@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.10.0-FINAL-2025-11-13-10:10
+// 🚀 VERSION: SIAF-v2.10.1-FINAL-2025-11-13-10:20
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
     minor: 10,
-    patch: 0,
+    patch: 1,
     date: '13/11/2025',
-    time: '10:10',
-    description: 'Fix caricamento WordPress async + Sistema debug completo + Performance ottimizzata',
-    color: '#34C759'  // iOS green - major fix
+    time: '10:20',
+    description: 'Fix cittadinanza estero: datalist auto-creato + autocomplete sempre funzionante',
+    color: '#007AFF'  // iOS blue - feature fix
 };
 
 class SiafApp {
@@ -1965,15 +1965,18 @@ async loadCittadinanzaList() {
 
         this.cittadinanzaData = await response.json();
 
-        // Popola il datalist
-        const datalist = document.getElementById('paesi-cittadinanza-list');
+        // Cerca o crea il datalist
+        let datalist = document.getElementById('paesi-cittadinanza-list');
         if (!datalist) {
-            console.warn('⚠️ Datalist cittadinanze non trovato nel DOM');
-            return;
+            console.log('📝 Datalist cittadinanze non trovato - Creazione automatica...');
+            datalist = document.createElement('datalist');
+            datalist.id = 'paesi-cittadinanza-list';
+            document.body.appendChild(datalist);
+            console.log('✅ Datalist cittadinanze creato e aggiunto al DOM');
+        } else {
+            // Svuota datalist esistente
+            datalist.innerHTML = '';
         }
-
-        // Svuota datalist esistente
-        datalist.innerHTML = '';
 
         // Aggiungi tutte le cittadinanze
         this.cittadinanzaData.forEach(paese => {
@@ -2122,7 +2125,6 @@ renderVenditore(venditore) {
                                        value="${venditore.cittadinanza && venditore.cittadinanza !== 'italiana' ? venditore.cittadinanza : ''}"
                                        placeholder="Digita il paese di cittadinanza..."
                                        autocomplete="off">
-                                <datalist id="paesi-cittadinanza-list"></datalist>
                                 <small class="field-hint">Inizia a digitare per vedere i suggerimenti</small>
                             </div>
                         </div>
