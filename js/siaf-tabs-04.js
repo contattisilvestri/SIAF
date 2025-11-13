@@ -1,14 +1,14 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.13.2-FINAL-2025-11-13-17:30
+// 🚀 VERSION: SIAF-v2.13.3-FINAL-2025-11-13-18:00
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
     minor: 13,
-    patch: 2,
+    patch: 3,
     date: '13/11/2025',
-    time: '17:30',
-    description: 'Fix toggle nascita visibilità + ordine campi stato prima comune',
+    time: '18:00',
+    description: 'Fix toggle nascita per coniuge auto-aggiunto (event listeners sempre attivi)',
     color: '#007AFF'  // iOS blue - new feature
 };
 
@@ -3477,101 +3477,6 @@ renderVenditore(venditore) {
                 console.log(`✅ Event listeners segmented control cittadinanza attivati per venditore ${venditore.id}`);
             }
 
-            // ========== EVENT LISTENERS: LUOGO DI NASCITA TOGGLE (Italia/Estero) ==========
-            // Privato
-            const natoItaliaRadio = document.getElementById(`venditore_${venditore.id}_nato_italia`);
-            const natoEsteroRadio = document.getElementById(`venditore_${venditore.id}_nato_estero`);
-            const nascitaEsteroField = document.getElementById(`nascita-estero-field-${venditore.id}`);
-
-            const handleNascitaChange = () => {
-                const isItalia = natoItaliaRadio.checked;
-
-                // Mostra/nascondi solo campo stato estero (comune sempre visibile)
-                if (nascitaEsteroField) nascitaEsteroField.style.display = isItalia ? 'none' : 'block';
-
-                // Aggiorna l'oggetto venditore in memoria
-                const v = this.venditori.find(ven => ven.id === venditore.id);
-                if (v) {
-                    v.nato_italia = isItalia;
-                    console.log(`🌍 Luogo nascita Privato venditore ${venditore.id}: ${isItalia ? 'Italia' : 'Estero'}`);
-                }
-            };
-
-            if (natoItaliaRadio && natoEsteroRadio) {
-                natoItaliaRadio.addEventListener('change', handleNascitaChange);
-                natoEsteroRadio.addEventListener('change', handleNascitaChange);
-                console.log(`✅ Event listeners luogo nascita Privato attivati per venditore ${venditore.id}`);
-            }
-
-            // Titolare Ditta
-            const titNatoItaliaRadio = document.getElementById(`venditore_${venditore.id}_titolare_nato_italia`);
-            const titNatoEsteroRadio = document.getElementById(`venditore_${venditore.id}_titolare_nato_estero`);
-            const titNascitaEsteroField = document.getElementById(`nascita-titolare-estero-field-${venditore.id}`);
-
-            const handleTitolareNascitaChange = () => {
-                const isItalia = titNatoItaliaRadio.checked;
-
-                if (titNascitaEsteroField) titNascitaEsteroField.style.display = isItalia ? 'none' : 'block';
-
-                const v = this.venditori.find(ven => ven.id === venditore.id);
-                if (v) {
-                    v.titolare_nato_italia = isItalia;
-                    console.log(`🌍 Luogo nascita Titolare venditore ${venditore.id}: ${isItalia ? 'Italia' : 'Estero'}`);
-                }
-            };
-
-            if (titNatoItaliaRadio && titNatoEsteroRadio) {
-                titNatoItaliaRadio.addEventListener('change', handleTitolareNascitaChange);
-                titNatoEsteroRadio.addEventListener('change', handleTitolareNascitaChange);
-                console.log(`✅ Event listeners luogo nascita Titolare attivati per venditore ${venditore.id}`);
-            }
-
-            // Rappresentante Società
-            const rappNatoItaliaRadio = document.getElementById(`venditore_${venditore.id}_rappresentante_nato_italia`);
-            const rappNatoEsteroRadio = document.getElementById(`venditore_${venditore.id}_rappresentante_nato_estero`);
-            const rappNascitaEsteroField = document.getElementById(`nascita-rappresentante-estero-field-${venditore.id}`);
-
-            const handleRappresentanteNascitaChange = () => {
-                const isItalia = rappNatoItaliaRadio.checked;
-
-                if (rappNascitaEsteroField) rappNascitaEsteroField.style.display = isItalia ? 'none' : 'block';
-
-                const v = this.venditori.find(ven => ven.id === venditore.id);
-                if (v) {
-                    v.rappresentante_nato_italia = isItalia;
-                    console.log(`🌍 Luogo nascita Rappresentante venditore ${venditore.id}: ${isItalia ? 'Italia' : 'Estero'}`);
-                }
-            };
-
-            if (rappNatoItaliaRadio && rappNatoEsteroRadio) {
-                rappNatoItaliaRadio.addEventListener('change', handleRappresentanteNascitaChange);
-                rappNatoEsteroRadio.addEventListener('change', handleRappresentanteNascitaChange);
-                console.log(`✅ Event listeners luogo nascita Rappresentante attivati per venditore ${venditore.id}`);
-            }
-
-            // Designato Società
-            const desNatoItaliaRadio = document.getElementById(`venditore_${venditore.id}_designato_nato_italia`);
-            const desNatoEsteroRadio = document.getElementById(`venditore_${venditore.id}_designato_nato_estero`);
-            const desNascitaEsteroField = document.getElementById(`nascita-designato-estero-field-${venditore.id}`);
-
-            const handleDesignatoNascitaChange = () => {
-                const isItalia = desNatoItaliaRadio.checked;
-
-                if (desNascitaEsteroField) desNascitaEsteroField.style.display = isItalia ? 'none' : 'block';
-
-                const v = this.venditori.find(ven => ven.id === venditore.id);
-                if (v) {
-                    v.designato_nato_italia = isItalia;
-                    console.log(`🌍 Luogo nascita Designato venditore ${venditore.id}: ${isItalia ? 'Italia' : 'Estero'}`);
-                }
-            };
-
-            if (desNatoItaliaRadio && desNatoEsteroRadio) {
-                desNatoItaliaRadio.addEventListener('change', handleDesignatoNascitaChange);
-                desNatoEsteroRadio.addEventListener('change', handleDesignatoNascitaChange);
-                console.log(`✅ Event listeners luogo nascita Designato attivati per venditore ${venditore.id}`);
-            }
-
             // ========== EVENT LISTENERS: TIPO SOGGETTO (Privato/Ditta/Società) ==========
             const tipoPrivatoRadio = document.getElementById(`venditore_${venditore.id}_tipo_privato`);
             const tipoDittaRadio = document.getElementById(`venditore_${venditore.id}_tipo_ditta`);
@@ -3843,6 +3748,104 @@ renderVenditore(venditore) {
     } else {
         console.log(`⏭️ Venditore ${venditore.id} è un coniuge auto-aggiunto - event listeners non necessari`);
     }
+
+    // ========== EVENT LISTENERS: LUOGO DI NASCITA TOGGLE (Italia/Estero) ==========
+    // QUESTI LISTENERS SONO ATTIVI PER TUTTI I VENDITORI (incluso coniuge auto-aggiunto)
+    setTimeout(() => {
+        // Privato
+        const natoItaliaRadio = document.getElementById(`venditore_${venditore.id}_nato_italia`);
+        const natoEsteroRadio = document.getElementById(`venditore_${venditore.id}_nato_estero`);
+        const nascitaEsteroField = document.getElementById(`nascita-estero-field-${venditore.id}`);
+
+        const handleNascitaChange = () => {
+            const isItalia = natoItaliaRadio.checked;
+
+            // Mostra/nascondi solo campo stato estero (comune sempre visibile)
+            if (nascitaEsteroField) nascitaEsteroField.style.display = isItalia ? 'none' : 'block';
+
+            // Aggiorna l'oggetto venditore in memoria
+            const v = this.venditori.find(ven => ven.id === venditore.id);
+            if (v) {
+                v.nato_italia = isItalia;
+                console.log(`🌍 Luogo nascita Privato venditore ${venditore.id}: ${isItalia ? 'Italia' : 'Estero'}`);
+            }
+        };
+
+        if (natoItaliaRadio && natoEsteroRadio) {
+            natoItaliaRadio.addEventListener('change', handleNascitaChange);
+            natoEsteroRadio.addEventListener('change', handleNascitaChange);
+            console.log(`✅ Event listeners luogo nascita Privato attivati per venditore ${venditore.id}`);
+        }
+
+        // Titolare Ditta
+        const titNatoItaliaRadio = document.getElementById(`venditore_${venditore.id}_titolare_nato_italia`);
+        const titNatoEsteroRadio = document.getElementById(`venditore_${venditore.id}_titolare_nato_estero`);
+        const titNascitaEsteroField = document.getElementById(`nascita-titolare-estero-field-${venditore.id}`);
+
+        const handleTitolareNascitaChange = () => {
+            const isItalia = titNatoItaliaRadio.checked;
+
+            if (titNascitaEsteroField) titNascitaEsteroField.style.display = isItalia ? 'none' : 'block';
+
+            const v = this.venditori.find(ven => ven.id === venditore.id);
+            if (v) {
+                v.titolare_nato_italia = isItalia;
+                console.log(`🌍 Luogo nascita Titolare venditore ${venditore.id}: ${isItalia ? 'Italia' : 'Estero'}`);
+            }
+        };
+
+        if (titNatoItaliaRadio && titNatoEsteroRadio) {
+            titNatoItaliaRadio.addEventListener('change', handleTitolareNascitaChange);
+            titNatoEsteroRadio.addEventListener('change', handleTitolareNascitaChange);
+            console.log(`✅ Event listeners luogo nascita Titolare attivati per venditore ${venditore.id}`);
+        }
+
+        // Rappresentante Società
+        const rappNatoItaliaRadio = document.getElementById(`venditore_${venditore.id}_rappresentante_nato_italia`);
+        const rappNatoEsteroRadio = document.getElementById(`venditore_${venditore.id}_rappresentante_nato_estero`);
+        const rappNascitaEsteroField = document.getElementById(`nascita-rappresentante-estero-field-${venditore.id}`);
+
+        const handleRappresentanteNascitaChange = () => {
+            const isItalia = rappNatoItaliaRadio.checked;
+
+            if (rappNascitaEsteroField) rappNascitaEsteroField.style.display = isItalia ? 'none' : 'block';
+
+            const v = this.venditori.find(ven => ven.id === venditore.id);
+            if (v) {
+                v.rappresentante_nato_italia = isItalia;
+                console.log(`🌍 Luogo nascita Rappresentante venditore ${venditore.id}: ${isItalia ? 'Italia' : 'Estero'}`);
+            }
+        };
+
+        if (rappNatoItaliaRadio && rappNatoEsteroRadio) {
+            rappNatoItaliaRadio.addEventListener('change', handleRappresentanteNascitaChange);
+            rappNatoEsteroRadio.addEventListener('change', handleRappresentanteNascitaChange);
+            console.log(`✅ Event listeners luogo nascita Rappresentante attivati per venditore ${venditore.id}`);
+        }
+
+        // Designato Società
+        const desNatoItaliaRadio = document.getElementById(`venditore_${venditore.id}_designato_nato_italia`);
+        const desNatoEsteroRadio = document.getElementById(`venditore_${venditore.id}_designato_nato_estero`);
+        const desNascitaEsteroField = document.getElementById(`nascita-designato-estero-field-${venditore.id}`);
+
+        const handleDesignatoNascitaChange = () => {
+            const isItalia = desNatoItaliaRadio.checked;
+
+            if (desNascitaEsteroField) desNascitaEsteroField.style.display = isItalia ? 'none' : 'block';
+
+            const v = this.venditori.find(ven => ven.id === venditore.id);
+            if (v) {
+                v.designato_nato_italia = isItalia;
+                console.log(`🌍 Luogo nascita Designato venditore ${venditore.id}: ${isItalia ? 'Italia' : 'Estero'}`);
+            }
+        };
+
+        if (desNatoItaliaRadio && desNatoEsteroRadio) {
+            desNatoItaliaRadio.addEventListener('change', handleDesignatoNascitaChange);
+            desNatoEsteroRadio.addEventListener('change', handleDesignatoNascitaChange);
+            console.log(`✅ Event listeners luogo nascita Designato attivati per venditore ${venditore.id}`);
+        }
+    }, 100);
 }
 
     // ========== BLOCCO 5: GESTIONE SALVATAGGIO ==========
