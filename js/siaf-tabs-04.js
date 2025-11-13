@@ -1,3 +1,9 @@
+// ═══════════════════════════════════════════════════════════════════
+// 🔥 TEST CARICAMENTO FILE - Se vedi questo, il file viene eseguito!
+// ═══════════════════════════════════════════════════════════════════
+console.log('%c🔥🔥🔥 SIAF-TABS-04.JS CARICATO! 🔥🔥🔥', 'background: #FF0000; color: #FFFFFF; font-size: 20px; font-weight: bold; padding: 10px;');
+console.log('%c⏰ Timestamp caricamento:', 'font-weight: bold', new Date().toISOString());
+
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
 // 🚀 VERSION: SIAF-v2.3.15-FINAL-2025-11-03-19:00
 
