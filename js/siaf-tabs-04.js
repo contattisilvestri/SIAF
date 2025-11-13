@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.10.4-FINAL-2025-11-13-11:15
+// 🚀 VERSION: SIAF-v2.11.0-FINAL-2025-11-13-13:00
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
-    minor: 10,
-    patch: 4,
+    minor: 11,
+    patch: 0,
     date: '13/11/2025',
-    time: '11:15',
-    description: 'UX coniuge auto-aggiunto: rimosso toggle Privato/Ditta/Società (sempre privato)',
-    color: '#5AC8FA'  // iOS cyan - UI cleanup
+    time: '13:00',
+    description: 'Quota e Natura Diritto: aggiunta tabella quote possesso e natura diritto per ogni venditore',
+    color: '#FF9500'  // iOS orange - new feature
 };
 
 class SiafApp {
@@ -689,8 +689,20 @@ class SiafApp {
                     prezzo_vendita: 0,
                     percentuale_riduzione: 0
                 },
-                stato: immobileData.stato || {}
+                stato: immobileData.stato || {},
+                venditori_quote: immobileData.venditori_quote || []
             };
+
+            // Se venditori_quote è vuoto, inizializza con venditori esistenti
+            if (immobile.venditori_quote.length === 0) {
+                this.venditori.forEach(venditore => {
+                    immobile.venditori_quote.push({
+                        venditore_id: venditore.id,
+                        quota_percentuale: null,
+                        natura_diritto: 'comproprietario'
+                    });
+                });
+            }
 
             this.immobili.push(immobile);
             this.renderImmobile(immobile);
@@ -1449,10 +1461,20 @@ addVenditore() {
     
     this.venditori.push(venditore);
     console.log(`✅ Venditore ${venditore.id} aggiunto. Totale venditori:`, this.venditori.length);
-    
+
+    // Sincronizza: aggiungi riga venditori_quote a tutti gli immobili esistenti
+    this.immobili.forEach(immobile => {
+        immobile.venditori_quote.push({
+            venditore_id: venditore.id,
+            quota_percentuale: null,
+            natura_diritto: 'comproprietario'
+        });
+    });
+    console.log('🔄 Venditori_quote sincronizzati in tutti gli immobili');
+
     this.renderVenditore(venditore);
     this.updateTabProgress();
-    
+
     console.log('📊 Array venditori attuale:', this.venditori);
 }
 
@@ -1501,6 +1523,13 @@ removeVenditore(id) {
     // Rimuovi il venditore
     this.venditori = this.venditori.filter(v => v.id !== id);
     document.getElementById(`venditore-${id}`).remove();
+
+    // Sincronizza: rimuovi riga venditori_quote da tutti gli immobili
+    this.immobili.forEach(immobile => {
+        immobile.venditori_quote = immobile.venditori_quote.filter(vq => vq.venditore_id !== id);
+    });
+    console.log('🔄 Venditori_quote sincronizzati (rimosso venditore) in tutti gli immobili');
+
     this.updateTabProgress();
     this.isDirty = true;
 
@@ -4918,8 +4947,18 @@ renderVenditore(venditore) {
             condizioni_economiche: {
                 prezzo_vendita: 0,
                 percentuale_riduzione: 0
-            }
+            },
+            venditori_quote: []
         };
+
+        // Inizializza venditori_quote con tutti i venditori esistenti
+        this.venditori.forEach(venditore => {
+            immobile.venditori_quote.push({
+                venditore_id: venditore.id,
+                quota_percentuale: null, // Inizialmente vuoto
+                natura_diritto: 'comproprietario' // Default
+            });
+        });
 
         this.immobili.push(immobile);
         console.log(`✅ Immobile ${immobile.id} aggiunto. Totale immobili:`, this.immobili.length);
@@ -5040,6 +5079,14 @@ renderVenditore(venditore) {
                     </div>
                 </div>
 
+                <!-- Venditori e Quote di Possesso -->
+                <div class="field-card">
+                    <h4>📊 Venditori e Quote di Possesso</h4>
+                    <div class="venditori-quote-table">
+                        ${this.renderVenditoriQuote(immobile)}
+                    </div>
+                </div>
+
                 <!-- Blocchi Catastali -->
                 <div class="field-card">
                     <div class="field-header">
@@ -5100,6 +5147,118 @@ renderVenditore(venditore) {
                     ''}
             </div>
         `).join('');
+    }
+
+    renderVenditoriQuote(immobile) {
+        if (this.venditori.length === 0) {
+            return '<p style="color: #999; text-align: center; padding: 20px;">Aggiungi almeno un venditore per specificare le quote</p>';
+        }
+
+        // Calcola somma quote
+        const sommaQuote = immobile.venditori_quote.reduce((sum, vq) => {
+            const quota = parseFloat(vq.quota_percentuale) || 0;
+            return sum + quota;
+        }, 0);
+
+        const quotaValida = sommaQuote === 100;
+        const quotaVuota = sommaQuote === 0;
+
+        return `
+            <table class="venditori-quote-table-content">
+                <thead>
+                    <tr>
+                        <th>Venditore</th>
+                        <th style="width: 120px;">Quota %</th>
+                        <th style="width: 200px;">Natura del Diritto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${immobile.venditori_quote.map(vq => {
+                        const venditore = this.venditori.find(v => v.id === vq.venditore_id);
+                        if (!venditore) return '';
+
+                        const nomeCompleto = `${venditore.nome || ''} ${venditore.cognome || ''}`.trim() || `Venditore ${venditore.id}`;
+
+                        return `
+                            <tr>
+                                <td>
+                                    <strong>👤 ${nomeCompleto}</strong>
+                                    ${venditore.isConiuge ? '<span class="badge-coniuge-small" style="font-size: 11px; margin-left: 8px;">💍</span>' : ''}
+                                </td>
+                                <td>
+                                    <input type="number"
+                                           id="quota_${immobile.id}_${vq.venditore_id}"
+                                           class="quota-input"
+                                           value="${vq.quota_percentuale !== null ? vq.quota_percentuale : ''}"
+                                           placeholder="0-100"
+                                           min="0"
+                                           max="100"
+                                           step="0.01"
+                                           onchange="window.siafApp.updateVenditoreQuota(${immobile.id}, ${vq.venditore_id}, 'quota_percentuale', this.value)">
+                                </td>
+                                <td>
+                                    <select id="natura_${immobile.id}_${vq.venditore_id}"
+                                            class="natura-input"
+                                            onchange="window.siafApp.updateVenditoreQuota(${immobile.id}, ${vq.venditore_id}, 'natura_diritto', this.value)">
+                                        <option value="proprietario" ${vq.natura_diritto === 'proprietario' ? 'selected' : ''}>Proprietario/a</option>
+                                        <option value="comproprietario" ${vq.natura_diritto === 'comproprietario' ? 'selected' : ''}>Comproprietario/a</option>
+                                        <option value="usufruttuario" ${vq.natura_diritto === 'usufruttuario' ? 'selected' : ''}>Usufruttuario/a</option>
+                                        <option value="nudo_proprietario" ${vq.natura_diritto === 'nudo_proprietario' ? 'selected' : ''}>Nudo/a proprietario/a</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
+            <div class="quota-totale" style="margin-top: 12px; padding: 12px; background: ${quotaValida ? '#d4edda' : quotaVuota ? '#fff3cd' : '#f8d7da'}; border-radius: 6px; text-align: center;">
+                ${quotaValida ?
+                    `<span style="color: #155724; font-weight: bold;">✅ Totale quote: ${sommaQuote.toFixed(2)}%</span>` :
+                    quotaVuota ?
+                    `<span style="color: #856404; font-weight: bold;">⚠️ Totale quote: ${sommaQuote.toFixed(2)}% (specificare le quote)</span>` :
+                    `<span style="color: #721c24; font-weight: bold;">⚠️ Totale quote: ${sommaQuote.toFixed(2)}% (deve essere 100%)</span>`
+                }
+            </div>
+        `;
+    }
+
+    // ============================================================
+    // BLOCCO 93: Aggiornamento Quote Venditori
+    // ============================================================
+    updateVenditoreQuota(immobileId, venditoreId, field, value) {
+        console.log(`🔄 Aggiornamento quota: immobile=${immobileId}, venditore=${venditoreId}, field=${field}, value=${value}`);
+
+        // Trova l'immobile
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        if (!immobile) {
+            console.error(`❌ Immobile ${immobileId} non trovato`);
+            return;
+        }
+
+        // Trova la riga venditori_quote
+        const quotaEntry = immobile.venditori_quote.find(vq => vq.venditore_id === venditoreId);
+        if (!quotaEntry) {
+            console.error(`❌ Quota entry per venditore ${venditoreId} non trovata`);
+            return;
+        }
+
+        // Aggiorna il campo
+        if (field === 'quota_percentuale') {
+            const numValue = parseFloat(value);
+            quotaEntry.quota_percentuale = isNaN(numValue) ? null : numValue;
+            console.log(`✅ Quota aggiornata: ${quotaEntry.quota_percentuale}%`);
+        } else if (field === 'natura_diritto') {
+            quotaEntry.natura_diritto = value;
+            console.log(`✅ Natura diritto aggiornata: ${value}`);
+        }
+
+        // Marca come modificato
+        this.isDirty = true;
+
+        // Re-render per aggiornare validazione somma
+        this.renderImmobili();
+
+        console.log('💾 Dati aggiornati:', quotaEntry);
     }
 
     renderBlocchiCatastali(immobile) {
