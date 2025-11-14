@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.19.2-FINAL-2025-11-14-04:00
+// 🚀 VERSION: SIAF-v2.20.0-FINAL-2025-11-14-05:00
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
-    minor: 19,
-    patch: 2,
+    minor: 20,
+    patch: 0,
     date: '14/11/2025',
-    time: '04:00',
-    description: 'UI: Espansi container interni a 1600px (pratica, form, condizioni)',
-    color: '#FF9500'  // Orange - UI improvement
+    time: '05:00',
+    description: 'CSS Consolidation: Rimosso CSS inline, tutto in file esterno',
+    color: '#10B981'  // Green - Major refactoring
 };
 
 class SiafApp {
