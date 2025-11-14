@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.19.2-FINAL-2025-11-14-04:00
+// 🚀 VERSION: SIAF-v2.21.0-FINAL-2025-11-14-12:00
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
-    minor: 19,
-    patch: 2,
+    minor: 21,
+    patch: 0,
     date: '14/11/2025',
-    time: '04:00',
-    description: 'UI: Espansi container interni a 1600px (pratica, form, condizioni)',
-    color: '#FF9500'  // Orange - UI improvement
+    time: '12:00',
+    description: 'Feature: Tab Provenienza con 4 sezioni dati + array atti dinamici',
+    color: '#667eea'  // Purple - Major feature
 };
 
 class SiafApp {
@@ -311,13 +311,21 @@ class SiafApp {
                 }, 50);
             }
 
+            // Se si sta passando alla tab provenienza, renderizza il contenuto
+            if (tabName === 'provenienza') {
+                setTimeout(() => {
+                    this.renderTabProvenienza();
+                    console.log('🔄 Contenuto provenienza renderizzato');
+                }, 50);
+            }
+
             // Aggiorna progress
             this.updateTabProgress();
         }
     }
 
     updateTabProgress() {
-        const tabs = ['pratica', 'venditore', 'acquirente', 'immobile-prima', 'immobile-dopo', 'condizioni', 'analisi'];
+        const tabs = ['pratica', 'venditore', 'acquirente', 'immobile-prima', 'immobile-dopo', 'condizioni', 'provenienza', 'analisi'];
         
         tabs.forEach(tabName => {
             const btn = document.querySelector(`[data-tab="${tabName}"]`);
@@ -7162,6 +7170,646 @@ renderVenditore(venditore) {
         });
 
         console.log('✅ Event listeners analisi inizializzati');
+    }
+
+    // ========== BLOCCO: GESTIONE TAB PROVENIENZA (v2.21.0) ==========
+
+    // BLOCCO: Render principale tab Provenienza
+    renderTabProvenienza() {
+        console.log('📜 Rendering tab Provenienza...');
+
+        const container = document.getElementById('provenienza-container');
+        if (!container) {
+            console.error('❌ Container provenienza non trovato');
+            return;
+        }
+
+        if (this.immobili.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state" style="text-align: center; padding: 60px 20px; color: #999;">
+                    <p style="font-size: 16px; margin-bottom: 12px;">🏠 Nessun immobile presente</p>
+                    <p style="font-size: 14px;">Aggiungi almeno un immobile per inserire i dati di provenienza e conformità</p>
+                </div>
+            `;
+            console.log('ℹ️ Nessun immobile presente');
+            return;
+        }
+
+        let html = '';
+
+        // Loop attraverso ogni immobile
+        this.immobili.forEach((immobile, index) => {
+            const nomeImmobile = immobile.numero_immobile
+                ? `Immobile ${immobile.numero_immobile}`
+                : `Immobile ${index + 1}`;
+
+            html += `
+                <div class="immobile-provenienza-card" style="margin-bottom: 30px; border: 2px solid #e0e0e0; border-radius: 12px; overflow: hidden;">
+                    <!-- Header immobile -->
+                    <div class="immobile-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 20px;">
+                        <h3 style="margin: 0; font-size: 18px; font-weight: 600;">📜 ${nomeImmobile}</h3>
+                    </div>
+
+                    <!-- Contenuto sezioni -->
+                    <div class="immobile-content" style="padding: 24px;">
+                        ${this.renderDatiEdilizi(immobile)}
+                        ${this.renderDatiImpianti(immobile)}
+                        ${this.renderDatiUrbanistici(immobile)}
+                        ${this.renderProvenienza(immobile)}
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+
+        // Inizializza event listeners per salvataggio
+        this.initializeProvenienzaEventListeners();
+
+        console.log('✅ Tab Provenienza renderizzato');
+    }
+
+    // BLOCCO: Render sezione Dati Edilizi
+    renderDatiEdilizi(immobile) {
+        const dati = immobile.dati_edilizi || {
+            nulla_osta_costruzione: { data: '', numero_pratica: '' },
+            autorizzazione_abitabilita: { data: '', numero_pratica: '' },
+            note_fabbricati_accessori: ''
+        };
+
+        return `
+            <div class="sezione-provenienza" style="margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #28a745;">
+                <h4 style="margin: 0 0 16px 0; color: #333; font-size: 16px; font-weight: 600;">🏗️ Dati Edilizi</h4>
+
+                <!-- Nulla Osta Costruzione -->
+                <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">
+                            Data Nulla Osta Costruzione
+                        </label>
+                        <input type="date"
+                               id="nulla_osta_data_${immobile.id}"
+                               value="${dati.nulla_osta_costruzione.data || ''}"
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">
+                            Numero Pratica
+                        </label>
+                        <input type="text"
+                               id="nulla_osta_pratica_${immobile.id}"
+                               value="${dati.nulla_osta_costruzione.numero_pratica || ''}"
+                               placeholder="Es: 2023/001234"
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                    </div>
+                </div>
+
+                <!-- Autorizzazione Abitabilità -->
+                <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">
+                            Data Autorizzazione Abitabilità
+                        </label>
+                        <input type="date"
+                               id="abitabilita_data_${immobile.id}"
+                               value="${dati.autorizzazione_abitabilita.data || ''}"
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">
+                            Numero Pratica
+                        </label>
+                        <input type="text"
+                               id="abitabilita_pratica_${immobile.id}"
+                               value="${dati.autorizzazione_abitabilita.numero_pratica || ''}"
+                               placeholder="Es: 2023/001234"
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                    </div>
+                </div>
+
+                <!-- Note Fabbricati Accessori -->
+                <div>
+                    <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">
+                        Note Fabbricati Accessori
+                    </label>
+                    <textarea id="note_fabbricati_${immobile.id}"
+                              placeholder="Es: Box auto, tettoia, ripostiglio esterno..."
+                              style="width: 100%; min-height: 80px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; resize: vertical; font-size: 14px;">${dati.note_fabbricati_accessori || ''}</textarea>
+                </div>
+            </div>
+        `;
+    }
+
+    // BLOCCO: Render sezione Dati Impianti
+    renderDatiImpianti(immobile) {
+        const dati = immobile.dati_impianti || { conformita_epoca: '' };
+
+        return `
+            <div class="sezione-provenienza" style="margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #ffc107;">
+                <h4 style="margin: 0 0 16px 0; color: #333; font-size: 16px; font-weight: 600;">⚡ Dati Impianti</h4>
+
+                <div>
+                    <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">
+                        Conformità Impianti all'Epoca dell'Installazione
+                    </label>
+                    <textarea id="conformita_impianti_${immobile.id}"
+                              placeholder="Es: Impianto elettrico conforme Legge 46/90, certificato rilasciato in data..."
+                              style="width: 100%; min-height: 100px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; resize: vertical; font-size: 14px;">${dati.conformita_epoca || ''}</textarea>
+                </div>
+            </div>
+        `;
+    }
+
+    // BLOCCO: Render sezione Dati Urbanistici
+    renderDatiUrbanistici(immobile) {
+        const dati = immobile.dati_urbanistici || { note: '' };
+
+        return `
+            <div class="sezione-provenienza" style="margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #17a2b8;">
+                <h4 style="margin: 0 0 16px 0; color: #333; font-size: 16px; font-weight: 600;">🏛️ Dati Urbanistici</h4>
+
+                <div>
+                    <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">
+                        Note Urbanistiche
+                    </label>
+                    <textarea id="note_urbanistiche_${immobile.id}"
+                              placeholder="Es: Zona residenziale R2, destinazione d'uso abitativa, vincoli paesaggistici..."
+                              style="width: 100%; min-height: 100px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; resize: vertical; font-size: 14px;">${dati.note || ''}</textarea>
+                </div>
+            </div>
+        `;
+    }
+
+    // BLOCCO: Render sezione Provenienza (array atti)
+    renderProvenienza(immobile) {
+        const atti = immobile.provenienza || [];
+
+        let attiHtml = '';
+
+        if (atti.length === 0) {
+            attiHtml = `
+                <div class="empty-atti" style="text-align: center; padding: 30px; color: #999; background: #fff; border: 2px dashed #ddd; border-radius: 8px;">
+                    <p style="margin: 0; font-size: 14px;">📄 Nessun atto di provenienza inserito</p>
+                    <p style="margin: 8px 0 0 0; font-size: 13px;">Clicca "Aggiungi Atto" per inserire il primo atto</p>
+                </div>
+            `;
+        } else {
+            atti.forEach((atto, index) => {
+                attiHtml += this.renderSingoloAtto(immobile.id, atto, index);
+            });
+        }
+
+        return `
+            <div class="sezione-provenienza" style="margin-bottom: 0; padding: 20px; background: #fff; border-radius: 8px; border: 2px solid #667eea;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h4 style="margin: 0; color: #333; font-size: 16px; font-weight: 600;">📋 Titoli di Provenienza</h4>
+                    <button type="button"
+                            class="btn-add-atto"
+                            data-immobile-id="${immobile.id}"
+                            style="padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px; transition: background 0.2s;">
+                        + Aggiungi Atto
+                    </button>
+                </div>
+
+                <div id="atti-container-${immobile.id}" style="display: flex; flex-direction: column; gap: 16px;">
+                    ${attiHtml}
+                </div>
+            </div>
+        `;
+    }
+
+    // BLOCCO: Render singolo atto di provenienza
+    renderSingoloAtto(immobileId, atto, index) {
+        const categoriaAtto = atto.categoria_atto || 'atto_tra_vivi';
+
+        // Campi condizionali basati su categoria
+        let campiSpecifici = '';
+
+        if (categoriaAtto === 'successione') {
+            campiSpecifici = `
+                <!-- Tipo Successione -->
+                <div>
+                    <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">
+                        Tipo Successione
+                    </label>
+                    <select id="tipo_successione_${immobileId}_${index}"
+                            class="atto-field"
+                            data-immobile-id="${immobileId}"
+                            data-atto-index="${index}"
+                            data-field="tipo_successione"
+                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                        <option value="">-- Seleziona --</option>
+                        ${TIPI_SUCCESSIONE.map(tipo => `
+                            <option value="${tipo}" ${atto.tipo_successione === tipo ? 'selected' : ''}>${tipo}</option>
+                        `).join('')}
+                    </select>
+                </div>
+
+                ${atto.tipo_successione === 'testamentaria' ? `
+                    <!-- Tipo Testamento -->
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">
+                            Tipo Testamento
+                        </label>
+                        <select id="tipo_testamento_${immobileId}_${index}"
+                                class="atto-field"
+                                data-immobile-id="${immobileId}"
+                                data-atto-index="${index}"
+                                data-field="tipo_testamento"
+                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                            <option value="">-- Seleziona --</option>
+                            ${TIPI_TESTAMENTO.map(tipo => `
+                                <option value="${tipo}" ${atto.tipo_testamento === tipo ? 'selected' : ''}>${tipo}</option>
+                            `).join('')}
+                        </select>
+                    </div>
+                ` : ''}
+
+                <!-- Figura Legale -->
+                <div>
+                    <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">
+                        Redatto da
+                    </label>
+                    <select id="figura_legale_${immobileId}_${index}"
+                            class="atto-field"
+                            data-immobile-id="${immobileId}"
+                            data-atto-index="${index}"
+                            data-field="figura_legale"
+                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                        <option value="">-- Seleziona --</option>
+                        ${FIGURE_LEGALI.map(figura => `
+                            <option value="${figura}" ${atto.figura_legale === figura ? 'selected' : ''}>${figura}</option>
+                        `).join('')}
+                    </select>
+                </div>
+
+                <!-- Nome Figura Legale -->
+                <div>
+                    <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">
+                        Nome e Cognome
+                    </label>
+                    <input type="text"
+                           id="nome_figura_${immobileId}_${index}"
+                           class="atto-field"
+                           data-immobile-id="${immobileId}"
+                           data-atto-index="${index}"
+                           data-field="nome_figura_legale"
+                           value="${atto.nome_figura_legale || ''}"
+                           placeholder="Es: Dott. Mario Rossi"
+                           style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                </div>
+
+                <!-- Tipo Accettazione -->
+                <div>
+                    <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">
+                        Tipo Accettazione
+                    </label>
+                    <select id="tipo_accettazione_${immobileId}_${index}"
+                            class="atto-field"
+                            data-immobile-id="${immobileId}"
+                            data-atto-index="${index}"
+                            data-field="tipo_accettazione"
+                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                        <option value="">-- Seleziona --</option>
+                        ${TIPI_ACCETTAZIONE.map(tipo => `
+                            <option value="${tipo}" ${atto.tipo_accettazione === tipo ? 'selected' : ''}>${tipo}</option>
+                        `).join('')}
+                    </select>
+                </div>
+            `;
+        } else {
+            // Campi per atto tra vivi o giudiziario
+            campiSpecifici = `
+                <!-- Tipo Atto -->
+                <div>
+                    <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">
+                        Tipo Atto
+                    </label>
+                    <select id="tipo_atto_${immobileId}_${index}"
+                            class="atto-field"
+                            data-immobile-id="${immobileId}"
+                            data-atto-index="${index}"
+                            data-field="tipo_atto"
+                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                        <option value="">-- Seleziona --</option>
+                        ${TIPI_ATTO.map(tipo => `
+                            <option value="${tipo}" ${atto.tipo_atto === tipo ? 'selected' : ''}>${tipo}</option>
+                        `).join('')}
+                    </select>
+                </div>
+
+                <!-- Natura Atto -->
+                <div>
+                    <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">
+                        Natura Atto
+                    </label>
+                    <select id="natura_atto_${immobileId}_${index}"
+                            class="atto-field"
+                            data-immobile-id="${immobileId}"
+                            data-atto-index="${index}"
+                            data-field="natura_atto"
+                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                        <option value="">-- Seleziona --</option>
+                        ${NATURE_ATTO.map(natura => `
+                            <option value="${natura}" ${atto.natura_atto === natura ? 'selected' : ''}>${natura}</option>
+                        `).join('')}
+                    </select>
+                </div>
+
+                <!-- Notaio -->
+                <div>
+                    <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">
+                        Notaio
+                    </label>
+                    <input type="text"
+                           id="notaio_${immobileId}_${index}"
+                           class="atto-field atto-notaio-autocomplete"
+                           data-immobile-id="${immobileId}"
+                           data-atto-index="${index}"
+                           data-field="notaio"
+                           value="${atto.notaio || ''}"
+                           placeholder="Digita per cercare..."
+                           style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                </div>
+            `;
+        }
+
+        return `
+            <div class="atto-card" style="padding: 16px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; position: relative;">
+                <div style="position: absolute; top: 12px; right: 12px;">
+                    <button type="button"
+                            class="btn-remove-atto"
+                            data-immobile-id="${immobileId}"
+                            data-atto-index="${index}"
+                            style="padding: 6px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500;">
+                        🗑️ Rimuovi
+                    </button>
+                </div>
+
+                <h5 style="margin: 0 0 16px 0; color: #555; font-size: 14px; font-weight: 600;">Atto ${index + 1}</h5>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <!-- Categoria Atto -->
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">
+                            Categoria Atto
+                        </label>
+                        <select id="categoria_atto_${immobileId}_${index}"
+                                class="atto-field atto-categoria"
+                                data-immobile-id="${immobileId}"
+                                data-atto-index="${index}"
+                                data-field="categoria_atto"
+                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                            ${CATEGORIE_ATTO.map(cat => `
+                                <option value="${cat}" ${categoriaAtto === cat ? 'selected' : ''}>
+                                    ${cat === 'successione' ? 'Successione' : cat === 'atto_tra_vivi' ? 'Atto tra Vivi' : 'Atto Giudiziario'}
+                                </option>
+                            `).join('')}
+                        </select>
+                    </div>
+
+                    <!-- Data Atto -->
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">
+                            Data Atto
+                        </label>
+                        <input type="date"
+                               id="data_atto_${immobileId}_${index}"
+                               class="atto-field"
+                               data-immobile-id="${immobileId}"
+                               data-atto-index="${index}"
+                               data-field="data_atto"
+                               value="${atto.data_atto || ''}"
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                    </div>
+
+                    ${campiSpecifici}
+
+                    <!-- Repertorio -->
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">
+                            Repertorio
+                        </label>
+                        <input type="text"
+                               id="repertorio_${immobileId}_${index}"
+                               class="atto-field"
+                               data-immobile-id="${immobileId}"
+                               data-atto-index="${index}"
+                               data-field="repertorio"
+                               value="${atto.repertorio || ''}"
+                               placeholder="Es: Rep. 12345"
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                    </div>
+
+                    <!-- Stato Registrazione -->
+                    <div>
+                        <label style="display: block; font-weight: 500; margin-bottom: 6px; color: #555; font-size: 13px;">
+                            Stato Trascrizione/Iscrizione
+                        </label>
+                        <select id="stato_registrazione_${immobileId}_${index}"
+                                class="atto-field"
+                                data-immobile-id="${immobileId}"
+                                data-atto-index="${index}"
+                                data-field="stato_registrazione"
+                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                            <option value="">-- Seleziona --</option>
+                            ${STATI_REGISTRAZIONE.map(stato => `
+                                <option value="${stato}" ${atto.stato_registrazione === stato ? 'selected' : ''}>${stato}</option>
+                            `).join('')}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // BLOCCO: Inizializza event listeners per Provenienza
+    initializeProvenienzaEventListeners() {
+        console.log('🔧 Inizializzazione event listeners Provenienza...');
+
+        // Event listeners per Dati Edilizi
+        this.immobili.forEach(immobile => {
+            // Nulla osta costruzione
+            const nullaOstaData = document.getElementById(`nulla_osta_data_${immobile.id}`);
+            const nullaOstaPratica = document.getElementById(`nulla_osta_pratica_${immobile.id}`);
+
+            if (nullaOstaData) {
+                nullaOstaData.addEventListener('blur', () => {
+                    if (!immobile.dati_edilizi) immobile.dati_edilizi = { nulla_osta_costruzione: {}, autorizzazione_abitabilita: {}, note_fabbricati_accessori: '' };
+                    immobile.dati_edilizi.nulla_osta_costruzione.data = nullaOstaData.value;
+                    console.log(`💾 Salvata data nulla osta per immobile ${immobile.id}`);
+                });
+            }
+
+            if (nullaOstaPratica) {
+                nullaOstaPratica.addEventListener('blur', () => {
+                    if (!immobile.dati_edilizi) immobile.dati_edilizi = { nulla_osta_costruzione: {}, autorizzazione_abitabilita: {}, note_fabbricati_accessori: '' };
+                    immobile.dati_edilizi.nulla_osta_costruzione.numero_pratica = nullaOstaPratica.value;
+                    console.log(`💾 Salvato numero pratica nulla osta per immobile ${immobile.id}`);
+                });
+            }
+
+            // Autorizzazione abitabilità
+            const abitabilitaData = document.getElementById(`abitabilita_data_${immobile.id}`);
+            const abitabilitaPratica = document.getElementById(`abitabilita_pratica_${immobile.id}`);
+
+            if (abitabilitaData) {
+                abitabilitaData.addEventListener('blur', () => {
+                    if (!immobile.dati_edilizi) immobile.dati_edilizi = { nulla_osta_costruzione: {}, autorizzazione_abitabilita: {}, note_fabbricati_accessori: '' };
+                    immobile.dati_edilizi.autorizzazione_abitabilita.data = abitabilitaData.value;
+                    console.log(`💾 Salvata data abitabilità per immobile ${immobile.id}`);
+                });
+            }
+
+            if (abitabilitaPratica) {
+                abitabilitaPratica.addEventListener('blur', () => {
+                    if (!immobile.dati_edilizi) immobile.dati_edilizi = { nulla_osta_costruzione: {}, autorizzazione_abitabilita: {}, note_fabbricati_accessori: '' };
+                    immobile.dati_edilizi.autorizzazione_abitabilita.numero_pratica = abitabilitaPratica.value;
+                    console.log(`💾 Salvato numero pratica abitabilità per immobile ${immobile.id}`);
+                });
+            }
+
+            // Note fabbricati accessori
+            const noteFabbricati = document.getElementById(`note_fabbricati_${immobile.id}`);
+            if (noteFabbricati) {
+                noteFabbricati.addEventListener('blur', () => {
+                    if (!immobile.dati_edilizi) immobile.dati_edilizi = { nulla_osta_costruzione: {}, autorizzazione_abitabilita: {}, note_fabbricati_accessori: '' };
+                    immobile.dati_edilizi.note_fabbricati_accessori = noteFabbricati.value;
+                    console.log(`💾 Salvate note fabbricati per immobile ${immobile.id}`);
+                });
+            }
+
+            // Conformità impianti
+            const conformitaImpianti = document.getElementById(`conformita_impianti_${immobile.id}`);
+            if (conformitaImpianti) {
+                conformitaImpianti.addEventListener('blur', () => {
+                    if (!immobile.dati_impianti) immobile.dati_impianti = { conformita_epoca: '' };
+                    immobile.dati_impianti.conformita_epoca = conformitaImpianti.value;
+                    console.log(`💾 Salvata conformità impianti per immobile ${immobile.id}`);
+                });
+            }
+
+            // Note urbanistiche
+            const noteUrbanistiche = document.getElementById(`note_urbanistiche_${immobile.id}`);
+            if (noteUrbanistiche) {
+                noteUrbanistiche.addEventListener('blur', () => {
+                    if (!immobile.dati_urbanistici) immobile.dati_urbanistici = { note: '' };
+                    immobile.dati_urbanistici.note = noteUrbanistiche.value;
+                    console.log(`💾 Salvate note urbanistiche per immobile ${immobile.id}`);
+                });
+            }
+        });
+
+        // Event listeners per bottoni Aggiungi/Rimuovi Atto
+        const btnAddAtto = document.querySelectorAll('.btn-add-atto');
+        btnAddAtto.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const immobileId = e.target.dataset.immobileId;
+                this.addAttoProvenienza(immobileId);
+            });
+        });
+
+        const btnRemoveAtto = document.querySelectorAll('.btn-remove-atto');
+        btnRemoveAtto.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const immobileId = e.target.dataset.immobileId;
+                const attoIndex = parseInt(e.target.dataset.attoIndex);
+                this.removeAttoProvenienza(immobileId, attoIndex);
+            });
+        });
+
+        // Event listeners per campi atti
+        const attoFields = document.querySelectorAll('.atto-field');
+        attoFields.forEach(field => {
+            const eventType = field.tagName === 'SELECT' ? 'change' : 'blur';
+            field.addEventListener(eventType, (e) => {
+                const immobileId = e.target.dataset.immobileId;
+                const attoIndex = parseInt(e.target.dataset.attoIndex);
+                const fieldName = e.target.dataset.field;
+
+                this.saveAttoField(immobileId, attoIndex, fieldName, e.target.value);
+            });
+        });
+
+        // Event listener speciale per cambio categoria atto (re-render)
+        const categoriaSelects = document.querySelectorAll('.atto-categoria');
+        categoriaSelects.forEach(select => {
+            select.addEventListener('change', () => {
+                console.log('🔄 Cambio categoria atto - re-rendering tab');
+                this.renderTabProvenienza();
+            });
+        });
+
+        // Event listener speciale per cambio tipo successione (re-render se passa da/a testamentaria)
+        const tipoSuccessioneSelects = document.querySelectorAll('[id^="tipo_successione_"]');
+        tipoSuccessioneSelects.forEach(select => {
+            select.addEventListener('change', () => {
+                console.log('🔄 Cambio tipo successione - re-rendering tab');
+                this.renderTabProvenienza();
+            });
+        });
+
+        console.log('✅ Event listeners Provenienza inizializzati');
+    }
+
+    // BLOCCO: Aggiungi nuovo atto di provenienza
+    addAttoProvenienza(immobileId) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        if (!immobile) {
+            console.error(`❌ Immobile ${immobileId} non trovato`);
+            return;
+        }
+
+        if (!immobile.provenienza) {
+            immobile.provenienza = [];
+        }
+
+        const nuovoAtto = {
+            categoria_atto: 'atto_tra_vivi',
+            data_atto: '',
+            tipo_atto: '',
+            natura_atto: '',
+            notaio: '',
+            repertorio: '',
+            stato_registrazione: '',
+            // Campi successione (opzionali)
+            tipo_successione: '',
+            tipo_testamento: '',
+            figura_legale: '',
+            nome_figura_legale: '',
+            tipo_accettazione: ''
+        };
+
+        immobile.provenienza.push(nuovoAtto);
+
+        console.log(`➕ Aggiunto nuovo atto per immobile ${immobileId}`);
+        this.renderTabProvenienza();
+    }
+
+    // BLOCCO: Rimuovi atto di provenienza
+    removeAttoProvenienza(immobileId, attoIndex) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        if (!immobile || !immobile.provenienza) {
+            console.error(`❌ Immobile ${immobileId} o atti non trovati`);
+            return;
+        }
+
+        immobile.provenienza.splice(attoIndex, 1);
+
+        console.log(`🗑️ Rimosso atto ${attoIndex} per immobile ${immobileId}`);
+        this.renderTabProvenienza();
+    }
+
+    // BLOCCO: Salva campo di un atto
+    saveAttoField(immobileId, attoIndex, fieldName, value) {
+        const immobile = this.immobili.find(i => i.id === immobileId);
+        if (!immobile || !immobile.provenienza || !immobile.provenienza[attoIndex]) {
+            console.error(`❌ Atto non trovato: immobile ${immobileId}, atto ${attoIndex}`);
+            return;
+        }
+
+        immobile.provenienza[attoIndex][fieldName] = value;
+        console.log(`💾 Salvato campo ${fieldName} = "${value}" per atto ${attoIndex} di immobile ${immobileId}`);
     }
 }
 
