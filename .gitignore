@@ -24,9 +24,22 @@ node_modules/
 *.tmp
 *.log
 
-# Project-specific temp files
+# ============================================================================
+# File da tenere SOLO in locale (non su GitHub)
+# ============================================================================
+
+# HTML principale (ospitato su WordPress)
+pratica-siaf-02.html
+
+# Config completo frontend+backend (su GitHub c'è app-config.js solo frontend)
+config.js
+
+# Script Apps Script (non servono su GitHub)
 contatori.js
 database.js
 main.js
 template-generator.js
+document-generator.js
+
+# File di test
 test-*.html
