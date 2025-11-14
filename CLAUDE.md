@@ -1,0 +1,3 @@
+Ogni volta che generi codice per i file principali di questo progetto, devi ragionare in blocchi logici e organizzare il codice di conseguenza. Ad esempio, il blocco funzionale 1 dovrà essere commentato come blocco 1 e dovrà avere un titolo rappresentativo. Così via per tutti gli altri blocchi logici. 
+
+Quando fai una modifica, indica sempre alla fine del messaggio quali sono i file su cui hai fatto modifiche.
