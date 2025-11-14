@@ -1412,7 +1412,7 @@ function prepareCondizioniEconomichePlaceholders(data, agenziaData) {
   placeholders.sezione_corrispondenti_completa = generaSezioneCorrispondenti(condizioni.autorizzazioni);
 
   // SEZIONE COMUNICAZIONI ED ACCETTAZIONE INCARICO COMPLETA
-  const venditori = data.venditori || [];
+  // venditori già dichiarato sopra (linea 1275)
   placeholders.sezione_comunicazioni_completa = generaSezioneComunicazioni(venditori);
 
   // SEZIONE DIRITTO DI RECESSO COMPLETA
