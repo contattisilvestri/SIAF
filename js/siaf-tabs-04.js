@@ -1,14 +1,14 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.19.1-FINAL-2025-11-14-03:30
+// 🚀 VERSION: SIAF-v2.19.2-FINAL-2025-11-14-04:00
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
     minor: 19,
-    patch: 1,
+    patch: 2,
     date: '14/11/2025',
-    time: '03:30',
-    description: 'UI: Interfaccia allargata a 1600px e rimossi pallini status menu',
+    time: '04:00',
+    description: 'UI: Espansi container interni a 1600px (pratica, form, condizioni)',
     color: '#FF9500'  // Orange - UI improvement
 };
 
