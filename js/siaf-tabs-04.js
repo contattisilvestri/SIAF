@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.21.0-FINAL-2025-11-14-12:00
+// 🚀 VERSION: SIAF-v2.21.1-FINAL-2025-11-15-01:00
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
     minor: 21,
-    patch: 0,
-    date: '14/11/2025',
-    time: '12:00',
-    description: 'Feature: Tab Provenienza con 4 sezioni dati + array atti dinamici',
-    color: '#667eea'  // Purple - Major feature
+    patch: 1,
+    date: '15/11/2025',
+    time: '01:00',
+    description: 'Bug fix: Event listener bottone Aggiungi Atto corretto',
+    color: '#22c55e'  // Green - Bug fix
 };
 
 class SiafApp {
