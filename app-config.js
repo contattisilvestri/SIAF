@@ -1,67 +1,3 @@
-// config.gs - Configurazioni globali SIAF
-const SHEET_ID = '1aWvqesmSC7zOIBP-povUfGKmaAeV5FZJa78k5jwcVsk';
-const SHEET_CONTATORI = 'Contatori';
-const SHEET_DATABASE = 'Master-Database';
-
-// ========== CONFIGURAZIONI TEMPLATE E CARTELLE ==========
-
-const TEMPLATE_FOLDERS = {
-  BASE: '1UE7ZpwY_70h6lYN6PHHJ5NTr2IsfRRgu',
-  PRATICHE_GENERATE: '1f1QFHVRd11gL51OMEX193GMdDzphNPeF'
-};
-
-// Nuova mappatura operatori -> lettere
-const OPERATORI_MAPPING = {
-  'luigi_b': 'L',
-  'silvia_b': 'L',
-  'milena_b': 'L',
-  'daniele_d': 'D',
-  'giulia_t': 'G',
-  'mirco_c': 'M',
-  'giuliano_h': 'H'
-};
-
-// Mapping templates per tipo documento (semplificato - un template per tipo)
-// I dati operatore sono ora dinamici tramite placeholder {{blocco_agenzia_completo}}
-const TEMPLATE_MAPPING = {
-  'INCARICO_MEDIAZIONE': 'MODULO_C-INCARICO-MEDIAZIONE',
-  'PREVENTIVO_IMPOSTE': 'MODULO_H-PREVENTIVI-PARTE-ACQUIRENTE'
-  // TODO: Aggiungere altri tipi documento quando necessario
-};
-
-const DOCUMENT_TYPES = {
-  INCARICO_MEDIAZIONE: 'incarico_mediazione',
-  PREVENTIVO_IMPOSTE: 'preventivo_imposte',
-  DELEGA_PLANIMETRIE: 'delega_planimetrie',
-  PROPOSTA_ACQUISTO: 'proposta_acquisto',
-  PROMEMORIA_NOTARILE: 'promemoria_notarile'
-};
-
-// ========== CONFIGURAZIONE STILI BLOCCHI AGENZIA ==========
-// Questi stili vengono applicati ai blocchi intestazione, agenzia completo e footer
-// Puoi modificare fontSize, bold, alignment e lineSpacing per personalizzare l'aspetto
-
-const BLOCK_STYLES = {
-  blocco_intestazione: {
-    fontSize: 10,           // Dimensione font (punti)
-    bold: false,            // true = grassetto, false = normale
-    alignment: 'CENTER',    // CENTER, LEFT, RIGHT, JUSTIFY
-    lineSpacing: 1.0        // Interlinea (1.0 = singola, 1.15 = standard, 1.5 = 1.5, 2.0 = doppia)
-  },
-  blocco_agenzia_completo: {
-    fontSize: 11,
-    bold: false,
-    alignment: 'LEFT',
-    lineSpacing: 1.15
-  },
-  blocco_footer: {
-    fontSize: 8,
-    bold: false,
-    alignment: 'CENTER',
-    lineSpacing: 1.0
-  }
-};
-
 // ============================================================================
 // CONFIGURAZIONI FRONTEND - SIAF APPLICATION
 // ============================================================================
@@ -183,7 +119,7 @@ const CATEGORIE_ATTO = [
  */
 async function caricaContattiAgenzia() {
     try {
-        const response = await fetch('configs/contatti_agenzie.json');
+        const response = await fetch('AGENCY/contatti_agenzie.json');
         const data = await response.json();
         return data[AGENZIA_CORRENTE] || { notai_preferiti: [] };
     } catch (error) {
