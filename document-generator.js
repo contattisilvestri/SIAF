@@ -1485,13 +1485,12 @@ function generaSezioneCompenso(compenso, datiAgenzia) {
 }
 
 /**
- * Genera sezione RINNOVO - solo opzione scelta (senza checkbox)
+ * Genera sezione RINNOVO - tutte le opzioni con checkbox (☐ vuoto, ☒ selezionato)
  */
 function generaSezioneRinnovo(durata, datiAgenzia) {
   if (!durata) return '';
 
   const tipoRinnovo = durata.tipo_rinnovo || 'cessato';
-  let testo = 's\'intenderà ';
 
   // Estrai dati agenzia con fallback ai placeholder
   const ragioneSociale = datiAgenzia?.ragione_sociale || '{{ragione_sociale_agenzia}}';
@@ -1499,29 +1498,36 @@ function generaSezioneRinnovo(durata, datiAgenzia) {
   const pec = datiAgenzia?.pec || '{{pec_agenzia}}';
   const telefono = datiAgenzia?.telefono || '{{telefono_agenzia}}';
 
-  switch (tipoRinnovo) {
-    case 'cessato':
-      testo += 'cessato a tutti gli effetti senza oneri e vincoli per il Venditore.';
-      break;
+  // Date incarico (già in formato italiano DD/MM/YYYY)
+  const dataInizio = formatDateToItalian(durata.data_inizio || '');
+  const dataFine = formatDateToItalian(durata.data_fine || '');
 
-    case 'tacito_unico':
-      testo += 'tacitamente rinnovato per ugual periodo e per una sola volta alle stesse condizioni.';
-      break;
+  // Checkbox: ☐ vuoto, ☒ selezionato
+  const checkCessato = tipoRinnovo === 'cessato' ? '☒' : '☐';
+  const checkUnico = tipoRinnovo === 'tacito_unico' ? '☒' : '☐';
+  const checkContinuo = tipoRinnovo === 'tacito_continuo' ? '☒' : '☐';
 
-    case 'tacito_continuo':
-      testo += 'tacitamente rinnovato per ugual periodo, e così di seguito, fino alla vendita dell\'immobile';
+  // Costruisci testo con intestazione + tutte e tre le opzioni
+  let testo = '';
 
-      if (durata.giorni_preavviso) {
-        const giorni = durata.giorni_preavviso;
-        const giorniLettere = numeroInLettere(giorni, false);
-        testo += `, salvo disdetta da inviarsi non prima del termine del secondo periodo di rinnovo, all'agenzia d'affari "${ragioneSociale}" a mezzo lettera raccomandata o e-mail agli indirizzi ${email}, oppure all'indirizzo ${pec}, telegramma o telefax al numero ${telefono}, almeno ${giorni} (${giorniLettere}) giorni prima della scadenza del periodo.`;
-      } else {
-        testo += '.';
-      }
-      break;
+  // Intestazione con date
+  testo += `La durata dell'incarico avrà decorso ${dataInizio} fino il giorno ${dataFine}, dopodiché:\n`;
 
-    default:
-      testo += 'cessato a tutti gli effetti senza oneri e vincoli per il Venditore.';
+  // Opzione 1: Cessato
+  testo += `${checkCessato} s'intenderà cessato a tutti gli effetti senza oneri e vincoli per il Venditore;\n`;
+
+  // Opzione 2: Tacito rinnovo unico
+  testo += `${checkUnico} s'intenderà tacitamente rinnovato per ugual periodo e per una sola volta alle stesse condizioni;\n`;
+
+  // Opzione 3: Tacito rinnovo continuo
+  testo += `${checkContinuo} s'intenderà tacitamente rinnovato per ugual periodo, e così di seguito, fino alla vendita dell'immobile`;
+
+  if (durata.giorni_preavviso) {
+    const giorni = durata.giorni_preavviso;
+    const giorniLettere = numeroInLettere(giorni, false);
+    testo += `, salvo disdetta da inviarsi non prima del termine del secondo periodo di rinnovo, all'agenzia d'affari "${ragioneSociale}" a mezzo lettera raccomandata o e-mail agl'indirizzi ${email}, oppure all'indirizzo ${pec}, telegramma o telefax al numero ${telefono}, almeno ${giorni} (${giorniLettere}) giorni prima della scadenza del periodo.`;
+  } else {
+    testo += '.';
   }
 
   return testo;
