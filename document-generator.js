@@ -1619,8 +1619,10 @@ function generaSezioneEsclusiva(esclusiva, numVenditori = 1) {
  * Genera il testo formattato completo per le condizioni di pagamento
  * Include: versamento anticipo, modalità saldo, stipula atto, clausole mutuo e deposito notarile
  */
-function generaSezioneCondizionipagamento(condizioni) {
+function generaSezioneCondizionipagamento(condizioni, numVenditori = 1) {
   if (!condizioni) return '';
+
+  const v = getVenditoreForm(numVenditori);
 
   // Calcola valori e conversioni in lettere
   const giorniVersamento = condizioni.giorni_versamento || 15;
@@ -1664,13 +1666,13 @@ function generaSezioneCondizionipagamento(condizioni) {
   testo += `In tale occasione, sarà facoltà delle parti riprodurre il contenuto della proposta d'acquisto, al fine di aggiungervi gli aspetti non disciplinati nella stessa (contratto preliminare).\n\n`;
 
   // Paragrafo 3: Saldo prezzo
-  testo += `Il saldo del prezzo dovrà essere liquidato per mezzo di ${modalitaSaldoTesto} entro ${giorniStipula} (${giorniStipulaLettere}) giorni dal perfezionamento del vincolo contrattuale, momento di stipulazione dell'atto notarile. Nel caso l'acquirente non intendesse accollarsi l'eventuale mutuo, il Venditore si obbliga, entro la data o contestualmente alla rogitazione, a estinguere il debito e a eseguire ogni formalità necessaria alla cancellazione della relativa ipoteca.\n\n`;
+  testo += `Il saldo del prezzo dovrà essere liquidato per mezzo di ${modalitaSaldoTesto} entro ${giorniStipula} (${giorniStipulaLettere}) giorni dal perfezionamento del vincolo contrattuale, momento di stipulazione dell'atto notarile. Nel caso l'acquirente non intendesse accollarsi l'eventuale mutuo, ${v.il_venditore} si obbliga, entro la data o contestualmente alla rogitazione, a estinguere il debito e a eseguire ogni formalità necessaria alla cancellazione della relativa ipoteca.\n\n`;
 
   // Paragrafo 4: Mutui e finanziamenti
-  testo += `L'acquirente potrà avvalersi, a propria cura e spesa, di mutui o finanziamenti, il cui importo sarà messo a disposizione del Venditore al momento del rogito notarile, esperite le formalità necessarie.\n\n`;
+  testo += `L'acquirente potrà avvalersi, a propria cura e spesa, di mutui o finanziamenti, il cui importo sarà messo a disposizione ${v.del_venditore} al momento del rogito notarile, esperite le formalità necessarie.\n\n`;
 
   // Paragrafo 5: Deposito presso notaio (legge 147/2013)
-  testo += `Il Venditore dichiara di essere stato debitamente edotto dall'Agenzia Immobiliare che, a norma dell'articolo 1 comma 63, lettera "C" della legge 27 dicembre 2013 numero 147, ciascuna delle parti e quindi anche la sola parte acquirente, qualora ne faccia apposita richiesta, potrà avvalersi della facoltà di depositare, presso il Notaio rogante, fino ad avvenuta trascrizione del contratto di compravendita, la somma relativa al saldo prezzo, se determinato in denaro, oltre alle somme destinate ad estinzione di gravami o spese non pagate dal Venditore o di altri oneri dovuti in occasione del ricevimento o dell'autenticazione dell'atto di trasferimento della proprietà.`;
+  testo += `${v.Il_Venditore} ${v.dichiara} di essere stato debitamente edotto dall'Agenzia Immobiliare che, a norma dell'articolo 1 comma 63, lettera "C" della legge 27 dicembre 2013 numero 147, ciascuna delle parti e quindi anche la sola parte acquirente, qualora ne faccia apposita richiesta, potrà avvalersi della facoltà di depositare, presso il Notaio rogante, fino ad avvenuta trascrizione del contratto di compravendita, la somma relativa al saldo prezzo, se determinato in denaro, oltre alle somme destinate ad estinzione di gravami o spese non pagate ${v.dal_venditore} o di altri oneri dovuti in occasione del ricevimento o dell'autenticazione dell'atto di trasferimento della proprietà.`;
 
   return testo;
 }
