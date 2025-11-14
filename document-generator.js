@@ -1406,7 +1406,7 @@ function prepareCondizioniEconomichePlaceholders(data, agenziaData) {
   placeholders.sezione_atto_notarile_completa = generaSezioneAttoNotarile(condizioni.condizioni_pagamento);
 
   // SEZIONE OBBLIGHI AGENZIA COMPLETA
-  placeholders.sezione_obblighi_agenzia_completa = generaSezioneObblighi(condizioni.esclusiva.attiva);
+  placeholders.sezione_obblighi_agenzia_completa = generaSezioneObblighi(condizioni.esclusiva.attiva, numVenditori);
 
   // SEZIONE CORRISPONDENTI E AUTORIZZAZIONI COMPLETA
   placeholders.sezione_corrispondenti_completa = generaSezioneCorrispondenti(condizioni.autorizzazioni);
@@ -1713,39 +1713,40 @@ function generaSezioneAttoNotarile(condizioni) {
  * Genera il testo formattato per gli obblighi dell'agenzia immobiliare
  * Cambia in base al tipo di incarico (esclusiva o non esclusiva)
  */
-function generaSezioneObblighi(isEsclusiva) {
+function generaSezioneObblighi(isEsclusiva, numVenditori = 1) {
+  const v = getVenditoreForm(numVenditori);
   let testo = '';
 
   testo += 'OBBLIGHI DELL\'AGENZIA IMMOBILIARE - INCARICO ';
   testo += isEsclusiva ? 'IN ESCLUSIVA' : 'NON IN ESCLUSIVA';
-  testo += '\n\n';
+  testo += ' -\n\n';
   testo += 'Con l\'accettazione del presente incarico l\'Agenzia Immobiliare si obbliga a:\n\n';
 
   if (isEsclusiva) {
     // OBBLIGHI IN ESCLUSIVA (13 punti)
-    testo += '• visionare e valutare accuratamente l\'immobile redigendo scheda estimativa;\n\n';
-    testo += '• produrre a propria cura la documentazione edilizia e catastale;\n\n';
-    testo += '• impegnare la propria organizzazione per promuovere la vendita, utilizzando gli strumenti ritenuti adeguati dalla stessa;\n\n';
-    testo += '• redigere il preventivo imposte, tasse e spese a carico del Venditore;\n\n';
-    testo += '• redigere il preventivo imposte, tasse e spese a carico dell\'acquirente;\n\n';
-    testo += '• accompagnare i potenziali acquirenti a visitare l\'immobile;\n\n';
-    testo += '• predisporre a richiesta delle parti ogni atto negoziale ritenuto necessario per il perfezionamento dell\'affare;\n\n';
-    testo += '• effettuare le visure relative all\'esistenza d\'iscrizioni e/o trascrizioni successive alla data dell\'atto di provenienza;\n\n';
-    testo += '• non richiedere un prezzo di vendita diverso da quello su indicato, fatto salvo il margine di trattativa stabilito;\n\n';
-    testo += '• fornire su semplice richiesta del Venditore informazioni sull\'attività effettuata;\n\n';
-    testo += '• fornire a entrambe le parti la propria assistenza fino all\'atto notarile;\n\n';
-    testo += '• comunicare l\'avvenuta vendita agli enti per le variazioni di rito;\n\n';
-    testo += '• registrare, entro 20 (venti) giorni, la proposta d\'acquisto accettata o il preliminare di compravendita, previa consegna in proprie mani di almeno due copie con firme autografe originali e della relativa provvista economica, necessaria per procedere al versamento di quanto dovuto per la registrazione.';
+    testo += '● visionare e valutare accuratamente l\'immobile redigendo scheda estimativa;\n\n';
+    testo += '● produrre a propria cura la documentazione edilizia e catastale;\n\n';
+    testo += '● impegnare la propria organizzazione per promuovere la vendita, utilizzando gli strumenti ritenuti adeguati dalla stessa;\n\n';
+    testo += `● redigere il preventivo imposte, tasse e spese a carico ${v.del_venditore};\n\n`;
+    testo += '● redigere il preventivo imposte, tasse e spese a carico dell\'acquirente;\n\n';
+    testo += '● accompagnare i potenziali acquirenti a visitare l\'immobile;\n\n';
+    testo += '● predisporre a richiesta delle parti ogni atto negoziale ritenuto necessario per il perfezionamento dell\'affare;\n\n';
+    testo += '● effettuare le visure relative all\'esistenza d\'iscrizioni e/o trascrizioni successive alla data dell\'atto di provenienza;\n\n';
+    testo += '● non richiedere un prezzo di vendita diverso da quello su indicato, fatto salvo il margine di trattativa stabilito;\n\n';
+    testo += `● fornire su semplice richiesta ${v.del_venditore} informazioni sull'attività effettuata;\n\n`;
+    testo += '● fornire a entrambe le parti la propria assistenza fino all\'atto notarile;\n\n';
+    testo += '● comunicare l\'avvenuta vendita agli enti per le variazioni di rito;\n\n';
+    testo += '● registrare, entro 20 (venti) giorni, la proposta d\'acquisto accettata o il preliminare di compravendita, previa consegna in proprie mani di almeno due copie con firme autografe originali e della relativa provvista economica, necessaria per procedere al versamento di quanto dovuto per la registrazione';
   } else {
     // OBBLIGHI NON IN ESCLUSIVA (8 punti)
-    testo += '• visionare e valutare sinteticamente l\'immobile;\n\n';
-    testo += '• promuovere la vendita, utilizzando gli strumenti ritenuti adeguati dallo stesso;\n\n';
-    testo += '• accompagnare i potenziali acquirenti a visitare l\'immobile;\n\n';
-    testo += '• predisporre a richiesta ogni atto negoziale tra le parti ritenuto necessario per il perfezionamento dell\'affare;\n\n';
-    testo += '• effettuare le visure relative all\'esistenza d\'iscrizioni e/o trascrizioni pregiudizievoli successive alla data dell\'atto di provenienza;\n\n';
-    testo += '• fornire a entrambe le parti la propria assistenza fino all\'atto notarile;\n\n';
-    testo += '• non richiedere un prezzo di vendita diverso da quello su indicato, fatto salvo il margine di trattativa stabilito;\n\n';
-    testo += '• registrare, entro 20 (venti) giorni, la proposta d\'acquisto accettata o il preliminare di compravendita, previa consegna in proprie mani di almeno due copie con firme autografe originali e della relativa provvista economica, necessaria per procedere al versamento di quanto dovuto per la registrazione.';
+    testo += '● visionare e valutare sinteticamente l\'immobile;\n\n';
+    testo += '● promuovere la vendita, utilizzando gli strumenti ritenuti adeguati dallo stesso;\n\n';
+    testo += '● accompagnare i potenziali acquirenti a visitare l\'immobile;\n\n';
+    testo += '● predisporre a richiesta ogni atto negoziale tra le parti ritenuto necessario per il perfezionamento dell\'affare;\n\n';
+    testo += '● effettuare le visure relative all\'esistenza d\'iscrizioni e/o trascrizioni pregiudizievoli successive alla data dell\'atto di provenienza;\n\n';
+    testo += '● fornire a entrambe le parti la propria assistenza fino all\'atto notarile;\n\n';
+    testo += '● non richiedere un prezzo di vendita diverso da quello su indicato, fatto salvo il margine di trattativa stabilito;\n\n';
+    testo += '● registrare, entro 20 (venti) giorni, la proposta d\'acquisto accettata o il preliminare di compravendita, previa consegna in proprie mani di almeno due copie con firme autografe originali e della relativa provvista economica, necessaria per procedere al versamento di quanto dovuto per la registrazione';
   }
 
   return testo;
@@ -1773,9 +1774,9 @@ function generaSezioneCorrispondenti(autorizzazioni) {
   // Paragrafo introduttivo (sempre presente)
   testo += 'L\'Agenzia Immobiliare è autorizzata ad avvalersi a proprie spese di banche dati e della collaborazione di colleghi esterni alla propria organizzazione, purché abilitati in conformità alla normativa vigente, senza che ciò comporti a carico del venditore costi aggiuntivi.\n\n';
 
-  testo += 'L\'AGENTE IMMOBILIARE\n\n';
+  testo += 'L\'AGENTE IMMOBILIARE\n';
 
-  // Elenco autorizzazioni
+  // Elenco autorizzazioni con checkbox
   const items = [
     { key: 'cartello_vendita', label: 'esporre il cartello di vendita in loco' },
     { key: 'vetrine', label: 'esporre l\'annuncio di vendita sulle vetrine' },
@@ -1783,16 +1784,12 @@ function generaSezioneCorrispondenti(autorizzazioni) {
     { key: 'stampa', label: 'pubblicizzare l\'immobile a mezzo stampa' }
   ];
 
-  items.forEach((item, index) => {
+  items.forEach(item => {
     const isAutorizzato = autorizzazioni[item.key] !== false;
-    const prefix = isAutorizzato ? 'è autorizzato' : 'non è autorizzato';
+    const checkSi = isAutorizzato ? '☒' : '☐';
+    const checkNo = !isAutorizzato ? '☒' : '☐';
 
-    testo += `${prefix} - a ${item.label}`;
-
-    // Aggiungi separatore solo se non è l'ultimo elemento
-    if (index < items.length - 1) {
-      testo += ' -\n\n';
-    }
+    testo += `${checkSi} è autorizzato ${checkNo} non è autorizzato - a ${item.label} -\n`;
   });
 
   return testo;
