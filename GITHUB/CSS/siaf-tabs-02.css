@@ -1,0 +1,1156 @@
+/* siaf-tabs.css - Sistema completo tab SIAF */
+
+/* ========== CONTAINER PRINCIPALE ========== */
+#siaf-app {
+    max-width: 1600px;
+    margin: 0 auto;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f8f9fa;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+/* ========== TAB NAVIGATION ========== */
+.siaf-tabs {
+    display: flex;
+    background: #ffffff;
+    border-bottom: 1px solid #e9ecef;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+}
+
+.tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    min-width: 140px;
+    justify-content: center;
+    position: relative;
+}
+
+.tab-btn:hover {
+    background: #f8f9fa;
+    color: #0066cc;
+}
+
+.tab-btn.active {
+    background: #ffffff;
+    color: #0066cc;
+    border-bottom-color: #0066cc;
+    font-weight: 600;
+}
+
+.tab-btn .icon {
+    font-size: 18px;
+}
+
+.tab-btn .text {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.tab-btn .status {
+    display: none;  /* Nascosto - status non visibile per design più pulito */
+}
+
+.tab-btn .status.complete {
+    color: #28a745;
+}
+
+.tab-btn .status.partial {
+    color: #ffc107;
+}
+
+.tab-btn .status.empty {
+    color: #dc3545;
+}
+
+/* ========== TAB CONTENT ========== */
+.tab-panel {
+    display: none;
+    padding: 24px;
+    background: #ffffff;
+    min-height: 500px;
+}
+
+.tab-panel.active {
+    display: block;
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.panel-header {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.panel-header h2 {
+    margin: 0;
+    color: #495057;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* ========== FORM LAYOUT ========== */
+.form-grid {
+    display: grid;
+    grid-template-columns: 60% 40%;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.field-card {
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.field-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.field-card h3 {
+    margin: 0 0 16px 0;
+    color: #495057;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.field-group {
+    margin-bottom: 16px;
+}
+
+.field-group:last-child {
+    margin-bottom: 0;
+}
+
+/* ========== FORM INPUTS ========== */
+label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #495057;
+    font-size: 14px;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: #ffffff;
+    box-sizing: border-box;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #0066cc;
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+input:invalid, select:invalid {
+    border-color: #dc3545;
+}
+
+.readonly-field {
+    background: #f8f9fa !important;
+    cursor: not-allowed;
+    color: #6c757d;
+}
+
+.readonly-field.loading {
+    background: #fff3cd !important;
+    color: #856404;
+}
+
+.readonly-field.preview {
+    background: #d1ecf1 !important;
+    color: #0c5460;
+    font-weight: 500;
+}
+
+.readonly-field.saved {
+    background: #d4edda !important;
+    color: #155724;
+    font-weight: 600;
+}
+
+.readonly-field.error {
+    background: #f8d7da !important;
+    color: #721c24;
+}
+
+.help-text {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* ========== BUTTONS ========== */
+.form-actions {
+    background: #ffffff;
+    padding: 20px 24px;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    min-width: 140px;
+    justify-content: center;
+}
+
+.btn-primary {
+    background: #0066cc;
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #0056b3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: #5a6268;
+    transform: translateY(-1px);
+}
+
+.btn-generate {
+    background: #28a745;
+    color: white;
+}
+
+.btn-generate:hover:not(:disabled) {
+    background: #218838;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.btn-remove {
+    background: #dc3545;
+    color: white;
+    padding: 8px 16px;
+    font-size: 12px;
+    min-width: auto;
+    border-radius: 6px;
+}
+
+.btn-remove:hover:not(:disabled) {
+    background: #c82333;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn.loading {
+    position: relative;
+}
+
+.btn.loading .icon {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ========== VENDITORE CARDS ========== */
+.venditore-card {
+    background: #ffffff;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.venditore-card:hover {
+    border-color: #0066cc;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.venditore-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.venditore-header h3 {
+    margin: 0;
+    color: #495057;
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ========== STATUS MESSAGES ========== */
+.save-status, .generate-status {
+    flex: 1;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    min-height: 20px;
+    display: flex;
+    align-items: center;
+    margin-left: 8px;
+}
+
+.save-status.loading, .generate-status.loading {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.save-status.success, .generate-status.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.save-status.error, .generate-status.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* ========== COMING SOON ========== */
+.coming-soon {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+    font-size: 18px;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+    .siaf-tabs {
+        flex-wrap: wrap;
+    }
+    
+    .tab-btn {
+        min-width: 120px;
+        padding: 12px 16px;
+    }
+    
+    .tab-btn .text {
+        font-size: 12px;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .field-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .tab-panel {
+        padding: 16px;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+}
+
+/* ========== CHIP BUTTONS CATASTO ========== */
+.tipo-selection-chips {
+    display: flex;
+    gap: 16px;
+    padding: 24px;
+    justify-content: center;
+    align-items: center;
+}
+
+.chip-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: #ffffff;
+    border: 2px solid #e9ecef;
+    border-radius: 24px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.chip-button:hover {
+    background: #0066cc;
+    color: #ffffff;
+    border-color: #0066cc;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,102,204,0.2);
+}
+
+.chip-button:active {
+    transform: translateY(0);
+}
+
+/* ========== ADD BLOCCO BUTTONS ========== */
+.add-blocco-buttons {
+    display: flex;
+    gap: 12px;
+    padding: 16px 0;
+    justify-content: center;
+    margin-top: 16px;
+    border-top: 1px solid #e9ecef;
+}
+
+.btn-add-blocco-tipo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #ffffff;
+    border: 1px solid #0066cc;
+    border-radius: 8px;
+    color: #0066cc;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-add-blocco-tipo:hover {
+    background: #0066cc;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,102,204,0.2);
+}
+
+.btn-add-blocco-tipo:active {
+    transform: translateY(0);
+}
+
+/* ========== NOTA SECTION ========== */
+.nota-section {
+    margin: 16px 0;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.btn-nota {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-nota:hover {
+    background: #0066cc;
+    color: #ffffff;
+    border-color: #0066cc;
+}
+
+.nota-dropdown {
+    margin-top: 12px;
+    padding: 12px;
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+}
+
+.nota-select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #ffffff;
+}
+
+.nota-custom {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+}
+
+/* ========== SEGMENTED CONTROL iOS-STYLE ========== */
+
+/* Container principale */
+.segmented-control {
+    display: inline-flex;
+    position: relative;
+    background: #f0f0f5;
+    border-radius: 10px;
+    padding: 2px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    user-select: none;
+    overflow: hidden;
+}
+
+/* Nascondi input radio nativo */
+.segmented-control input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Slider background animato */
+.segmented-control-slider {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    height: calc(100% - 4px);
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+}
+
+/* Opzioni (label) */
+.segmented-control label {
+    position: relative;
+    z-index: 2;
+    padding: 8px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    white-space: nowrap;
+    min-width: 80px;
+    text-align: center;
+    margin: 0;
+}
+
+/* Label attiva */
+.segmented-control input:checked + label {
+    color: #0066cc;
+}
+
+/* Hover su label */
+.segmented-control label:hover {
+    color: #333;
+}
+
+/* VARIANTE: Sesso (2 opzioni) */
+.segmented-control.sesso-control {
+    width: 200px;
+}
+
+.segmented-control.sesso-control label {
+    flex: 1;
+}
+
+.segmented-control.sesso-control .segmented-control-slider {
+    width: calc(50% - 2px);
+}
+
+/* Prima opzione (Maschio) checked */
+.segmented-control.sesso-control input:nth-of-type(1):checked ~ .segmented-control-slider {
+    left: 2px;
+}
+
+/* Seconda opzione (Femmina) checked */
+.segmented-control.sesso-control input:nth-of-type(2):checked ~ .segmented-control-slider {
+    left: calc(50% + 0px);
+}
+
+/* VARIANTE: Cittadinanza (2 opzioni) */
+.segmented-control.cittadinanza-control {
+    width: 180px;
+}
+
+.segmented-control.cittadinanza-control label {
+    flex: 1;
+}
+
+.segmented-control.cittadinanza-control .segmented-control-slider {
+    width: calc(50% - 2px);
+}
+
+/* Prima opzione (Italia) checked */
+.segmented-control.cittadinanza-control input:nth-of-type(1):checked ~ .segmented-control-slider {
+    left: 2px;
+}
+
+/* Seconda opzione (Estero) checked */
+.segmented-control.cittadinanza-control input:nth-of-type(2):checked ~ .segmented-control-slider {
+    left: calc(50% + 0px);
+}
+
+/* VARIANTE: Tipo Soggetto (3 opzioni: Privato | Ditta | Società) */
+.segmented-control.tipo-soggetto-control {
+    width: 300px;
+    margin-left: 16px;
+}
+
+.segmented-control.tipo-soggetto-control label {
+    flex: 1;
+    min-width: 95px;
+}
+
+.segmented-control.tipo-soggetto-control .segmented-control-slider {
+    width: calc(33.333% - 1.33px);
+}
+
+/* Prima opzione (Privato) checked */
+.segmented-control.tipo-soggetto-control input:nth-of-type(1):checked ~ .segmented-control-slider {
+    left: 2px;
+}
+
+/* Seconda opzione (Ditta) checked */
+.segmented-control.tipo-soggetto-control input:nth-of-type(2):checked ~ .segmented-control-slider {
+    left: calc(33.333% + 0.67px);
+}
+
+/* Terza opzione (Società) checked */
+.segmented-control.tipo-soggetto-control input:nth-of-type(3):checked ~ .segmented-control-slider {
+    left: calc(66.666% + 1.33px);
+}
+
+/* Campo autocomplete cittadinanza */
+.cittadinanza-field {
+    margin-top: 12px;
+    animation: slideDown 0.3s ease;
+}
+
+.cittadinanza-field input[type="text"] {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.cittadinanza-field input[type="text"]:focus {
+    outline: none;
+    border-color: #0066cc;
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+.cittadinanza-field input[type="text"]::placeholder {
+    color: #a0aec0;
+}
+
+.cittadinanza-field .field-hint {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: #718096;
+}
+
+/* Animation slideDown */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========== PERMESSO DI SOGGIORNO ========== */
+
+.permesso-soggiorno-section {
+    animation: slideDown 0.3s ease;
+}
+
+.permesso-soggiorno-section h4 {
+    color: #34C759;
+    margin-bottom: 16px;
+}
+
+/* ========== FORM SWITCHING: PRIVATO / DITTA / SOCIETÀ ========== */
+
+/* Header con titolo + tipo soggetto */
+.venditore-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.venditore-header h3 {
+    margin: 0;
+}
+
+/* Form containers */
+.form-tipo-privato,
+.form-tipo-ditta,
+.form-tipo-societa {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.form-tipo-privato.active,
+.form-tipo-ditta.active,
+.form-tipo-societa.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========== SOTTOSEZIONI SOCIETÀ ========== */
+
+/* Sottosezione Società-amministratore */
+.societa-amministratore-section {
+    background: #f8f9fa;
+    border-left: 4px solid #FF9500;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.societa-amministratore-section h5 {
+    color: #FF9500;
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 16px 0;
+}
+
+/* Sottosezione Designato */
+.designato-section {
+    background: #fff3e0;
+    border-left: 4px solid #FF6B35;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.designato-section h5 {
+    color: #FF6B35;
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 16px 0;
+}
+
+/* Checkbox domicilio per la carica */
+.domicilio-carica-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.domicilio-carica-toggle input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.domicilio-carica-toggle label {
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0066cc;
+    margin: 0;
+}
+
+.domicilio-carica-fields {
+    display: none;
+    animation: slideDown 0.3s ease;
+}
+
+.domicilio-carica-fields.active {
+    display: block;
+}
+
+/* Utility class */
+.hidden {
+    display: none !important;
+}
+
+/* ========== CODICE FISCALE: CALCOLO AUTOMATICO ========== */
+
+/* CF Input Group - Wrapper per input + button */
+.cf-input-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.cf-input-group input {
+    flex: 1;
+}
+
+/* Calculate CF Button - Bottone calcolo automatico */
+.btn-calculate-cf {
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #4CAF50 0%, #66bb6a 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.btn-calculate-cf:hover {
+    background: linear-gradient(135deg, #66bb6a 0%, #81c784 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.btn-calculate-cf:active {
+    transform: translateY(0);
+}
+
+.btn-calculate-cf:disabled {
+    background: #e0e0e0;
+    color: #9e9e9e;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* CF Warning Container - Messaggi di feedback */
+.cf-warning {
+    margin-top: 8px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    border-left: 4px solid;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* CF Warning Types - Diversi stati del messaggio */
+.cf-warning-error {
+    background: #ffebee;
+    color: #c62828;
+    border-color: #f44336;
+}
+
+.cf-warning-warning {
+    background: #fff3e0;
+    color: #e65100;
+    border-color: #ff9800;
+}
+
+.cf-warning-info {
+    background: #e3f2fd;
+    color: #1565c0;
+    border-color: #2196F3;
+}
+
+.cf-warning-success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border-color: #4caf50;
+}
+
+/* ========== REGIME PATRIMONIALE: CONIUGE AUTO-AGGIUNTO ========== */
+
+/* Chip button toggle per regime patrimoniale */
+.regime-chip-toggle {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #e9ecef;
+    border: 2px solid #ced4da;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    outline: none;
+    user-select: none;
+}
+
+.regime-chip-toggle:hover {
+    background: #dee2e6;
+    border-color: #adb5bd;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.regime-chip-toggle.active {
+    background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+    border-color: #0066cc;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+}
+
+.regime-chip-toggle.active:hover {
+    background: linear-gradient(135deg, #0052a3 0%, #004085 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0, 102, 204, 0.4);
+}
+
+/* Badge per coniuge auto-aggiunto */
+.badge-coniuge {
+    display: inline-block;
+    background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 12px;
+    margin-left: 10px;
+    animation: pulse-badge 2s ease-in-out infinite;
+    box-shadow: 0 2px 8px rgba(255, 107, 157, 0.3);
+    letter-spacing: 0.5px;
+}
+
+@keyframes pulse-badge {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(255, 107, 157, 0.3);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(255, 107, 157, 0.5);
+    }
+}
+
+/* Card venditore coniuge auto-aggiunto */
+.venditore-coniuge-auto {
+    border: 2px solid #ff6b9d;
+    background: linear-gradient(to bottom, #fff5f8 0%, #ffffff 100%);
+    box-shadow: 0 4px 12px rgba(255, 107, 157, 0.15);
+}
+
+.venditore-coniuge-auto .venditore-header {
+    background: linear-gradient(135deg, #ffe5ef 0%, #fff0f5 100%);
+    border-bottom: 2px solid #ff6b9d;
+}
+
+/* Bottone rimuovi disabilitato */
+.btn-remove:disabled {
+    background: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.7;
+    border: 1px solid #ced4da;
+}
+
+.btn-remove:disabled:hover {
+    background: #e9ecef;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Alert informativo per comunione dei beni */
+.info-alert {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border: 1px solid #2196F3;
+    border-left: 4px solid #2196F3;
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-top: 12px;
+    font-size: 14px;
+    color: #0d47a1;
+    box-shadow: 0 2px 6px rgba(33, 150, 243, 0.1);
+}
+
+.info-alert strong {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+/* Checkbox container */
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-container input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #0066cc;
+}
+
+.checkbox-container span {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+/* Toast notifications */
+.notification-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    min-width: 300px;
+    max-width: 500px;
+    padding: 16px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    opacity: 0;
+    transform: translateX(400px);
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.notification-toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.notification-toast.notification-success {
+    background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+    color: white;
+    border-left: 4px solid #2e7d32;
+}
+
+.notification-toast.notification-info {
+    background: linear-gradient(135deg, #2196F3 0%, #42a5f5 100%);
+    color: white;
+    border-left: 4px solid #1565c0;
+}
+
+.notification-toast.notification-warning {
+    background: linear-gradient(135deg, #ff9800 0%, #ffa726 100%);
+    color: white;
+    border-left: 4px solid #e65100;
+}
+
+.notification-toast.notification-error {
+    background: linear-gradient(135deg, #f44336 0%, #e57373 100%);
+    color: white;
+    border-left: 4px solid #c62828;
+}
+
+@media (max-width: 480px) {
+    .tab-btn .icon {
+        font-size: 16px;
+    }
+
+    .tab-btn .text {
+        display: none;
+    }
+
+    .field-card {
+        padding: 16px;
+    }
+
+    .tipo-selection-chips {
+        flex-direction: column;
+        padding: 16px;
+    }
+
+    .chip-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .add-blocco-buttons {
+        flex-direction: column;
+    }
+
+    .btn-add-blocco-tipo {
+        width: 100%;
+        justify-content: center;
+    }
+}
