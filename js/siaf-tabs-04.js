@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.14.0-FINAL-2025-11-13-19:00
+// 🚀 VERSION: SIAF-v2.14.1-CRITICAL-2025-11-13-19:30
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
     minor: 14,
-    patch: 0,
+    patch: 1,
     date: '13/11/2025',
-    time: '19:00',
-    description: 'Aggiunto campo "Note aggiuntive" a sezioni Conformità e Vincoli',
-    color: '#34C759'  // iOS green - new feature
+    time: '19:30',
+    description: 'FIX CRITICO: Preserva ID originali al caricamento pratiche (fix duplicati)',
+    color: '#FF3B30'  // iOS red - critical bugfix
 };
 
 class SiafApp {
@@ -673,10 +673,11 @@ class SiafApp {
             container.innerHTML = '';
         }
 
-        // Ricostruisce immobili dai dati
+        // Ricostruisce immobili dai dati PRESERVANDO GLI ID ORIGINALI
         immobiliData.forEach(immobileData => {
             const immobile = {
-                id: ++this.immobileCounter,
+                // MANTIENI l'ID originale (se esiste), altrimenti genera nuovo
+                id: immobileData.id || ++this.immobileCounter,
                 provincia: immobileData.provincia || 'Rovigo',
                 comune: immobileData.comune || 'Bergantino',
                 via: immobileData.via || '',
@@ -717,6 +718,14 @@ class SiafApp {
 
             console.log(`✅ Ricostruito immobile ${immobile.id}:`, immobile);
         });
+
+        // Dopo aver caricato tutti gli immobili, imposta counter al massimo ID
+        // Così i prossimi immobili aggiunti avranno ID univoci
+        if (this.immobili.length > 0) {
+            const maxId = Math.max(...this.immobili.map(i => i.id));
+            this.immobileCounter = maxId;
+            console.log(`📊 Counter immobili impostato a ${this.immobileCounter} (massimo ID esistente)`);
+        }
 
         // Se non ci sono immobili, aggiungi uno di default
         if (this.immobili.length === 0) {
@@ -828,11 +837,12 @@ class SiafApp {
             container.innerHTML = '';
         }
 
-        // Ricostruisce venditori dai dati
+        // Ricostruisce venditori dai dati PRESERVANDO GLI ID ORIGINALI
         venditoriData.forEach(venditoreData => {
             const venditore = {
-                id: ++this.venditoreCounter,
-                ...venditoreData
+                ...venditoreData,
+                // MANTIENI l'ID originale (se esiste), altrimenti genera nuovo
+                id: venditoreData.id || ++this.venditoreCounter
             };
 
             this.venditori.push(venditore);
@@ -843,6 +853,14 @@ class SiafApp {
                 this.populateSingleVenditore(venditore);
             }, 100);
         });
+
+        // Dopo aver caricato tutti i venditori, imposta counter al massimo ID
+        // Così i prossimi venditori aggiunti avranno ID univoci
+        if (this.venditori.length > 0) {
+            const maxId = Math.max(...this.venditori.map(v => v.id));
+            this.venditoreCounter = maxId;
+            console.log(`📊 Counter impostato a ${this.venditoreCounter} (massimo ID esistente)`);
+        }
     }
 
     populateSingleVenditore(venditore) {
