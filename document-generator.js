@@ -1534,36 +1534,39 @@ function generaSezioneRinnovo(durata, datiAgenzia) {
 }
 
 /**
- * Genera sezione ESCLUSIVA - solo opzione scelta (senza checkbox)
+ * Genera sezione ESCLUSIVA - entrambe le opzioni con checkbox finale
  */
 function generaSezioneEsclusiva(esclusiva) {
   if (!esclusiva) return '';
 
   const isEsclusiva = esclusiva.attiva;
+
+  // Spese massime autorizzate (per opzione NON in esclusiva)
+  const speseMax = esclusiva.spese_massime || 0;
+  const speseMaxLettere = numeroInLettere(speseMax, false);
+
+  // Costruisci testo con entrambe le opzioni
   let testo = '';
 
-  if (isEsclusiva) {
-    // INCARICO IN ESCLUSIVA
-    testo += 'Il presente incarico viene conferito IN ESCLUSIVA.\n\n';
-    testo += 'Il Venditore s\'impegna a non conferire incarico ad altre agenzie immobiliari, né a terzi, né a vendere l\'immobile per tutto il periodo di validità dell\'incarico. La violazione dell\'obbligo di esclusiva, sia nel caso di conferimento d\'incarico ad altre agenzie e/o a terzi, che per il caso di vendita effettuata direttamente dal Venditore, comporterà il pagamento da parte di quest\'ultimo della penale prevista al successivo punto.\n\n';
-    testo += 'Nell\'ipotesi di conferimento dell\'incarico in esclusiva l\'Agenzia Immobiliare s\'impegna a rinunciare al rimborso delle spese che sosterrà per l\'esecuzione dell\'incarico, anche in caso di mancata conclusione dell\'affare, fatto salvo il rimborso delle spese preventivate ed autorizzate.';
+  // Intestazione
+  testo += 'Il presente incarico viene conferito:\n\n';
 
-    // Testo custom (se presente)
-    if (esclusiva.testo_custom && esclusiva.testo_custom.trim() !== '') {
-      testo += `\n\nNote aggiuntive sull'esclusiva:\n${esclusiva.testo_custom}`;
-    }
+  // OPZIONE 1: NON IN ESCLUSIVA
+  testo += 'Non in esclusiva\n';
+  testo += 'In tal caso il Venditore potrà vendere l\'immobile direttamente o tramite altre agenzie immobiliari senza nulla dovere all\'Agenzia Immobiliare a titolo di provvigione o penale, impegnandosi però a comunicare tempestivamente all\'Agenzia Immobiliare l\'avvenuta accettazione di una proposta d\'acquisto e a rimborsare alla stessa le spese documentate sostenute nell\'esecuzione del presente incarico anche in caso di mancata vendita. ';
+  testo += `Il Venditore autorizza fin d'ora l'Agenzia Immobiliare a fare tali spese fino all'ammontare massimo di €uro ${speseMax.toFixed(2).replace('.', ',')} (${speseMaxLettere}/00).\n\n`;
 
-  } else {
-    // INCARICO NON IN ESCLUSIVA
-    testo += 'Il presente incarico viene conferito NON IN ESCLUSIVA.\n\n';
-    testo += 'Il Venditore potrà vendere l\'immobile direttamente o tramite altre agenzie immobiliari senza nulla dovere all\'Agenzia Immobiliare a titolo di provvigione o penale, impegnandosi però a comunicare tempestivamente all\'Agenzia Immobiliare l\'avvenuta accettazione di una proposta d\'acquisto e a rimborsare alla stessa le spese documentate sostenute nell\'esecuzione del presente incarico anche in caso di mancata vendita. ';
+  // OPZIONE 2: IN ESCLUSIVA
+  testo += 'In esclusiva\n';
+  testo += 'In tal caso il Venditore s\'impegna a non conferire incarico ad altre agenzie immobiliari, né a terzi, né a vendere l\'immobile per tutto il periodo di validità dell\'incarico. La violazione dell\'obbligo di esclusiva, sia nel caso di conferimento d\'incarico ad altre agenzie e/o a terzi, che per il caso di vendita effettuata direttamente dal Venditore, comporterà il pagamento da parte di quest\'ultimo della penale prevista al successivo punto.\n';
+  testo += 'Nell\'ipotesi di conferimento dell\'incarico in esclusiva l\'Agenzia Immobiliare s\'impegna a rinunciare al rimborso delle spese che sosterrà per l\'esecuzione dell\'incarico, anche in caso di mancata conclusione dell\'affare, fatto salvo il rimborso delle spese preventivate ed autorizzate.\n\n';
 
-    // Spese massime autorizzate (se specificate)
-    const speseMax = esclusiva.spese_massime || 0;
-    const speseMaxLettere = numeroInLettere(speseMax, false);
+  // CHECKBOX FINALE
+  const checkNonEsclusiva = !isEsclusiva ? '☒' : '☐';
+  const checkEsclusiva = isEsclusiva ? '☒' : '☐';
 
-    testo += `Il Venditore autorizza fin d'ora l'Agenzia Immobiliare a fare tali spese fino all'ammontare massimo di €uro ${speseMax.toFixed(2).replace('.', ',')} (${speseMaxLettere}/00).`;
-  }
+  testo += 'In relazione a quanto sopra il Venditore dichiara di scegliere l\'alternativa:\n';
+  testo += `${checkNonEsclusiva} non in esclusiva ${checkEsclusiva} in esclusiva`;
 
   return testo;
 }
