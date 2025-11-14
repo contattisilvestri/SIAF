@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.17.0-FINAL-2025-11-14-00:00
+// 🚀 VERSION: SIAF-v2.18.0-FINAL-2025-11-14-01:00
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
-    minor: 17,
+    minor: 18,
     patch: 0,
     date: '14/11/2025',
-    time: '00:00',
-    description: 'Formato date italiano (DD/MM/YYYY) nei documenti generati',
-    color: '#007AFF'  // iOS blue - update
+    time: '01:00',
+    description: 'Fix sincronizzazione venditori mancanti in quote possesso',
+    color: '#FF3B30'  // Red - bugfix critico
 };
 
 class SiafApp {
@@ -697,16 +697,28 @@ class SiafApp {
                 venditori_quote: immobileData.venditori_quote || []
             };
 
-            // Se venditori_quote è vuoto, inizializza con venditori esistenti
-            if (immobile.venditori_quote.length === 0) {
-                this.venditori.forEach(venditore => {
+            // Sincronizza venditori_quote con tutti i venditori esistenti
+            // 1. Rimuovi venditori "fantasma" (presenti in venditori_quote ma non in this.venditori)
+            immobile.venditori_quote = immobile.venditori_quote.filter(vq => {
+                const venditoreTrovatoEsiste = this.venditori.find(v => v.id === vq.venditore_id);
+                if (!venditoreTrovatoEsiste) {
+                    console.log(`🧹 Rimosso venditore fantasma ${vq.venditore_id} da venditori_quote di immobile ${immobile.id}`);
+                }
+                return venditoreTrovatoEsiste;
+            });
+
+            // 2. Aggiungi venditori mancanti (presenti in this.venditori ma non in venditori_quote)
+            this.venditori.forEach(venditore => {
+                const esiste = immobile.venditori_quote.find(vq => vq.venditore_id === venditore.id);
+                if (!esiste) {
                     immobile.venditori_quote.push({
                         venditore_id: venditore.id,
                         quota_percentuale: null,
                         natura_diritto: 'comproprietario'
                     });
-                });
-            }
+                    console.log(`🔄 Aggiunto venditore ${venditore.id} a venditori_quote di immobile ${immobile.id}`);
+                }
+            });
 
             this.immobili.push(immobile);
             this.renderImmobile(immobile);
