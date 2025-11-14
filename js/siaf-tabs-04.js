@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.18.0-FINAL-2025-11-14-01:00
+// 🚀 VERSION: SIAF-v2.18.1-FINAL-2025-11-14-02:30
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
     minor: 18,
-    patch: 0,
+    patch: 1,
     date: '14/11/2025',
-    time: '01:00',
-    description: 'Fix sincronizzazione venditori mancanti in quote possesso',
-    color: '#FF3B30'  // Red - bugfix critico
+    time: '02:30',
+    description: 'Aggiunto campo Note Operative Agenzia per ogni immobile',
+    color: '#007AFF'  // Blue - nuova feature
 };
 
 class SiafApp {
@@ -4396,6 +4396,9 @@ renderVenditore(venditore) {
 
         immobile.stato.documenti_consegnati = documenti;
 
+        // Note operative agenzia
+        immobile.stato.note_operative = getValue(`note_operative_${immobileId}`);
+
         console.log(`🏠 Stato salvato per immobile ${immobileId}:`, immobile.stato);
     }
 
@@ -6128,6 +6131,14 @@ renderVenditore(venditore) {
                         <label>Altro:</label>
                         <textarea id="doc_altro_${id}" placeholder="Altri documenti consegnati..." rows="2">${stato.documenti_consegnati?.find(d => d.startsWith('altro:'))?.substring(6) || ''}</textarea>
                     </div>
+                </div>
+
+                <!-- NOTE OPERATIVE AGENZIA -->
+                <div class="form-group">
+                    <label for="note_operative_${id}">📝 Note Operative Agenzia:</label>
+                    <textarea id="note_operative_${id}"
+                              placeholder="Note interne per l'agenzia (non visibili nel documento finale)..."
+                              style="width: 100%; min-height: 80px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical; background-color: #fffbf0;">${stato.note_operative || ''}</textarea>
                 </div>
             </div>
         `;
