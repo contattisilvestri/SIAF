@@ -34,6 +34,41 @@ function getNomeProvinciaCompleto(sigla) {
   return PROVINCE_ITALIANE[siglaMaiuscola] || sigla; // Fallback alla sigla se non trovata
 }
 
+/**
+ * Funzione helper per gestire forme singolari/plurali di "Venditore"
+ * @param {number} numVenditori - Numero di venditori
+ * @returns {Object} Oggetto con tutte le forme necessarie
+ */
+function getVenditoreForm(numVenditori) {
+  const isPlural = numVenditori > 1;
+
+  return {
+    // Articolo + sostantivo
+    il_venditore: isPlural ? 'i Venditori' : 'il Venditore',
+    Il_Venditore: isPlural ? 'I Venditori' : 'Il Venditore',
+
+    // Preposizioni articolate
+    del_venditore: isPlural ? 'dei Venditori' : 'del Venditore',
+    al_venditore: isPlural ? 'ai Venditori' : 'al Venditore',
+    dal_venditore: isPlural ? 'dai Venditori' : 'dal Venditore',
+
+    // Solo sostantivo
+    Venditore: isPlural ? 'Venditori' : 'Venditore',
+    venditore: isPlural ? 'venditori' : 'venditore',
+
+    // Verbi coniugati
+    accetta: isPlural ? 'accettano' : 'accetta',
+    dichiara: isPlural ? 'dichiarano' : 'dichiara',
+    si_impegna: isPlural ? 's\'impegnano' : 's\'impegna',
+    potrà: isPlural ? 'potranno' : 'potrà',
+    riterrà: isPlural ? 'riterranno' : 'riterrà',
+    autorizza: isPlural ? 'autorizzano' : 'autorizza',
+
+    // Pronomi
+    quest_ultimo: isPlural ? 'questi ultimi' : 'quest\'ultimo'
+  };
+}
+
 // ========== ENDPOINT PRINCIPALE ==========
 
 function handleGenerateDocuments(requestData) {
@@ -1237,6 +1272,8 @@ function formatCurrency(numero) {
 function prepareCondizioniEconomichePlaceholders(data, agenziaData) {
   const condizioni = data.condizioni_economiche || {};
   const immobili = data.immobili || [];
+  const venditori = data.venditori || [];
+  const numVenditori = venditori.length;
   const placeholders = {};
 
   // Estrai dati agenzia per sostituzione nei testi generati
@@ -1250,6 +1287,7 @@ function prepareCondizioniEconomichePlaceholders(data, agenziaData) {
   console.log('💰 === PREPARAZIONE PLACEHOLDER CONDIZIONI ECONOMICHE ===');
   console.log('💰 Modalità prezzo:', condizioni.modalita_prezzo);
   console.log('💰 Numero immobili:', immobili.length);
+  console.log('💰 Numero venditori:', numVenditori);
 
   // ========== SEZIONE PREZZO ==========
   if (condizioni.modalita_prezzo === 'offerta_unica' && condizioni.prezzo_forfettario) {
@@ -1350,19 +1388,19 @@ function prepareCondizioniEconomichePlaceholders(data, agenziaData) {
   // Genera sezioni complete con testo e checkbox già formattate
 
   // SEZIONE PREZZO COMPLETA
-  placeholders.sezione_prezzo_completa = generaSezionePrezzo(condizioni, immobili);
+  placeholders.sezione_prezzo_completa = generaSezionePrezzo(condizioni, immobili, numVenditori);
 
   // SEZIONE COMPENSO COMPLETA
-  placeholders.sezione_compenso_completa = generaSezioneCompenso(condizioni.compenso, datiAgenzia);
+  placeholders.sezione_compenso_completa = generaSezioneCompenso(condizioni.compenso, datiAgenzia, numVenditori);
 
   // SEZIONE RINNOVO COMPLETA
-  placeholders.sezione_rinnovo_completa = generaSezioneRinnovo(condizioni.durata, datiAgenzia);
+  placeholders.sezione_rinnovo_completa = generaSezioneRinnovo(condizioni.durata, datiAgenzia, numVenditori);
 
   // SEZIONE ESCLUSIVA COMPLETA
-  placeholders.sezione_esclusiva_completa = generaSezioneEsclusiva(condizioni.esclusiva);
+  placeholders.sezione_esclusiva_completa = generaSezioneEsclusiva(condizioni.esclusiva, numVenditori);
 
   // SEZIONE CONDIZIONI DI PAGAMENTO COMPLETA
-  placeholders.sezione_condizioni_pagamento_completa = generaSezioneCondizionipagamento(condizioni.condizioni_pagamento);
+  placeholders.sezione_condizioni_pagamento_completa = generaSezioneCondizionipagamento(condizioni.condizioni_pagamento, numVenditori);
 
   // SEZIONE ATTO NOTARILE COMPLETA
   placeholders.sezione_atto_notarile_completa = generaSezioneAttoNotarile(condizioni.condizioni_pagamento);
@@ -1397,7 +1435,8 @@ function prepareCondizioniEconomichePlaceholders(data, agenziaData) {
 /**
  * Genera sezione PREZZO completa con testo formattato
  */
-function generaSezionePrezzo(condizioni, immobili) {
+function generaSezionePrezzo(condizioni, immobili, numVenditori = 1) {
+  const v = getVenditoreForm(numVenditori);
   let testo = '';
 
   if (condizioni.modalita_prezzo === 'offerta_unica' && condizioni.prezzo_forfettario) {
@@ -1433,7 +1472,7 @@ function generaSezionePrezzo(condizioni, immobili) {
         testo += `, con possibilità di trattativa in riduzione fino a un massimo del ${percRiduzione}%, fino a Euro ${formatCurrency(prezzoMinimo)} (${numeroInLettere(prezzoMinimo, true)})`;
       }
 
-      testo += '. Indipendentemente dai prezzi citati, il prezzo complessivo e finale sarà quello che il Venditore riterrà di accettare, in seguito alle proposte d\'acquisto che riceverà.';
+      testo += `. Indipendentemente dai prezzi citati, il prezzo complessivo e finale sarà quello che ${v.il_venditore} ${v.riterrà} di accettare, in seguito alle proposte d'acquisto che riceverà.`;
 
     } else {
       // Più immobili - elenco
@@ -1457,7 +1496,7 @@ function generaSezionePrezzo(condizioni, immobili) {
         testo += '.\n\n';
       });
 
-      testo += 'Indipendentemente dai prezzi citati, il prezzo complessivo e finale sarà quello che il Venditore riterrà di accettare, in seguito alle proposte d\'acquisto che riceverà.';
+      testo += `Indipendentemente dai prezzi citati, il prezzo complessivo e finale sarà quello che ${v.il_venditore} ${v.riterrà} di accettare, in seguito alle proposte d'acquisto che riceverà.`;
     }
   }
 
@@ -1467,9 +1506,10 @@ function generaSezionePrezzo(condizioni, immobili) {
 /**
  * Genera sezione COMPENSO MEDIAZIONE completa
  */
-function generaSezioneCompenso(compenso, datiAgenzia) {
+function generaSezioneCompenso(compenso, datiAgenzia, numVenditori = 1) {
   if (!compenso) return '';
 
+  const v = getVenditoreForm(numVenditori);
   const percProvvigione = compenso.percentuale_provvigione || 3;
   const percLettere = numeroInLettere(percProvvigione, false);
   const sogliaMinima = formatCurrency(compenso.soglia_minima || 50000);
@@ -1478,7 +1518,7 @@ function generaSezioneCompenso(compenso, datiAgenzia) {
   const ragioneSociale = datiAgenzia?.ragione_sociale || '{{ragione_sociale_agenzia}}';
 
   let testo = `Provvigione ${percProvvigione}% (${percLettere} per cento) più IVA, sul prezzo di vendita se uguale o superiore a Euro ${sogliaMinima}, con un minimo di ${importoMinimo} più IVA. `;
-  testo += `Il compenso maturerà all'avvenuta conoscenza da parte dell'acquirente dell'accettazione della proposta d'acquisto e sarà corrisposto dal Venditore all'agenzia d'affari "${ragioneSociale}". `;
+  testo += `Il compenso maturerà all'avvenuta conoscenza da parte dell'acquirente dell'accettazione della proposta d'acquisto e sarà corrisposto ${v.dal_venditore} all'agenzia d'affari "${ragioneSociale}". `;
   testo += `La provvigione pattuita sarà comunque dovuta, nel caso di vendita o promessa di vendita con soggetti che l'Agenzia Immobiliare abbia segnalato in esecuzione dell'incarico, anche qualora la stipulazione avvenga dopo la scadenza di quest'ultimo o la vendita si realizzi per interposta persona fisica o giuridica.`;
 
   return testo;
@@ -1487,9 +1527,10 @@ function generaSezioneCompenso(compenso, datiAgenzia) {
 /**
  * Genera sezione RINNOVO - tutte le opzioni con checkbox (☐ vuoto, ☒ selezionato)
  */
-function generaSezioneRinnovo(durata, datiAgenzia) {
+function generaSezioneRinnovo(durata, datiAgenzia, numVenditori = 1) {
   if (!durata) return '';
 
+  const v = getVenditoreForm(numVenditori);
   const tipoRinnovo = durata.tipo_rinnovo || 'cessato';
 
   // Estrai dati agenzia con fallback ai placeholder
@@ -1514,7 +1555,7 @@ function generaSezioneRinnovo(durata, datiAgenzia) {
   testo += `La durata dell'incarico avrà decorso ${dataInizio} fino il giorno ${dataFine}, dopodiché:\n`;
 
   // Opzione 1: Cessato
-  testo += `${checkCessato} s'intenderà cessato a tutti gli effetti senza oneri e vincoli per il Venditore;\n`;
+  testo += `${checkCessato} s'intenderà cessato a tutti gli effetti senza oneri e vincoli per ${v.il_venditore};\n`;
 
   // Opzione 2: Tacito rinnovo unico
   testo += `${checkUnico} s'intenderà tacitamente rinnovato per ugual periodo e per una sola volta alle stesse condizioni;\n`;
@@ -1536,9 +1577,10 @@ function generaSezioneRinnovo(durata, datiAgenzia) {
 /**
  * Genera sezione ESCLUSIVA - entrambe le opzioni con checkbox finale
  */
-function generaSezioneEsclusiva(esclusiva) {
+function generaSezioneEsclusiva(esclusiva, numVenditori = 1) {
   if (!esclusiva) return '';
 
+  const v = getVenditoreForm(numVenditori);
   const isEsclusiva = esclusiva.attiva;
 
   // Spese massime autorizzate (per opzione NON in esclusiva)
@@ -1553,19 +1595,19 @@ function generaSezioneEsclusiva(esclusiva) {
 
   // OPZIONE 1: NON IN ESCLUSIVA
   testo += 'Non in esclusiva\n';
-  testo += 'In tal caso il Venditore potrà vendere l\'immobile direttamente o tramite altre agenzie immobiliari senza nulla dovere all\'Agenzia Immobiliare a titolo di provvigione o penale, impegnandosi però a comunicare tempestivamente all\'Agenzia Immobiliare l\'avvenuta accettazione di una proposta d\'acquisto e a rimborsare alla stessa le spese documentate sostenute nell\'esecuzione del presente incarico anche in caso di mancata vendita. ';
-  testo += `Il Venditore autorizza fin d'ora l'Agenzia Immobiliare a fare tali spese fino all'ammontare massimo di €uro ${speseMax.toFixed(2).replace('.', ',')} (${speseMaxLettere}/00).\n\n`;
+  testo += `In tal caso ${v.il_venditore} ${v.potrà} vendere l'immobile direttamente o tramite altre agenzie immobiliari senza nulla dovere all'Agenzia Immobiliare a titolo di provvigione o penale, impegnandosi però a comunicare tempestivamente all'Agenzia Immobiliare l'avvenuta accettazione di una proposta d'acquisto e a rimborsare alla stessa le spese documentate sostenute nell'esecuzione del presente incarico anche in caso di mancata vendita. `;
+  testo += `${v.Il_Venditore} ${v.autorizza} fin d'ora l'Agenzia Immobiliare a fare tali spese fino all'ammontare massimo di €uro ${speseMax.toFixed(2).replace('.', ',')} (${speseMaxLettere}/00).\n\n`;
 
   // OPZIONE 2: IN ESCLUSIVA
   testo += 'In esclusiva\n';
-  testo += 'In tal caso il Venditore s\'impegna a non conferire incarico ad altre agenzie immobiliari, né a terzi, né a vendere l\'immobile per tutto il periodo di validità dell\'incarico. La violazione dell\'obbligo di esclusiva, sia nel caso di conferimento d\'incarico ad altre agenzie e/o a terzi, che per il caso di vendita effettuata direttamente dal Venditore, comporterà il pagamento da parte di quest\'ultimo della penale prevista al successivo punto.\n';
-  testo += 'Nell\'ipotesi di conferimento dell\'incarico in esclusiva l\'Agenzia Immobiliare s\'impegna a rinunciare al rimborso delle spese che sosterrà per l\'esecuzione dell\'incarico, anche in caso di mancata conclusione dell\'affare, fatto salvo il rimborso delle spese preventivate ed autorizzate.\n\n';
+  testo += `In tal caso ${v.il_venditore} ${v.si_impegna} a non conferire incarico ad altre agenzie immobiliari, né a terzi, né a vendere l'immobile per tutto il periodo di validità dell'incarico. La violazione dell'obbligo di esclusiva, sia nel caso di conferimento d'incarico ad altre agenzie e/o a terzi, che per il caso di vendita effettuata direttamente ${v.dal_venditore}, comporterà il pagamento da parte di ${v.quest_ultimo} della penale prevista al successivo punto.\n`;
+  testo += `Nell'ipotesi di conferimento dell'incarico in esclusiva l'Agenzia Immobiliare s'impegna a rinunciare al rimborso delle spese che sosterrà per l'esecuzione dell'incarico, anche in caso di mancata conclusione dell'affare, fatto salvo il rimborso delle spese preventivate ed autorizzate.\n\n`;
 
   // CHECKBOX FINALE
   const checkNonEsclusiva = !isEsclusiva ? '☒' : '☐';
   const checkEsclusiva = isEsclusiva ? '☒' : '☐';
 
-  testo += 'In relazione a quanto sopra il Venditore dichiara di scegliere l\'alternativa:\n';
+  testo += `In relazione a quanto sopra ${v.il_venditore} ${v.dichiara} di scegliere l'alternativa:\n`;
   testo += `${checkNonEsclusiva} non in esclusiva ${checkEsclusiva} in esclusiva`;
 
   return testo;
