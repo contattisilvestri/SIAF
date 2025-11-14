@@ -5449,7 +5449,20 @@ renderVenditore(venditore) {
                 prezzo_vendita: 0,
                 percentuale_riduzione: 0
             },
-            venditori_quote: []
+            venditori_quote: [],
+            // v2.21.0: Provenienza e dati legali
+            dati_edilizi: {
+                nulla_osta_costruzione: { data: '', numero_pratica: '' },
+                autorizzazione_abitabilita: { data: '', numero_pratica: '' },
+                note_fabbricati_accessori: ''
+            },
+            dati_impianti: {
+                conformita_epoca: ''
+            },
+            dati_urbanistici: {
+                note: ''
+            },
+            provenienza: []  // Array di atti di provenienza (successioni, compravendite, etc.)
         };
 
         // Inizializza venditori_quote con tutti i venditori esistenti

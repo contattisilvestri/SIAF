@@ -1,0 +1,59 @@
+{
+  "B": {
+    "nome_agenzia": "Studio M&C - Sede Bergantino",
+    "citta": "Bergantino",
+    "provincia": "RO",
+    "notai_preferiti": [
+      { "nome": "Umberto Barbieri", "sede": "Castelmassa" },
+      { "nome": "Umberto Barbieri", "sede": "Ficarolo" },
+      { "nome": "Giancarlo Chinarelli", "sede": "Ferrara" },
+      { "nome": "Giancarlo Chinarelli", "sede": "Bergantino" },
+      { "nome": "Loretta Munzio", "sede": "Vicenza" },
+      { "nome": "Loretta Munzio", "sede": "Bergantino" },
+      { "nome": "Francesco Manetto", "sede": "Ostiglia" },
+      { "nome": "Federico Tortora", "sede": "Ostiglia" },
+      { "nome": "Alessandro Wurzer", "sede": "Badia Polesine" },
+      { "nome": "Ciro Caccavale", "sede": "Ostiglia" },
+      { "nome": "Francesco Rizzo", "sede": "Poggio Rusco" },
+      { "nome": "Giulio Stori", "sede": "Poggio Rusco" },
+      { "nome": "Angelo Codifava", "sede": "Sermide" },
+      { "nome": "Egidio Ferrara", "sede": "Sermide" },
+      { "nome": "Simonetta Doro", "sede": "Lendinara" },
+      { "nome": "Claudio Berlini", "sede": "Legnago" },
+      { "nome": "Claudio Gabinio", "sede": "Rovigo" },
+      { "nome": "Sergio Macchi", "sede": "Legnago" },
+      { "nome": "Lidio Schiavi", "sede": "Adria" },
+      { "nome": "Mauro Coppola", "sede": "Occhiobello" },
+      { "nome": "Mauro Coppola", "sede": "Bergantino" },
+      { "nome": "Alessandro Mistri", "sede": "Bergantino" },
+      { "nome": "Mauro Mestieri", "sede": "Bergantino" },
+      { "nome": "Francesco Leoni", "sede": "Bergantino" }
+    ],
+    "ultimo_aggiornamento": "2025-01-14"
+  },
+  "C": {
+    "nome_agenzia": "Agenzia Calza",
+    "citta": "Bergantino",
+    "provincia": "RO",
+    "notai_preferiti": [],
+    "ultimo_aggiornamento": "2025-01-14"
+  },
+  "D": {
+    "nome_agenzia": "Agenzia Montagnini",
+    "citta": "Bergantino",
+    "provincia": "RO",
+    "notai_preferiti": [],
+    "ultimo_aggiornamento": "2025-01-14"
+  },
+  "DEMO": {
+    "nome_agenzia": "Account Demo",
+    "citta": "Milano",
+    "provincia": "MI",
+    "notai_preferiti": [
+      { "nome": "Mario Rossi", "sede": "Milano" },
+      { "nome": "Giuseppe Verdi", "sede": "Roma" },
+      { "nome": "Anna Bianchi", "sede": "Napoli" }
+    ],
+    "ultimo_aggiornamento": "2025-01-14"
+  }
+}

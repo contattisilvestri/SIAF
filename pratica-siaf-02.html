@@ -27,6 +27,11 @@
         <span class="text">Immobile Prima</span>
         <span class="status"></span>
     </button>
+    <button class="tab-btn" data-tab="provenienza">
+        <span class="icon">📜</span>
+        <span class="text">Provenienza</span>
+        <span class="status"></span>
+    </button>
     <button class="tab-btn" data-tab="immobile-dopo">
         <span class="icon">🏘️</span>
         <span class="text">Immobile Dopo</span>
@@ -186,6 +191,22 @@
 
     <div id="immobili-container">
         <!-- Immobili dinamici generati da JavaScript -->
+    </div>
+</div>
+
+<div id="tab-provenienza" class="tab-panel">
+    <div class="panel-header">
+        <h2>📜 Provenienza e Dati Legali</h2>
+        <p class="panel-subtitle">Titoli di provenienza, autorizzazioni edilizie e conformità per ogni immobile</p>
+    </div>
+    <div id="provenienza-container">
+        <!-- Contenuto dinamico generato da JavaScript -->
+        <!-- Per ogni immobile verrà creato un accordion con:
+             - Dati Edilizi (nulla osta, abitabilità)
+             - Dati Impianti (conformità epoca)
+             - Dati Urbanistici (note)
+             - Provenienza (array atti ripetibili)
+        -->
     </div>
 </div>
 
@@ -2903,6 +2924,9 @@ select[id*="_comune"]:hover {
     }
 
     // Carica script principali con timestamp anti-cache
+
+    // BLOCCO 0: Configurazione globale (caricamento PRIMA di tutto)
+    loadScript('https://contattisilvestri.github.io/SIAF/config.js');
 
     // BLOCCO 1: Moduli Codice Fiscale (caricamento sincrono, PRIMA dell'app)
     loadScript('https://contattisilvestri.github.io/SIAF/js/cf-security.js');
