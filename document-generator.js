@@ -697,7 +697,7 @@ function generatePrivatoText(venditore, index, isLast, venditori) {
       result += `${natoPrefix}${venditore.luogo_nascita}`;
     }
 
-    result += ` il ${venditore.data_nascita}`;
+    result += ` il ${formatDateToItalian(venditore.data_nascita)}`;
   }
 
   if (venditore.codice_fiscale) {
@@ -716,11 +716,11 @@ function generatePrivatoText(venditore, index, isLast, venditori) {
   }
 
   if (venditore.data_rilascio) {
-    result += `, data di rilascio ${venditore.data_rilascio}`;
+    result += `, data di rilascio ${formatDateToItalian(venditore.data_rilascio)}`;
   }
 
   if (venditore.data_scadenza) {
-    result += `, data di scadenza ${venditore.data_scadenza}`;
+    result += `, data di scadenza ${formatDateToItalian(venditore.data_scadenza)}`;
   }
 
   // Permesso di soggiorno
@@ -739,8 +739,8 @@ function generatePrivatoText(venditore, index, isLast, venditori) {
       result += ` ${tipiPermesso[venditore.permesso_tipo] || 'permesso di soggiorno'}`;
     }
     if (venditore.permesso_numero) result += ` numero ${venditore.permesso_numero}`;
-    if (venditore.permesso_rilascio) result += `, rilasciato in data ${venditore.permesso_rilascio}`;
-    if (venditore.permesso_scadenza) result += `, con scadenza ${venditore.permesso_scadenza}`;
+    if (venditore.permesso_rilascio) result += `, rilasciato in data ${formatDateToItalian(venditore.permesso_rilascio)}`;
+    if (venditore.permesso_scadenza) result += `, con scadenza ${formatDateToItalian(venditore.permesso_scadenza)}`;
     if (venditore.permesso_questura) result += `, dalla ${venditore.permesso_questura}`;
   }
 
@@ -822,7 +822,7 @@ function generateDittaText(venditore, index, isLast) {
       result += `${natoPrefix}${venditore.titolare_luogo_nascita}`;
     }
 
-    result += ` il ${venditore.titolare_data_nascita}`;
+    result += ` il ${formatDateToItalian(venditore.titolare_data_nascita)}`;
   }
 
   if (venditore.cf_titolare) {
@@ -842,10 +842,10 @@ function generateDittaText(venditore, index, isLast) {
     result += `, ${tipoDoc} numero ${venditore.titolare_numero_documento}`;
 
     if (venditore.titolare_data_rilascio) {
-      result += `, rilasciat${isFemale ? 'a' : 'o'} in data ${venditore.titolare_data_rilascio}`;
+      result += `, rilasciat${isFemale ? 'a' : 'o'} in data ${formatDateToItalian(venditore.titolare_data_rilascio)}`;
     }
     if (venditore.titolare_data_scadenza) {
-      result += `, con scadenza ${venditore.titolare_data_scadenza}`;
+      result += `, con scadenza ${formatDateToItalian(venditore.titolare_data_scadenza)}`;
     }
   }
 
@@ -1019,7 +1019,7 @@ function generateSocietaText(venditore, index, isLast) {
         result += `${natoPrefix}${venditore.rappresentante_luogo_nascita}`;
       }
 
-      result += ` il ${venditore.rappresentante_data_nascita}`;
+      result += ` il ${formatDateToItalian(venditore.rappresentante_data_nascita)}`;
     }
 
     if (venditore.rappresentante_cf) {
@@ -1039,10 +1039,10 @@ function generateSocietaText(venditore, index, isLast) {
       result += `, ${tipoDoc} numero ${venditore.rappresentante_numero_documento}`;
 
       if (venditore.rappresentante_data_rilascio) {
-        result += `, rilasciat${isFemale ? 'a' : 'o'} in data ${venditore.rappresentante_data_rilascio}`;
+        result += `, rilasciat${isFemale ? 'a' : 'o'} in data ${formatDateToItalian(venditore.rappresentante_data_rilascio)}`;
       }
       if (venditore.rappresentante_data_scadenza) {
-        result += `, con scadenza ${venditore.rappresentante_data_scadenza}`;
+        result += `, con scadenza ${formatDateToItalian(venditore.rappresentante_data_scadenza)}`;
       }
     }
 
@@ -1104,7 +1104,7 @@ function generateSocietaText(venditore, index, isLast) {
         result += `${natoPrefix}${venditore.designato_luogo_nascita}`;
       }
 
-      result += ` il ${venditore.designato_data_nascita}`;
+      result += ` il ${formatDateToItalian(venditore.designato_data_nascita)}`;
     }
 
     if (venditore.designato_cf) {
@@ -1124,10 +1124,10 @@ function generateSocietaText(venditore, index, isLast) {
       result += `, ${tipoDoc} numero ${venditore.designato_numero_documento}`;
 
       if (venditore.designato_data_rilascio) {
-        result += `, rilasciat${isFemale ? 'a' : 'o'} in data ${venditore.designato_data_rilascio}`;
+        result += `, rilasciat${isFemale ? 'a' : 'o'} in data ${formatDateToItalian(venditore.designato_data_rilascio)}`;
       }
       if (venditore.designato_data_scadenza) {
-        result += `, con scadenza ${venditore.designato_data_scadenza}`;
+        result += `, con scadenza ${formatDateToItalian(venditore.designato_data_scadenza)}`;
       }
     }
 
@@ -1313,8 +1313,8 @@ function prepareCondizioniEconomichePlaceholders(data, agenziaData) {
 
   // ========== DURATA INCARICO ==========
   if (condizioni.durata) {
-    placeholders.data_inizio_incarico = condizioni.durata.data_inizio || '';
-    placeholders.data_fine_incarico = condizioni.durata.data_fine || '';
+    placeholders.data_inizio_incarico = formatDateToItalian(condizioni.durata.data_inizio || '');
+    placeholders.data_fine_incarico = formatDateToItalian(condizioni.durata.data_fine || '');
     placeholders.tipo_rinnovo = condizioni.durata.tipo_rinnovo || 'cessato';
 
     // Testo rinnovo in formato leggibile
@@ -2131,6 +2131,30 @@ function formatDate(date) {
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
   const year = date.getFullYear();
   return `${day}/${month}/${year}`;
+}
+
+/**
+ * Converte una data da formato ISO (YYYY-MM-DD) a formato italiano (DD/MM/YYYY)
+ * @param {string} dateString - Data in formato YYYY-MM-DD (da input type="date")
+ * @returns {string} Data in formato DD/MM/YYYY, o stringa vuota se input non valido
+ */
+function formatDateToItalian(dateString) {
+  if (!dateString) return '';
+
+  // Se la data è già in formato DD/MM/YYYY, ritorna così com'è
+  if (dateString.includes('/')) {
+    return dateString;
+  }
+
+  // Converti da YYYY-MM-DD a DD/MM/YYYY
+  const parts = dateString.split('-');
+  if (parts.length === 3) {
+    const [year, month, day] = parts;
+    return `${day}/${month}/${year}`;
+  }
+
+  // Fallback: ritorna stringa originale
+  return dateString;
 }
 
 // Stub per altri documenti (da implementare)

@@ -1,14 +1,14 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.16.0-FINAL-2025-11-13-20:15
+// 🚀 VERSION: SIAF-v2.17.0-FINAL-2025-11-14-00:00
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
-    minor: 16,
+    minor: 17,
     patch: 0,
-    date: '13/11/2025',
-    time: '20:15',
-    description: 'Aggiornate classi energetiche: A1, A2, A3, A4, B, C, D, E, F, G',
+    date: '14/11/2025',
+    time: '00:00',
+    description: 'Formato date italiano (DD/MM/YYYY) nei documenti generati',
     color: '#007AFF'  // iOS blue - update
 };
 
