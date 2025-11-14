@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.19.0-FINAL-2025-11-14-03:00
+// 🚀 VERSION: SIAF-v2.19.1-FINAL-2025-11-14-03:30
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
     minor: 19,
-    patch: 0,
+    patch: 1,
     date: '14/11/2025',
-    time: '03:00',
-    description: 'Aggiunta sezione Analisi Operativa Interna con note per affare e immobili',
-    color: '#007AFF'  // Blue - nuova feature
+    time: '03:30',
+    description: 'UI: Interfaccia allargata a 1600px e rimossi pallini status menu',
+    color: '#FF9500'  // Orange - UI improvement
 };
 
 class SiafApp {
