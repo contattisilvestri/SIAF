@@ -7704,7 +7704,10 @@ renderVenditore(venditore) {
         const btnAddAtto = document.querySelectorAll('.btn-add-atto');
         btnAddAtto.forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const immobileId = e.target.dataset.immobileId;
+                e.preventDefault();
+                const button = e.currentTarget;
+                const immobileId = button.dataset.immobileId;
+                console.log('🆕 Aggiunta atto per immobile:', immobileId);
                 this.addAttoProvenienza(immobileId);
             });
         });
@@ -7712,8 +7715,11 @@ renderVenditore(venditore) {
         const btnRemoveAtto = document.querySelectorAll('.btn-remove-atto');
         btnRemoveAtto.forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const immobileId = e.target.dataset.immobileId;
-                const attoIndex = parseInt(e.target.dataset.attoIndex);
+                e.preventDefault();
+                const button = e.currentTarget;
+                const immobileId = button.dataset.immobileId;
+                const attoIndex = parseInt(button.dataset.attoIndex);
+                console.log('🗑️ Rimozione atto', attoIndex, 'per immobile:', immobileId);
                 this.removeAttoProvenienza(immobileId, attoIndex);
             });
         });
