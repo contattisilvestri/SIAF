@@ -3,7 +3,6 @@
 <div id="version-indicator" style="position: fixed; top: 10px; right: 10px; background: #999; color: white; padding: 5px 10px; border-radius: 5px; font-size: 12px; z-index: 9999; font-family: monospace; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
     ⏳ Caricamento...
 </div>
-<div id="container-width-debug">Width: <span id="width-value">---</span>px</div>
 <div id="siaf-app">
     
     <!-- BLOCCO 2: Navigazione tab con status indicators -->
@@ -492,6 +491,2395 @@
 
 <link rel="stylesheet" href="https://contattisilvestri.github.io/SIAF/css/siaf-tabs-02.css">
 
+<style id="siaf-override-elementor">/* ===============================
+   🎨 SIAF COMPLETE CSS
+   CSS ORIGINALE COMPLETO + ClickUp
+   ELEMENTOR OVERRIDE
+================================ */
+
+/* ===============================
+   VARIABILI TEMA
+================================ */
+:root {
+  --bg-main: #F7F8FB;
+  --card-bg: #FFFFFF;
+  --border-color: #E6E8EF;
+  --text-primary: #0F172A;
+  --text-muted: #5B6474;
+  --gradient-purple: linear-gradient(135deg, #8C6FF8 0%, #F27BB0 50%, #72D5E5 100%);
+  --gradient-primary: linear-gradient(135deg, #635BFF 0%, #8E7BFF 55%, #00C4B4 120%);
+  --gradient-secondary: linear-gradient(180deg, #F3F6FF 0%, #ECF2FF 100%);
+  --primary: #635BFF;
+  --primary-hover: #534AE8;
+  --success: #10B981;
+  --shadow-card: 0 8px 26px rgba(2, 6, 23, 0.08);
+  --shadow-hover: 0 14px 32px rgba(2, 6, 23, 0.12);
+  --radius: 16px;
+  --card-min-height: 460px;
+}
+
+/* ===============================
+   BASE & FONT - OVERRIDE ELEMENTOR
+================================ */
+html body,
+body,
+.elementor body,
+#siaf-app,
+#siaf-app *,
+#siaf-app button,
+#siaf-app input,
+#siaf-app select,
+#siaf-app textarea,
+#siaf-app h1,
+#siaf-app h2,
+#siaf-app h3,
+#siaf-app h4,
+#siaf-app h5,
+#siaf-app h6,
+#siaf-app p,
+#siaf-app span,
+#siaf-app div,
+#siaf-app label {
+  font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif !important;
+}
+
+html, body {
+  background: var(--bg-main) !important;
+}
+
+#siaf-app {
+  background: var(--bg-main) !important;
+  box-shadow: none !important;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* ===============================
+   TABS NAVIGATION (ClickUp Style)
+================================ */
+#siaf-app .siaf-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  gap: 10px;
+  padding: 14px 20px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(2, 6, 23, 0.04);
+  overflow-x: auto;
+}
+
+#siaf-app .siaf-tabs .tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: #fff;
+  color: #475569;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: auto;
+  white-space: nowrap;
+}
+
+#siaf-app .siaf-tabs .tab-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(2, 6, 23, 0.08);
+  border-color: #D1D5DB;
+}
+
+#siaf-app .siaf-tabs .tab-btn.active {
+  color: #fff;
+  border-color: transparent;
+  background: var(--gradient-primary);
+  box-shadow: 0 6px 20px rgba(99, 91, 255, 0.35);
+}
+
+#siaf-app .siaf-tabs .tab-btn .icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+#siaf-app .siaf-tabs .tab-btn .text {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+#siaf-app .siaf-tabs .tab-btn .status {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff3b57;
+  box-shadow: 0 0 0 2px #fff;
+  position: relative;
+  top: -1px;
+  display: none;
+}
+
+#siaf-app .siaf-tabs .tab-btn.active .status {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+#siaf-app .siaf-tabs .tab-btn .status.complete {
+  background: #28a745;
+  display: none;
+}
+
+#siaf-app .siaf-tabs .tab-btn .status.partial {
+  background: #ffc107;
+  display: none;
+}
+
+#siaf-app .siaf-tabs .tab-btn .status.empty {
+  background: #dc3545;
+  display: none;
+}
+
+/* ===============================
+   TAB PANELS
+================================ */
+.tab-panel {
+  display: none;
+  padding: 24px;
+  background: #ffffff;
+  min-height: 500px;
+}
+
+.tab-panel.active {
+  display: block;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===============================
+   PANEL HEADER (tutte le tab)
+================================ */
+.panel-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel-header h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 32px;
+  font-weight: 700;
+}
+
+/* SOLO per tab Pratica: stile grande */
+#siaf-app #tab-pratica .panel-header {
+  border: 0;
+  margin: 20px 0 10px;
+  padding: 0 20px;
+}
+
+#siaf-app #tab-pratica .panel-header h2 {
+  font-size: 48px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+}
+
+/* ===============================
+   PRATICA SELECTION (3 Card ClickUp)
+================================ */
+.pratica-selection {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 20px;
+  margin-top: 16px;
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: stretch;
+}
+
+.selection-grid {
+  display: contents;
+}
+
+/* Card uniformi */
+#siaf-app .selection-card,
+#siaf-app #ultime-pratiche-section {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 460px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 26px 24px 24px;
+  transition: all 0.3s ease;
+}
+
+#siaf-app .selection-card:hover,
+#siaf-app #ultime-pratiche-section:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+}
+
+/* Gradiente header */
+#siaf-app .selection-card::before,
+#siaf-app #ultime-pratiche-section::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 200px;
+  background: var(--gradient-purple);
+  opacity: 0.18;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Card content */
+#siaf-app .selection-card h3,
+#siaf-app #ultime-pratiche-section h3 {
+  position: relative;
+  z-index: 1;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 6px 0 18px;
+  line-height: 1.2;
+}
+
+#siaf-app .selection-card p {
+  position: relative;
+  z-index: 1;
+  color: var(--text-muted);
+  margin: 0 0 auto;
+  line-height: 1.5;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* Field Group nelle card */
+#siaf-app .selection-card .field-group {
+  position: relative;
+  z-index: 1;
+  margin-top: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+#siaf-app .selection-card .field-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+#siaf-app .selection-card .field-group input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  box-sizing: border-box;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+#siaf-app .selection-card .field-group input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.12);
+}
+
+/* CTA buttons nelle card */
+#siaf-app .selection-card .btn {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  margin-top: auto;
+}
+
+/* ===============================
+   ULTIME PRATICHE (Card 3)
+================================ */
+#siaf-app #ultime-pratiche-section {
+  padding: 26px 24px 24px;
+  min-height: 460px;
+}
+
+#siaf-app #ultime-pratiche-section h3 {
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.ultime-pratiche-container {
+  position: relative;
+  z-index: 1;
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  flex: 1;
+  align-content: start;
+}
+
+.pratica-recente-btn {
+  text-align: left !important;
+  padding: 18px 20px !important;
+  border-radius: 12px !important;
+  border: 1px solid var(--border-color) !important;
+  background: #fff !important;
+  box-shadow: 0 4px 14px rgba(2, 6, 23, 0.06) !important;
+  transition: all 0.3s ease !important;
+  cursor: pointer !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.pratica-recente-btn::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: linear-gradient(135deg, rgba(99, 91, 255, 0.08) 0%, rgba(142, 123, 255, 0.08) 50%, rgba(0, 196, 180, 0.08) 100%) !important;
+  opacity: 0 !important;
+  transition: opacity 0.3s ease !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+}
+
+.pratica-recente-btn:hover::before {
+  opacity: 1 !important;
+}
+
+.pratica-recente-btn:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 12px 28px rgba(99, 91, 255, 0.15) !important;
+  border-color: rgba(99, 91, 255, 0.3) !important;
+}
+
+.pratica-recente-btn:active {
+  transform: translateY(-1px) !important;
+}
+
+.pratica-recente-btn > * {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.pratica-recente-protocollo {
+  color: var(--primary);
+  font-weight: 800;
+  font-size: 17px;
+}
+
+.pratica-recente-venditore {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.pratica-recente-data {
+  font-size: 12px;
+  font-weight: 500;
+  color: #9CA3AF;
+  margin-top: 4px;
+}
+
+.ultime-pratiche-empty {
+  background: rgba(255, 255, 255, 0.5);
+  border: 2px dashed var(--border-color);
+  border-radius: 10px;
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  font-weight: 500;
+}
+
+/* ===============================
+   AUTOCOMPLETE
+================================ */
+.autocomplete-container {
+  position: relative;
+}
+
+.autocomplete-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid var(--border-color);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 12px 28px rgba(2, 6, 23, 0.15);
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 1000;
+  display: none;
+}
+
+.autocomplete-item {
+  padding: 14px 18px;
+  cursor: pointer;
+  border-bottom: 1px solid #F3F4F6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.15s ease;
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.selected {
+  background: #F9FAFB;
+}
+
+.autocomplete-item:last-child {
+  border-bottom: none;
+}
+
+.autocomplete-protocollo {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 15px;
+}
+
+.autocomplete-operatore {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.autocomplete-data {
+  font-size: 12px;
+  color: #999;
+}
+
+.autocomplete-no-results {
+  padding: 12px 16px;
+  color: #999;
+  font-style: italic;
+  text-align: center;
+}
+
+/* ===============================
+   BUTTONS (ClickUp Style)
+================================ */
+.btn {
+  border-radius: 12px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  padding: 14px 24px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: auto;
+}
+
+.btn .icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.btn-primary {
+  color: #fff;
+  background: var(--gradient-primary);
+  box-shadow: 0 10px 24px rgba(99, 91, 255, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: saturate(1.08);
+  box-shadow: 0 14px 32px rgba(99, 91, 255, 0.38);
+}
+
+.btn-secondary {
+  color: #273BFF;
+  border: 1px solid #DDE3FF;
+  background: var(--gradient-secondary);
+  box-shadow: 0 8px 18px rgba(39, 59, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: linear-gradient(180deg, #EEF3FF 0%, #E7EEFF 100%);
+  box-shadow: 0 12px 24px rgba(39, 59, 255, 0.16);
+}
+
+.btn-generate {
+  background: #28a745;
+  color: white;
+}
+
+.btn-generate:hover:not(:disabled) {
+  background: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.btn-remove {
+  background: #dc3545;
+  color: white;
+  padding: 8px 16px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+.btn-remove:hover:not(:disabled) {
+  background: #c82333;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.btn-remove-block {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.btn-remove-block:hover {
+  background: #c82333;
+  transform: translateY(-1px);
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--primary);
+  text-decoration: none;
+  cursor: pointer;
+  padding: 8px 14px;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-link:hover {
+  background: rgba(99, 91, 255, 0.08);
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn.loading {
+  position: relative;
+}
+
+.btn.loading .icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ===============================
+   FORM ACTIONS BAR
+================================ */
+.form-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  background: rgba(247, 248, 251, 0.90);
+  backdrop-filter: blur(14px);
+  border-top: 1px solid var(--border-color);
+  box-shadow: 0 -8px 24px rgba(2, 6, 23, 0.08);
+  flex-wrap: wrap;
+}
+
+/* ===============================
+   PRATICA FORM (Form compilazione)
+================================ */
+.pratica-form {
+  padding: 24px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.form-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.field-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+  transition: all 0.3s ease;
+}
+
+.field-card:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+}
+
+.field-card h3 {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ===============================
+   FORM FIELDS (generale)
+================================ */
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.field-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-group:last-child {
+  margin-bottom: 0;
+}
+
+.field-group label {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 14px;
+  display: block;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  background: white;
+  box-sizing: border-box;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.12);
+}
+
+input:invalid, select:invalid {
+  border-color: #dc3545;
+}
+
+.help-text, .field-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+  display: block;
+  margin-top: 4px;
+}
+
+.readonly-field {
+  background: #F9FAFB !important;
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.readonly-field.loading {
+  background: #fff3cd !important;
+  color: #856404;
+}
+
+.readonly-field.preview {
+  background: #d1ecf1 !important;
+  color: #0c5460;
+  font-weight: 500;
+}
+
+.readonly-field.saved {
+  background: #d4edda !important;
+  color: #155724;
+  font-weight: 600;
+}
+
+.readonly-field.error {
+  background: #f8d7da !important;
+  color: #721c24;
+}
+
+/* ===============================
+   VENDITORE & IMMOBILE CARDS
+================================ */
+.venditore-card,
+.immobile-card {
+  background: var(--card-bg);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-card);
+  transition: all 0.3s ease;
+}
+
+.venditore-card:hover,
+.immobile-card:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-hover);
+}
+
+.venditore-header,
+.immobile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.venditore-header h3,
+.immobile-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ===============================
+   BLOCCO CATASTALE
+================================ */
+.blocco-catastale {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.blocco-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.blocco-header h4 {
+  margin: 0;
+  color: #555;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.descrizione-dropdown {
+  width: 100%;
+  margin-bottom: 15px;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.descrizione-dropdown:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.12);
+}
+
+.descrizione-custom {
+  width: 100%;
+  margin-bottom: 15px;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  display: none;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.descrizione-custom:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.12);
+}
+
+.tipo-catasto-selector {
+  margin-bottom: 15px;
+}
+
+.tipo-catasto-selector label {
+  margin-right: 20px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.tipo-catasto-selector label:hover {
+  color: var(--primary);
+}
+
+.catasto-row {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.catasto-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.catasto-fields input {
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  font-size: 14px;
+}
+
+/* ===============================
+   CONFINI SECTION
+================================ */
+.confini-section {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 15px;
+  margin-top: 20px;
+}
+
+.confini-direction {
+  margin-bottom: 15px;
+}
+
+.confini-direction label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.mappali-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.mappale-input {
+  width: 80px;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+}
+
+.btn-add-mappale {
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.btn-add-mappale:hover {
+  background: #218838;
+  transform: translateY(-1px);
+}
+
+.btn-remove-mappale {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 11px;
+  margin-left: 5px;
+  transition: all 0.2s ease;
+}
+
+.btn-remove-mappale:hover {
+  background: #c82333;
+}
+
+.btn-add-catasto-row {
+  background: #17a2b8;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: all 0.2s ease;
+}
+
+.btn-add-catasto-row:hover {
+  background: #138496;
+  transform: translateY(-1px);
+}
+
+/* ===============================
+   COMUNI RECENTI (Immobile Prima)
+================================ */
+.comuni-recenti-section {
+  background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+  border: 1px solid #cce7ff;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.08);
+}
+
+.comuni-recenti-section h5 {
+  margin: 0 0 12px 0;
+  color: #0066cc;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.comuni-recenti-section h5::before {
+  content: "📍";
+  font-size: 16px;
+}
+
+.comuni-recenti {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.btn-comune-recente {
+  background: #fff;
+  border: 2px solid #99d6ff;
+  border-radius: 20px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 6px rgba(0, 102, 204, 0.1);
+}
+
+.btn-comune-recente:hover {
+  background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+  color: white;
+  border-color: #0052a3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.25);
+}
+
+.btn-comune-recente .comune {
+  font-weight: 700;
+}
+
+.btn-comune-recente .provincia {
+  color: #666;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.btn-comune-recente:hover .provincia {
+  color: rgba(255, 255, 255, 0.85);
+  opacity: 1;
+}
+
+.no-recent {
+  color: #666;
+  font-style: italic;
+  margin: 0;
+  font-size: 13px;
+  text-align: center;
+  padding: 12px;
+}
+
+/* ===============================
+   TABELLA VENDITORI E QUOTE DI POSSESSO
+================================ */
+
+/* Container wrapper */
+.venditori-quote-table {
+  margin-top: 16px;
+}
+
+/* Tabella principale */
+.venditori-quote-table-content {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Header tabella */
+.venditori-quote-table-content thead {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.venditori-quote-table-content th {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 700;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #dee2e6;
+}
+
+/* Colonne responsive */
+.venditori-quote-table-content th:nth-child(1) {
+  width: auto; /* Flex */
+}
+
+.venditori-quote-table-content th:nth-child(2) {
+  width: 140px;
+}
+
+.venditori-quote-table-content th:nth-child(3) {
+  width: 220px;
+}
+
+/* Body righe */
+.venditori-quote-table-content tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.2s ease;
+}
+
+.venditori-quote-table-content tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.venditori-quote-table-content tbody tr:last-child {
+  border-bottom: none;
+}
+
+.venditori-quote-table-content td {
+  padding: 16px;
+  vertical-align: middle;
+  font-size: 14px;
+  color: #495057;
+}
+
+.venditori-quote-table-content td strong {
+  font-weight: 600;
+  color: #0f172a;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Input quota nella cella */
+.venditori-quote-table-content .quota-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 2px solid #e9ecef;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.2s ease;
+  background: #ffffff;
+}
+
+.venditori-quote-table-content .quota-input:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+  background: #f0f7ff;
+}
+
+.venditori-quote-table-content .quota-input::-webkit-inner-spin-button,
+.venditori-quote-table-content .quota-input::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+/* Dropdown natura nella cella */
+.venditori-quote-table-content .natura-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 2px solid #e9ecef;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.venditori-quote-table-content .natura-input:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+/* Badge coniuge small (tabella) */
+.badge-coniuge-small {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 10px;
+  margin-left: 8px;
+  box-shadow: 0 2px 6px rgba(255, 107, 157, 0.25);
+  letter-spacing: 0.3px;
+  vertical-align: middle;
+}
+
+/* Alert validazione quote */
+.quota-totale {
+  margin-top: 12px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  border-left: 4px solid;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.quota-totale.valida {
+  background: linear-gradient(135deg, #10B981 0%, #34D399 50%, #6EE7B7 100%);
+  color: #ffffff;
+  border-color: #10B981;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.quota-totale.valida span {
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.quota-totale.vuota {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+  color: #856404;
+  border-color: #ffc107;
+}
+
+.quota-totale.invalida {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  color: #721c24;
+  border-color: #dc3545;
+}
+
+.quota-totale span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Empty state */
+.venditori-quote-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+  font-size: 14px;
+  font-style: italic;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .venditori-quote-table-content th:nth-child(2),
+  .venditori-quote-table-content th:nth-child(3) {
+    width: auto;
+  }
+
+  .venditori-quote-table-content th,
+  .venditori-quote-table-content td {
+    padding: 12px 10px;
+    font-size: 13px;
+  }
+
+  .venditori-quote-table-content .quota-input,
+  .venditori-quote-table-content .natura-input {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Stacking verticale per mobile */
+  .venditori-quote-table-content,
+  .venditori-quote-table-content thead,
+  .venditori-quote-table-content tbody,
+  .venditori-quote-table-content th,
+  .venditori-quote-table-content td,
+  .venditori-quote-table-content tr {
+    display: block;
+  }
+
+  .venditori-quote-table-content thead {
+    display: none;
+  }
+
+  .venditori-quote-table-content tbody tr {
+    margin-bottom: 16px;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .venditori-quote-table-content td {
+    padding: 8px 0;
+    border: none;
+  }
+
+  .venditori-quote-table-content td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    display: block;
+    margin-bottom: 6px;
+    color: #6c757d;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+}
+
+/* Dropdown provincie e comuni */
+select[id*="_provincia"],
+select[id*="_comune"] {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: white;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+select[id*="_provincia"]:focus,
+select[id*="_comune"]:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.12);
+}
+
+select[id*="_provincia"]:hover,
+select[id*="_comune"]:hover {
+  border-color: #adb5bd;
+}
+
+/* ===============================
+   CHIP BUTTONS CATASTO
+================================ */
+.tipo-selection-chips {
+  display: flex;
+  gap: 16px;
+  padding: 24px;
+  justify-content: center;
+  align-items: center;
+}
+
+.chip-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #ffffff;
+  border: 2px solid #e9ecef;
+  border-radius: 24px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.chip-button:hover {
+  background: #0066cc;
+  color: #ffffff;
+  border-color: #0066cc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,102,204,0.2);
+}
+
+.chip-button:active {
+  transform: translateY(0);
+}
+
+/* ===============================
+   ADD BLOCCO BUTTONS
+================================ */
+.add-blocco-buttons {
+  display: flex;
+  gap: 12px;
+  padding: 16px 0;
+  justify-content: center;
+  margin-top: 16px;
+  border-top: 1px solid #e9ecef;
+}
+
+.btn-add-blocco-tipo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #ffffff;
+  border: 1px solid #0066cc;
+  border-radius: 8px;
+  color: #0066cc;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-add-blocco-tipo:hover {
+  background: #0066cc;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,102,204,0.2);
+}
+
+.btn-add-blocco-tipo:active {
+  transform: translateY(0);
+}
+
+/* ===============================
+   NOTA SECTION
+================================ */
+.nota-section {
+  margin: 16px 0;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.btn-nota {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-nota:hover {
+  background: #0066cc;
+  color: #ffffff;
+  border-color: #0066cc;
+}
+
+.nota-dropdown {
+  margin-top: 12px;
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+}
+
+.nota-select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 8px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 14px;
+  background: #ffffff;
+}
+
+.nota-custom {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;
+}
+
+/* ===============================
+   STATO IMMOBILE SECTION
+================================ */
+.stato-immobile-section {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 15px;
+  margin-top: 20px;
+}
+
+.stato-immobile-section h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #555;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.stato-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.stato-form .form-group {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.stato-form .form-group > label:first-child {
+  display: block;
+  margin-bottom: 12px;
+  color: #333;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Radio & Checkbox nascosti */
+.stato-form input[type="radio"],
+.stato-form input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Label styled come pulsante */
+.stato-form .radio-group label,
+.stato-form .checkbox-group label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  color: #495057;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  text-align: center;
+  min-height: 44px;
+}
+
+.stato-form .radio-group label:hover,
+.stato-form .checkbox-group label:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.stato-form input[type="radio"]:checked + label,
+.stato-form input[type="checkbox"]:checked + label {
+  background: #007bff;
+  border-color: #0056b3;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 3px 8px rgba(0, 123, 255, 0.3);
+}
+
+/* Stati colorati */
+.stato-form input[type="radio"]:checked + label.stato-success,
+.stato-form input[type="checkbox"]:checked + label.stato-success {
+  background: #28a745;
+  border-color: #1e7e34;
+  box-shadow: 0 3px 8px rgba(40, 167, 69, 0.3);
+}
+
+.stato-form input[type="radio"]:checked + label.stato-success::before,
+.stato-form input[type="checkbox"]:checked + label.stato-success::before {
+  content: '✅ ';
+}
+
+.stato-form input[type="radio"]:checked + label.stato-neutral {
+  background: #333333;
+  border-color: #1a1a1a;
+  box-shadow: 0 3px 8px rgba(51, 51, 51, 0.3);
+}
+
+.stato-form input[type="checkbox"]:checked + label.stato-danger {
+  background: #dc3545;
+  border-color: #bd2130;
+  box-shadow: 0 3px 8px rgba(220, 53, 69, 0.3);
+}
+
+.stato-form input[type="checkbox"]:checked + label.stato-danger::before {
+  content: '❌ ';
+}
+
+.stato-form input[type="radio"]:checked + label.stato-warning {
+  background: #ffc107;
+  border-color: #d39e00;
+  color: #212529;
+  box-shadow: 0 3px 8px rgba(255, 193, 7, 0.3);
+}
+
+.stato-form input[type="radio"]:checked + label.stato-warning::before {
+  content: '⚠️ ';
+}
+
+/* Focus state per accessibilità */
+.stato-form input[type="radio"]:focus + label,
+.stato-form input[type="checkbox"]:focus + label {
+  outline: 2px solid #80bdff;
+  outline-offset: 2px;
+}
+
+/* Layout groups */
+.stato-form .radio-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.stato-form .checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.stato-form .checkbox-group-3 {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+/* Campi condizionali */
+.stato-form .conditional-fields {
+  margin-top: 15px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border: 2px solid #e3f2fd;
+  border-left: 4px solid #007bff;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stato-form .conditional-fields label {
+  font-weight: 600;
+  margin-bottom: 5px;
+  font-size: 12px;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stato-form .conditional-fields-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.stato-form input[type="text"],
+.stato-form input[type="number"],
+.stato-form input[type="date"],
+.stato-form select,
+.stato-form textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.stato-form input[type="text"]:focus,
+.stato-form input[type="number"]:focus,
+.stato-form input[type="date"]:focus,
+.stato-form select:focus,
+.stato-form textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.stato-form input[type="text"]::placeholder,
+.stato-form input[type="number"]::placeholder,
+.stato-form textarea::placeholder {
+  color: #adb5bd;
+  font-style: italic;
+}
+
+.stato-form select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23495057' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 35px;
+}
+
+.stato-form .dual-input-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.stato-form .dual-input-container > * {
+  flex: 1;
+  min-width: 120px;
+}
+
+.stato-form .dual-input-separator {
+  font-size: 12px;
+  color: #6c757d;
+  font-style: italic;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.stato-form textarea {
+  min-height: 60px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* ===============================
+   CONDIZIONI ECONOMICHE
+================================ */
+.condizioni-container {
+  padding: 20px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.toggle-offerta-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.toggle-offerta-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 20px;
+}
+
+.toggle-offerta-checkbox {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-offerta-slider {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 34px;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.toggle-offerta-slider::before {
+  content: "";
+  position: absolute;
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-offerta-checkbox:checked + .toggle-offerta-slider {
+  background-color: #28a745;
+}
+
+.toggle-offerta-checkbox:checked + .toggle-offerta-slider::before {
+  transform: translateX(26px);
+}
+
+.toggle-offerta-text {
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  flex: 1;
+}
+
+.toggle-off-text,
+.toggle-on-text {
+  display: inline-block;
+}
+
+.toggle-offerta-checkbox:checked ~ .toggle-offerta-text .toggle-off-text {
+  display: none;
+}
+
+.toggle-offerta-checkbox:not(:checked) ~ .toggle-offerta-text .toggle-on-text {
+  display: none;
+}
+
+.condizioni-section {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.condizioni-section h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.condizioni-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.condizioni-form .field-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.condizioni-form .field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.condizioni-form .field-group label {
+  font-weight: 600;
+  color: #495057;
+  font-size: 14px;
+}
+
+.condizioni-form input[type="number"],
+.condizioni-form input[type="date"],
+.condizioni-form input[type="text"],
+.condizioni-form textarea {
+  padding: 10px 14px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.condizioni-form input:focus,
+.condizioni-form textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+/* Radio group rinnovo */
+.radio-group-rinnovo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.radio-group-rinnovo input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.radio-group-rinnovo .rinnovo-option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  color: #495057;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.radio-group-rinnovo .rinnovo-option:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+  transform: translateY(-1px);
+}
+
+.radio-group-rinnovo input[type="radio"]:checked + .rinnovo-option {
+  background: var(--primary);
+  border-color: var(--primary-hover);
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 3px 8px rgba(99, 91, 255, 0.3);
+}
+
+/* Esclusiva - Usa .radio-group-rinnovo (vedi sopra) */
+
+/* Checkbox group per autorizzazioni */
+.condizioni-form .checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.condizioni-form .checkbox-group input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.condizioni-form .checkbox-group label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  color: #495057;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.condizioni-form .checkbox-group label:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+  transform: translateY(-1px);
+}
+
+.condizioni-form .checkbox-group input[type="checkbox"]:checked + label {
+  background: var(--primary);
+  border-color: var(--primary-hover);
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 3px 8px rgba(99, 91, 255, 0.3);
+}
+
+/* Campi condizionali */
+.conditional-fields {
+  margin-top: 15px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border: 2px solid #e3f2fd;
+  border-left: 4px solid var(--primary);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Sezione prezzo */
+.prezzo-section {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.prezzo-section h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.prezzo-immobile-card {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.prezzo-immobile-card h4 {
+  margin: 0 0 16px 0;
+  color: #495057;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.prezzo-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.prezzo-info-row:last-child {
+  border-bottom: none;
+}
+
+.prezzo-info-label {
+  font-weight: 500;
+  color: #6c757d;
+  font-size: 13px;
+}
+
+.prezzo-info-value {
+  font-weight: 600;
+  color: #212529;
+  font-size: 15px;
+}
+
+.prezzo-info-value.prezzo-in-lettere {
+  font-style: italic;
+  color: #495057;
+  font-size: 13px;
+}
+
+.btn-applica-tutti {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+}
+
+.btn-applica-tutti:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* ===============================
+   STATUS MESSAGES
+================================ */
+.save-status, .generate-status {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  min-height: 20px;
+  display: flex;
+  align-items: center;
+  margin-left: 8px;
+}
+
+.save-status.loading, .generate-status.loading {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.save-status.success, .generate-status.success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.save-status.error, .generate-status.error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* ===============================
+   COMING SOON
+================================ */
+.coming-soon {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+  font-size: 18px;
+}
+
+/* ===============================
+   RESPONSIVE
+================================ */
+@media (max-width: 1200px) {
+  .pratica-selection {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  #siaf-app #ultime-pratiche-section {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .pratica-selection {
+    grid-template-columns: 1fr;
+  }
+  
+  #siaf-app #tab-pratica .panel-header h2 {
+    font-size: 36px;
+  }
+  
+  #siaf-app .selection-card,
+  #siaf-app #ultime-pratiche-section {
+    min-height: 400px;
+  }
+  
+  .siaf-tabs {
+    flex-wrap: wrap;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .btn {
+    width: 100%;
+  }
+  
+  .catasto-fields {
+    grid-template-columns: 1fr;
+  }
+  
+  .mappali-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .comuni-recenti {
+    flex-direction: column;
+  }
+  
+  .btn-comune-recente {
+    justify-content: center;
+  }
+
+  .ultime-pratiche-container {
+    grid-template-columns: 1fr;
+  }
+
+  .stato-form .radio-group,
+  .stato-form .checkbox-group,
+  .stato-form .checkbox-group-3 {
+    grid-template-columns: 1fr;
+  }
+  
+  .stato-form .conditional-fields {
+    padding: 15px;
+  }
+  
+  .stato-form .dual-input-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .stato-form .dual-input-separator {
+    text-align: center;
+  }
+  
+  .radio-group-rinnovo {
+    grid-template-columns: 1fr;
+  }
+  
+  .condizioni-container {
+    padding: 15px;
+  }
+  
+  .toggle-offerta-text {
+    font-size: 16px;
+  }
+  
+  .condizioni-form .field-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .tipo-selection-chips {
+    flex-direction: column;
+    padding: 16px;
+  }
+  
+  .chip-button {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .add-blocco-buttons {
+    flex-direction: column;
+  }
+  
+  .btn-add-blocco-tipo {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  #siaf-app #tab-pratica .panel-header h2 {
+    font-size: 28px;
+  }
+  
+  #siaf-app .selection-card h3,
+  #siaf-app #ultime-pratiche-section h3 {
+    font-size: 20px;
+  }
+  
+  .tab-btn .icon {
+    font-size: 16px;
+  }
+  
+  .tab-btn .text {
+    display: none;
+  }
+  
+  .field-card {
+    padding: 16px;
+  }
+  
+  .stato-form .radio-group label,
+  .stato-form .checkbox-group label {
+    font-size: 12px;
+    padding: 8px 12px;
+    min-height: 40px;
+  }
+  
+  .toggle-offerta-section {
+    padding: 16px;
+  }
+  
+  .toggle-offerta-label {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+  
+  .condizioni-section {
+    padding: 15px;
+  }
+  
+  .condizioni-section h3 {
+    font-size: 16px;
+  }
+
+  /* ========== CODICE FISCALE: CALCOLO AUTOMATICO ========== */
+
+  /* CF Input Group - Wrapper per input + button */
+  .cf-input-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .cf-input-group input {
+    flex: 1;
+  }
+
+  /* Calculate CF Button - Bottone calcolo automatico */
+  .btn-calculate-cf {
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #4CAF50 0%, #66bb6a 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+  }
+
+  .btn-calculate-cf:hover {
+    background: linear-gradient(135deg, #66bb6a 0%, #81c784 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  }
+
+  .btn-calculate-cf:active {
+    transform: translateY(0);
+  }
+
+  .btn-calculate-cf:disabled {
+    background: #e0e0e0;
+    color: #9e9e9e;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* CF Warning Container - Messaggi di feedback */
+  .cf-warning {
+    margin-top: 8px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    border-left: 4px solid;
+    animation: slideDown 0.3s ease;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* CF Warning Types - Diversi stati del messaggio */
+  .cf-warning-error {
+    background: #ffebee;
+    color: #c62828;
+    border-color: #f44336;
+  }
+
+  .cf-warning-warning {
+    background: #fff3e0;
+    color: #e65100;
+    border-color: #ff9800;
+  }
+
+  .cf-warning-info {
+    background: #e3f2fd;
+    color: #1565c0;
+    border-color: #2196F3;
+  }
+
+  .cf-warning-success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border-color: #4caf50;
+  }
+}</style>
 
 <!-- Inter -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -524,23 +2912,6 @@
     loadScript('https://contattisilvestri.github.io/SIAF/js/siaf-tabs-04.js');
     loadScript('https://contattisilvestri.github.io/SIAF/js/siaf-document-generator-04.js');
 })();
-</script>
-
-<!-- Debug: Container Width Indicator -->
-<script>
-// Debug: Container Width Indicator
-function updateContainerWidthDebug() {
-  const container = document.getElementById('siaf-app');
-  const widthValue = document.getElementById('width-value');
-  if (container && widthValue) {
-    widthValue.textContent = container.offsetWidth;
-  }
-}
-window.addEventListener('resize', updateContainerWidthDebug);
-window.addEventListener('DOMContentLoaded', () => {
-  setTimeout(updateContainerWidthDebug, 500);
-  setInterval(updateContainerWidthDebug, 1000);
-});
 </script>
 
 </div>
