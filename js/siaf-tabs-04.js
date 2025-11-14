@@ -1,14 +1,14 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.18.1-FINAL-2025-11-14-02:30
+// 🚀 VERSION: SIAF-v2.19.0-FINAL-2025-11-14-03:00
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
-    minor: 18,
-    patch: 1,
+    minor: 19,
+    patch: 0,
     date: '14/11/2025',
-    time: '02:30',
-    description: 'Aggiunto campo Note Operative Agenzia per ogni immobile',
+    time: '03:00',
+    description: 'Aggiunta sezione Analisi Operativa Interna con note per affare e immobili',
     color: '#007AFF'  // Blue - nuova feature
 };
 
@@ -94,6 +94,12 @@ class SiafApp {
                 luogo: '',
                 data: '' // formato YYYY-MM-DD
             }
+        };
+
+        // Analisi Operativa Interna (note confidenziali agenzia)
+        this.analisi = {
+            note_generali: '', // Note generali sull'affare
+            immobili_note: []  // Array: { immobile_id, note_operative_import, ulteriori_note }
         };
     }
 
@@ -297,13 +303,21 @@ class SiafApp {
                 }, 50);
             }
 
+            // Se si sta passando alla tab analisi, renderizza il contenuto
+            if (tabName === 'analisi') {
+                setTimeout(() => {
+                    this.renderAnalisiContent();
+                    console.log('🔄 Contenuto analisi renderizzato');
+                }, 50);
+            }
+
             // Aggiorna progress
             this.updateTabProgress();
         }
     }
 
     updateTabProgress() {
-        const tabs = ['pratica', 'venditore', 'acquirente', 'immobile-prima', 'immobile-dopo', 'condizioni'];
+        const tabs = ['pratica', 'venditore', 'acquirente', 'immobile-prima', 'immobile-dopo', 'condizioni', 'analisi'];
         
         tabs.forEach(tabName => {
             const btn = document.querySelector(`[data-tab="${tabName}"]`);
@@ -617,6 +631,11 @@ class SiafApp {
         // Popola condizioni economiche
         if (praticaData.condizioni_economiche) {
             this.populateCondizioniEconomiche(praticaData.condizioni_economiche);
+        }
+
+        // Popola analisi operativa interna
+        if (praticaData.analisi) {
+            this.populateAnalisi(praticaData.analisi);
         }
 
         // Aggiungi alle pratiche recenti
@@ -1084,6 +1103,21 @@ class SiafApp {
         }, 200);
 
         console.log('✅ Condizioni economiche popolate');
+    }
+
+    // BLOCCO: Popolamento Analisi Operativa Interna
+    populateAnalisi(analisiData) {
+        console.log('📊 Popolamento analisi operativa:', analisiData);
+
+        // Aggiorna oggetto interno
+        if (analisiData) {
+            this.analisi = {
+                note_generali: analisiData.note_generali || '',
+                immobili_note: analisiData.immobili_note || []
+            };
+        }
+
+        console.log('✅ Analisi operativa popolata');
     }
 
     formatDateForDisplay(date) {
@@ -4288,7 +4322,10 @@ renderVenditore(venditore) {
             immobili: this.immobili,
 
             // Condizioni Economiche (JSON)
-            condizioni_economiche: this.condizioniEconomiche
+            condizioni_economiche: this.condizioniEconomiche,
+
+            // Analisi Operativa Interna (JSON)
+            analisi: this.analisi
         };
         
         console.log('🎯 Final form data:', finalData);
@@ -6985,6 +7022,146 @@ renderVenditore(venditore) {
     async caricaPraticaRecente(protocollo) {
         console.log(`📂 Caricamento pratica recente: ${protocollo}`);
         await this.caricaPraticaEsistente(protocollo);
+    }
+
+    // BLOCCO: Rendering sezione Analisi Operativa Interna
+    renderAnalisiContent() {
+        console.log('📊 Rendering sezione Analisi...');
+
+        const container = document.getElementById('analisi-container');
+        if (!container) {
+            console.error('❌ Container analisi non trovato');
+            return;
+        }
+
+        // Sincronizza immobili_note con immobili esistenti
+        this.syncAnalisiImmobili();
+
+        let html = '';
+
+        // SEZIONE 1: Note Generali Affare
+        html += `
+            <div class="analisi-section">
+                <h3>📝 Note Generali sull'Affare</h3>
+                <p style="color: #666; font-size: 13px; margin-bottom: 12px;">
+                    Impressioni sul venditore, sul compratore, note confidenziali, promemoria operativi
+                </p>
+                <textarea id="note_generali_affare"
+                          placeholder="Es: Venditore molto motivato, esigenze di liquidità immediate. Immobile necessita ristrutturazione bagno. Cliente ha mostrato interesse anche per immobili limitrofi..."
+                          style="width: 100%; min-height: 150px; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-family: inherit; resize: vertical; font-size: 14px;">${this.analisi.note_generali || ''}</textarea>
+            </div>
+        `;
+
+        // SEZIONE 2: Note per ogni immobile
+        if (this.immobili.length > 0) {
+            html += `<div class="analisi-section" style="margin-top: 30px;">
+                <h3>🏠 Note per Immobili</h3>`;
+
+            this.immobili.forEach((immobile, index) => {
+                const noteData = this.analisi.immobili_note.find(n => n.immobile_id === immobile.id);
+                const noteOperativeImport = immobile.stato?.note_operative || '';
+                const ulterioriNote = noteData?.ulteriori_note || '';
+
+                const nomeImmobile = immobile.numero_immobile
+                    ? `Immobile ${immobile.numero_immobile}`
+                    : `Immobile ${index + 1}`;
+
+                html += `
+                    <div class="immobile-note-card" style="margin-bottom: 25px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007AFF;">
+                        <h4 style="margin: 0 0 15px 0; color: #333;">🏠 ${nomeImmobile}</h4>
+
+                        <!-- Note operative importate (readonly) -->
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 6px; color: #555;">
+                                📋 Note Operative (dalla sezione Immobile):
+                            </label>
+                            <div style="padding: 12px; background: #fffbf0; border: 1px solid #e6d8a0; border-radius: 6px; min-height: 60px; font-size: 13px; color: #666; font-style: italic;">
+                                ${noteOperativeImport || '<em style="color: #999;">Nessuna nota operativa inserita nella sezione immobile</em>'}
+                            </div>
+                        </div>
+
+                        <!-- Ulteriori note aggiuntive (editabile) -->
+                        <div>
+                            <label for="ulteriori_note_${immobile.id}" style="display: block; font-weight: 600; margin-bottom: 6px; color: #555;">
+                                ➕ Ulteriori Note Aggiuntive:
+                            </label>
+                            <textarea id="ulteriori_note_${immobile.id}"
+                                      placeholder="Aggiungi ulteriori note specifiche per questo immobile..."
+                                      style="width: 100%; min-height: 100px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; resize: vertical; font-size: 13px;">${ulterioriNote}</textarea>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+        } else {
+            html += `
+                <div class="analisi-section" style="margin-top: 30px;">
+                    <p style="color: #999; text-align: center; padding: 30px;">
+                        ℹ️ Aggiungi almeno un immobile per inserire note specifiche per immobile
+                    </p>
+                </div>
+            `;
+        }
+
+        container.innerHTML = html;
+
+        // Aggiungi event listeners per salvataggio automatico
+        this.initializeAnalisiEventListeners();
+
+        console.log('✅ Sezione Analisi renderizzata');
+    }
+
+    // BLOCCO: Sincronizza array immobili_note con immobili esistenti
+    syncAnalisiImmobili() {
+        // Rimuovi note per immobili che non esistono più
+        this.analisi.immobili_note = this.analisi.immobili_note.filter(nota => {
+            const immobileEsiste = this.immobili.find(i => i.id === nota.immobile_id);
+            if (!immobileEsiste) {
+                console.log(`🧹 Rimossa nota per immobile ${nota.immobile_id} (non esiste più)`);
+            }
+            return immobileEsiste;
+        });
+
+        // Aggiungi entry per nuovi immobili
+        this.immobili.forEach(immobile => {
+            const notaEsiste = this.analisi.immobili_note.find(n => n.immobile_id === immobile.id);
+            if (!notaEsiste) {
+                this.analisi.immobili_note.push({
+                    immobile_id: immobile.id,
+                    ulteriori_note: ''
+                });
+                console.log(`➕ Aggiunta entry note per immobile ${immobile.id}`);
+            }
+        });
+    }
+
+    // BLOCCO: Inizializza event listeners per sezione Analisi
+    initializeAnalisiEventListeners() {
+        // Event listener per note generali
+        const noteGeneraliTextarea = document.getElementById('note_generali_affare');
+        if (noteGeneraliTextarea) {
+            noteGeneraliTextarea.addEventListener('blur', () => {
+                this.analisi.note_generali = noteGeneraliTextarea.value;
+                console.log('💾 Note generali salvate');
+            });
+        }
+
+        // Event listeners per ulteriori note di ogni immobile
+        this.immobili.forEach(immobile => {
+            const ulterioriNoteTextarea = document.getElementById(`ulteriori_note_${immobile.id}`);
+            if (ulterioriNoteTextarea) {
+                ulterioriNoteTextarea.addEventListener('blur', () => {
+                    const noteData = this.analisi.immobili_note.find(n => n.immobile_id === immobile.id);
+                    if (noteData) {
+                        noteData.ulteriori_note = ulterioriNoteTextarea.value;
+                        console.log(`💾 Ulteriori note salvate per immobile ${immobile.id}`);
+                    }
+                });
+            }
+        });
+
+        console.log('✅ Event listeners analisi inizializzati');
     }
 }
 
