@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.14.1-CRITICAL-2025-11-13-19:30
+// 🚀 VERSION: SIAF-v2.15.0-FINAL-2025-11-13-20:00
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
-    minor: 14,
-    patch: 1,
+    minor: 15,
+    patch: 0,
     date: '13/11/2025',
-    time: '19:30',
-    description: 'FIX CRITICO: Preserva ID originali al caricamento pratiche (fix duplicati)',
-    color: '#FF3B30'  // iOS red - critical bugfix
+    time: '20:00',
+    description: 'Aggiornamento automatico quote possesso quando cambiano venditori',
+    color: '#34C759'  // iOS green - new feature
 };
 
 class SiafApp {
@@ -1516,6 +1516,9 @@ addVenditore() {
     this.renderVenditore(venditore);
     this.updateTabProgress();
 
+    // Aggiorna visualizzazione quote in tutti gli immobili
+    this.refreshAllVenditoriQuote();
+
     console.log('📊 Array venditori attuale:', this.venditori);
 }
 
@@ -1573,6 +1576,9 @@ removeVenditore(id) {
 
     this.updateTabProgress();
     this.isDirty = true;
+
+    // Aggiorna visualizzazione quote in tutti gli immobili
+    this.refreshAllVenditoriQuote();
 
     console.log(`❌ Rimosso venditore ${id}`);
 }
@@ -1663,8 +1669,21 @@ addConiugeAuto(principaleId) {
         principaleCard.parentNode.insertBefore(coniugeCard, principaleCard.nextSibling);
     }
 
+    // Sincronizza: aggiungi riga venditori_quote per il coniuge a tutti gli immobili
+    this.immobili.forEach(immobile => {
+        immobile.venditori_quote.push({
+            venditore_id: coniuge.id,
+            quota_percentuale: null,
+            natura_diritto: 'comproprietario'
+        });
+    });
+    console.log('🔄 Venditori_quote sincronizzati (aggiunto coniuge) in tutti gli immobili');
+
     this.updateTabProgress();
     this.isDirty = true;
+
+    // Aggiorna visualizzazione quote in tutti gli immobili
+    this.refreshAllVenditoriQuote();
 
     this.showNotification(
         `💍 Coniuge aggiunto automaticamente per "${principale.nome} ${principale.cognome}"`,
@@ -1702,8 +1721,17 @@ removeConiugeAuto(principaleId) {
     principale.hasConiuge = false;
     principale.coniugeId = null;
 
+    // Sincronizza: rimuovi riga venditori_quote del coniuge da tutti gli immobili
+    this.immobili.forEach(immobile => {
+        immobile.venditori_quote = immobile.venditori_quote.filter(vq => vq.venditore_id !== coniugeId);
+    });
+    console.log('🔄 Venditori_quote sincronizzati (rimosso coniuge) in tutti gli immobili');
+
     this.updateTabProgress();
     this.isDirty = true;
+
+    // Aggiorna visualizzazione quote in tutti gli immobili
+    this.refreshAllVenditoriQuote();
 
     this.showNotification(
         `❌ Coniuge rimosso automaticamente`,
@@ -5620,6 +5648,23 @@ renderVenditore(venditore) {
                 <span>${alertIcon} ${alertText}</span>
             </div>
         `;
+    }
+
+    /**
+     * Aggiorna la visualizzazione della tabella venditori_quote per tutti gli immobili
+     * Da chiamare quando cambiano i venditori (add/remove/coniuge)
+     */
+    refreshAllVenditoriQuote() {
+        console.log('🔄 Refresh venditori_quote per tutti gli immobili...');
+
+        this.immobili.forEach(immobile => {
+            const container = document.querySelector(`#immobile-${immobile.id} .venditori-quote-table`);
+            if (container) {
+                // Ri-renderizza solo la tabella quote
+                container.innerHTML = this.renderVenditoriQuote(immobile);
+                console.log(`✅ Quote aggiornate per immobile ${immobile.id}`);
+            }
+        });
     }
 
     // ============================================================
