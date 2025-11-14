@@ -1,0 +1,32 @@
+# macOS
+.DS_Store
+*.swp
+*.swo
+*~
+
+# VS Code
+.vscode/
+Visual Studio Code.app/
+VSCode-*.zip
+
+# Backup files
+*.bak
+*~
+
+# Master database files (non-version controlled)
+MASTER-SIAF*.csv
+*.db
+
+# Node modules (se presenti)
+node_modules/
+
+# Temporary files
+*.tmp
+*.log
+
+# Project-specific temp files
+contatori.js
+database.js
+main.js
+template-generator.js
+test-*.html
