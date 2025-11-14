@@ -1,14 +1,14 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.21.1-FINAL-2025-11-15-01:00
+// 🚀 VERSION: SIAF-v2.21.2-FINAL-2025-11-15-01:15
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
     minor: 21,
-    patch: 1,
+    patch: 2,
     date: '15/11/2025',
-    time: '01:00',
-    description: 'Bug fix: Event listener bottone Aggiungi Atto corretto',
+    time: '01:15',
+    description: 'Bug fix: Type mismatch immobileId (string vs number) - parseInt aggiunto',
     color: '#22c55e'  // Green - Bug fix
 };
 
@@ -7760,7 +7760,9 @@ renderVenditore(venditore) {
 
     // BLOCCO: Aggiungi nuovo atto di provenienza
     addAttoProvenienza(immobileId) {
-        const immobile = this.immobili.find(i => i.id === immobileId);
+        // Converti a number per confronto corretto
+        const id = parseInt(immobileId);
+        const immobile = this.immobili.find(i => i.id === id);
         if (!immobile) {
             console.error(`❌ Immobile ${immobileId} non trovato`);
             return;
@@ -7794,7 +7796,9 @@ renderVenditore(venditore) {
 
     // BLOCCO: Rimuovi atto di provenienza
     removeAttoProvenienza(immobileId, attoIndex) {
-        const immobile = this.immobili.find(i => i.id === immobileId);
+        // Converti a number per confronto corretto
+        const id = parseInt(immobileId);
+        const immobile = this.immobili.find(i => i.id === id);
         if (!immobile || !immobile.provenienza) {
             console.error(`❌ Immobile ${immobileId} o atti non trovati`);
             return;
@@ -7808,7 +7812,9 @@ renderVenditore(venditore) {
 
     // BLOCCO: Salva campo di un atto
     saveAttoField(immobileId, attoIndex, fieldName, value) {
-        const immobile = this.immobili.find(i => i.id === immobileId);
+        // Converti a number per confronto corretto
+        const id = parseInt(immobileId);
+        const immobile = this.immobili.find(i => i.id === id);
         if (!immobile || !immobile.provenienza || !immobile.provenienza[attoIndex]) {
             console.error(`❌ Atto non trovato: immobile ${immobileId}, atto ${attoIndex}`);
             return;
