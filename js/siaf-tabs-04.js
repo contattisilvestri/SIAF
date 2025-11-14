@@ -1,15 +1,15 @@
 // BLOCCO 1: Definizione classe principale e inizializzazione variabili
-// 🚀 VERSION: SIAF-v2.15.0-FINAL-2025-11-13-20:00
+// 🚀 VERSION: SIAF-v2.16.0-FINAL-2025-11-13-20:15
 
 // Sistema versioning dinamico
 window.SIAF_VERSION = {
     major: 2,
-    minor: 15,
+    minor: 16,
     patch: 0,
     date: '13/11/2025',
-    time: '20:00',
-    description: 'Aggiornamento automatico quote possesso quando cambiano venditori',
-    color: '#34C759'  // iOS green - new feature
+    time: '20:15',
+    description: 'Aggiornate classi energetiche: A1, A2, A3, A4, B, C, D, E, F, G',
+    color: '#007AFF'  // iOS blue - update
 };
 
 class SiafApp {
@@ -6062,12 +6062,12 @@ renderVenditore(venditore) {
                             <div class="dual-input-container">
                                 <select id="cert_classe_select_${id}">
                                     <option value="">Seleziona...</option>
-                                    ${['A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G'].map(classe =>
+                                    ${['A1', 'A2', 'A3', 'A4', 'B', 'C', 'D', 'E', 'F', 'G'].map(classe =>
                                         `<option value="${classe}" ${stato.certificazione_energetica?.classe === classe ? 'selected' : ''}>${classe}</option>`
                                     ).join('')}
                                 </select>
                                 <span class="dual-input-separator">oppure</span>
-                                <input type="text" id="cert_classe_text_${id}" placeholder="Classe personalizzata" value="${stato.certificazione_energetica?.classe && !['A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G'].includes(stato.certificazione_energetica.classe) ? stato.certificazione_energetica.classe : ''}">
+                                <input type="text" id="cert_classe_text_${id}" placeholder="Classe personalizzata" value="${stato.certificazione_energetica?.classe && !['A1', 'A2', 'A3', 'A4', 'B', 'C', 'D', 'E', 'F', 'G'].includes(stato.certificazione_energetica.classe) ? stato.certificazione_energetica.classe : ''}">
                             </div>
                         </div>
 
